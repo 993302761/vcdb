@@ -41,7 +41,6 @@ public class VCDBAdmin {
         memStore.add(newKv);
         //size + 1
         memStore.size.addAndGet(kv.getLength());
-
     }
 
     public void createTable(CreateTable createTable) {
