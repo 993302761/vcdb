@@ -1,5 +1,6 @@
 package org.example.vcdb.executor;
 
+import org.example.vcdb.config.ClientConfig;
 import org.example.vcdb.entity.Delete.DeleteCells;
 import org.example.vcdb.entity.Delete.DeleteTable;
 import org.example.vcdb.entity.Post.*;
@@ -15,6 +16,7 @@ import java.util.List;
 import static org.example.vcdb.store.mem.KV.byteToType;
 
 public class VCDBAdmin {
+    ClientConfig clientConfig;
     MemStore memStore;
     public VCDBAdmin(){
         memStore=new MemStore();

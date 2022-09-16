@@ -6,9 +6,31 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.Properties;
 
 
 public class IOUtils {
+  public static Properties getProperties(String path){
+    // 生成文件对象
+    File pf = new File(path);
+    // 生成文件输入流
+    FileInputStream inputStream = null;
+    try {
+      inputStream = new FileInputStream(pf);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    // 生成properties对象
+    Properties p = new Properties();
+    try {
+      p.load(inputStream);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return p;
+  }
+
   public static void copyBytes(InputStream in, OutputStream out, int buffSize, boolean close) 
     throws IOException {
     try {
