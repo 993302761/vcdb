@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.example.util;
+package org.example.vcdb.util;
 
 import java.util.Comparator;
 

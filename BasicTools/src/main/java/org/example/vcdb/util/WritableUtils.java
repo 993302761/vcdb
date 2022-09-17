@@ -1,6 +1,6 @@
 
 
-package org.example.util;
+package org.example.vcdb.util;
 
 import java.io.*;
 import java.nio.ByteBuffer;

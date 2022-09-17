@@ -1,5 +1,5 @@
 
-package org.example.util;
+package org.example.vcdb.util;
 
 import com.google.common.collect.Lists;
 import sun.misc.Unsafe;

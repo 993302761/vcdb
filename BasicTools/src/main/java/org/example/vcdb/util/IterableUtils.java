@@ -1,4 +1,4 @@
-package org.example.util;
+package org.example.vcdb.util;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,4 +1,4 @@
-package org.example.util;
+package org.example.vcdb.util;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
