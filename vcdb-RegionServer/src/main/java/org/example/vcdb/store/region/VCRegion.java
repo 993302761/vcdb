@@ -16,6 +16,7 @@ Region               (Regions for the table)
         MemStore     (MemStore for each Store for each Region for the table)
         FileStore    (StoreFiles for each Store for each Region for the table)
             KV    (Blocks within a StoreFile within a Store for each Region for the table)*/
+    /*表---》rowKey----》列族*/
 public class VCRegion {
     RegionServerMeta regionServerMeta;
     //regionID,VCRegionStores

@@ -16,9 +16,9 @@ public class RegionServerMeta {
 
     /*fileCount,pageCount,metaName,fileMap,rangMap*/
     byte[] MetaByte;
-    /*key(db+table+cf)---encodeNames(fileCount{(nameLength,name).....})*/
-    /*encodeName---keyRange(startKey,endKey)*/
+    /*key(db+table+rowKey+keyRange)---encodeNames(fileCount{(nameLength,name).....})*/
+    /*encodeName---------------keyRange(startKey,endKey)*/
     String metaName;//文件名字
     HashMap<byte[],byte[]> fileMap=new HashMap<>();
-    HashMap<byte[],byte[]> rangMap=new HashMap<>();
+    HashMap<byte[],byte[]> rangeMap=new HashMap<>();
 }
