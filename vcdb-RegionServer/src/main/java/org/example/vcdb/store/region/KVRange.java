@@ -1,9 +1,8 @@
 package org.example.vcdb.store.region;
 
-<<<<<<< HEAD
+
 import org.example.vcdb.util.Bytes;
-=======
->>>>>>> 91aae6775cc8e3dbe43c43f92cf64035b801fe42
+
 
 /**
  * @ClassName KVRange

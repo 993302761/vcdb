@@ -1,12 +1,8 @@
 package org.example.vcdb.store.mem;
 
-<<<<<<< HEAD
-import org.example.util.Bytes;
-import org.example.util.RawComparator;
-=======
+
 import org.example.vcdb.util.Bytes;
 import org.example.vcdb.util.RawComparator;
->>>>>>> 91aae6775cc8e3dbe43c43f92cf64035b801fe42
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

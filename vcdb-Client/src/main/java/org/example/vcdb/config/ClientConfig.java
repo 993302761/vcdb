@@ -1,10 +1,9 @@
 package org.example.vcdb.config;
 
-<<<<<<< HEAD
-import org.example.util.IOUtils;
-=======
+
+
 import org.example.vcdb.util.IOUtils;
->>>>>>> 91aae6775cc8e3dbe43c43f92cf64035b801fe42
+
 
 import java.util.Properties;
 
