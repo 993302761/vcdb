@@ -12,6 +12,10 @@
         <module>vcdb-PDServer</module>
         <module>vcdb-RegionServer</module>
         <module>vcdb-Client</module>
+<<<<<<< HEAD
+        <module>BasicTools</module>
+=======
+>>>>>>> 91aae6775cc8e3dbe43c43f92cf64035b801fe42
     </modules>
     <dependencies>
         <dependency>
