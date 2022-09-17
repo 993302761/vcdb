@@ -1,7 +1,4 @@
 package org.example.vcdb.store.region;
-
-
-
 import org.example.vcdb.util.Bytes;
 
 
@@ -18,7 +15,6 @@ import org.example.vcdb.util.Bytes;
     boolean unique;
     boolean isNull;
     int Version=Integer.MAX_VALUE;
-    byte method;
     byte type;
 */
 public class ColumnFamilyMeta {
