@@ -20,7 +20,6 @@ import org.example.vcdb.util.Bytes;
     int Version=Integer.MAX_VALUE;
     byte method;
     byte type;
-    String cf_name;
 */
 public class ColumnFamilyMeta {
     private byte[] data=null;
@@ -33,8 +32,7 @@ public class ColumnFamilyMeta {
         return length;
     }
     public ColumnFamilyMeta(boolean unique, boolean isNull, long min,
-                            long max, CFType type,
-                            byte[] family, int fOffset, int fLength){
+                            long max, CFType type){
         byte uni=0;
         byte isNil=0;
         if (unique){
@@ -44,7 +42,7 @@ public class ColumnFamilyMeta {
             isNil=1;
         }
         this.data = createByteArray(uni, isNil, min,
-                max,  type, family,fOffset,fLength);
+                max,  type);
         this.length = this.data.length;
     }
 
@@ -54,19 +52,15 @@ public class ColumnFamilyMeta {
     }
 
     private byte[] createByteArray(byte unique, byte isNull, long min,
-                                   long max, CFType type,
-                                   byte[] family, int fOffset, int fLength) {
-        byte[] bytes = new byte[1+1+8+8+4+1+4+fLength];
+                                   long max, CFType type
+                                   ) {
+        byte[] bytes = new byte[1+1+8+8+4+1];
         int pos=0;
         pos= Bytes.putByte(bytes,pos,unique);
         pos=Bytes.putByte(bytes,pos,isNull);
         pos=Bytes.putLong(bytes,pos,min);
         pos=Bytes.putLong(bytes,pos,max);
         pos=Bytes.putByte(bytes,pos,type.getCode());
-        pos=Bytes.putInt(bytes,pos,fLength);
-        if (fLength != 0) {
-            pos = Bytes.putBytes(bytes, pos, family, fOffset, fLength);
-        }
         return bytes;
     }
     public boolean isUnique() {
@@ -85,12 +79,6 @@ public class ColumnFamilyMeta {
 
     public CFType getType() {
         return byteToCFType(data[18]);
-    }
-    public int getCFLength() {
-        return Bytes.toInt(this.data,19,4);
-    }
-    public String getCf_name() {
-        return Bytes.toString(this.data,23,getCFLength());
     }
 
     public static enum CFType {

@@ -57,13 +57,11 @@ public class FileStore {
         this.data=data;
         this.length=data.length;
     }
-    public FileStore( ColumnFamilyMeta columnFamilyMeta, FileStoreMeta fileStoreMeta,
+    public FileStore(  FileStoreMeta fileStoreMeta,
                       List<KVRange> pageTrailer, KeyValueSkipListSet dataSet) {
         //fileStoreMeta也会随时更新
         this.data = new byte[4*1024*16];
-        int pos = 16;
-        pos = Bytes.putInt(this.data, pos, columnFamilyMeta.getLength());
-        pos = Bytes.putBytes(this.data, pos, columnFamilyMeta.getData(), 0, columnFamilyMeta.getLength());
+        int pos = 12;
         pos = Bytes.putInt(this.data, pos, fileStoreMeta.getLength());
         pos = Bytes.putBytes(this.data, pos, fileStoreMeta.getData(), 0, fileStoreMeta.getLength());
         pos = Bytes.putInt(this.data, pos, pageTrailer.size());
@@ -74,14 +72,12 @@ public class FileStore {
         pos=(pos%(1024*4)+1)*(1024*4);
         //分页管理可以改变trailer的参数
         Trailer trailer=new Trailer(
-                4*4,
-                4*4+4+columnFamilyMeta.getLength(),
-                4*4+4+columnFamilyMeta.getLength()+4+fileStoreMeta.getLength(),
+                4*3,
+                4*3+4+fileStoreMeta.getLength(),
                 pos);
-        Bytes.putInt(this.data, 0, trailer.getColumnMetaIndex());
-        Bytes.putInt(this.data, 4, trailer.getRegionInfoIndex());
-        Bytes.putInt(this.data, 8, trailer.getPageTrailerIndex());
-        Bytes.putInt(this.data, 12, trailer.getDataSetIndex());
+        Bytes.putInt(this.data, 0, trailer.getRegionInfoIndex());
+        Bytes.putInt(this.data, 4, trailer.getPageTrailerIndex());
+        Bytes.putInt(this.data, 8, trailer.getDataSetIndex());
         int dataSetCount = dataSet.size();
         pos = Bytes.putInt(this.data, pos, dataSetCount);
         //获取key和value的set
@@ -103,8 +99,7 @@ public class FileStore {
     public Trailer getTrailer() {
         return new Trailer(Bytes.toInt(this.data, 0, 4),
                 Bytes.toInt(this.data, 4, 4),
-                Bytes.toInt(this.data, 8, 4),
-                Bytes.toInt(this.data, 12, 4));
+                Bytes.toInt(this.data, 8, 4));
     }
 
     public int getColumnFamilyMetaLength() {
@@ -138,17 +133,14 @@ public class FileStore {
         return pageTrailer;
     }
 
-    public int getColumnMetaIndex(){
+    public int getRegionInfoIndex(){
         return Bytes.toInt(this.data,0,4);
     }
-    public int getRegionInfoIndex(){
+    public int getTrailerIndex(){
         return Bytes.toInt(this.data,4,4);
     }
-    public int getTrailerIndex(){
-        return Bytes.toInt(this.data,8,4);
-    }
     public int getDataSetIndex(){
-        return Bytes.toInt(this.data,12,4);
+        return Bytes.toInt(this.data,8,4);
     }
 
     /*----------------------------------------------------*/
@@ -169,11 +161,6 @@ public class FileStore {
         Bytes.putInt(this.data, 12, offset);
     }
 
-    public void updateColumnFamilyMeta(ColumnFamilyMeta columnFamilyMeta){
-        int columnFamilyMetaIndex=getColumnMetaIndex();
-        byte[] oldHeadPage=getHeadPage();
-
-    }
     public void updateFileStoreMeta(FileStoreMeta fileStoreMeta){
         int fileStoreMetaIndex=getRegionInfoIndex();
 

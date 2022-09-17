@@ -16,21 +16,18 @@ package org.example.vcdb.store.region;
  * DataSet   (不分，一直往后累加，不用打乱排序）
  * */
 public class Trailer {
-    private int columnMetaIndex;
+
     private int regionInfoIndex;
     private int pageTrailerIndex;
     private int dataSetIndex;
 
-    public Trailer(int columnMetaIndex, int regionInfoIndex, int pageTrailerIndex, int dataSetIndex) {
-        this.columnMetaIndex = columnMetaIndex;
+    public Trailer( int regionInfoIndex, int pageTrailerIndex, int dataSetIndex) {
+
         this.regionInfoIndex = regionInfoIndex;
         this.pageTrailerIndex = pageTrailerIndex;
         this.dataSetIndex = dataSetIndex;
     }
 
-    public int getColumnMetaIndex() {
-        return columnMetaIndex;
-    }
 
     public int getRegionInfoIndex() {
         return regionInfoIndex;
@@ -44,9 +41,6 @@ public class Trailer {
         return dataSetIndex;
     }
 
-    public void setColumnMetaIndex(int columnMetaIndex) {
-        this.columnMetaIndex = columnMetaIndex;
-    }
 
     public void setRegionInfoIndex(int regionInfoIndex) {
         this.regionInfoIndex = regionInfoIndex;

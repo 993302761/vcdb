@@ -12,7 +12,7 @@ import java.util.HashMap;
 /*
 * PD提取的类，保存的是整个Region Server的元数据*/
     //单独存起来
-public class RegionMeta {
+public class RegionServerMeta {
 
     /*fileCount,pageCount,metaName,fileMap,rangMap*/
     byte[] MetaByte;

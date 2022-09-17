@@ -11,7 +11,7 @@ public class RegionServer {
     }
 
     //接受rpc调用
-    public RegionMeta getRegionMeta(){
+    public RegionServerMeta getRegionMeta(){
         return null;
     }
 }

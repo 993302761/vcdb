@@ -3,6 +3,10 @@ package org.example.vcdb.store.region;
 
 import org.example.vcdb.util.Bytes;
 
+/*
+* 数据格式
+* encodeName.meta
+* encodeName*/
 
 //存储a region的具体信息(元数据)
 public class FileStoreMeta {
@@ -22,6 +26,7 @@ public class FileStoreMeta {
         this.data=data;
         this.length =data.length;
     }
+
     public FileStoreMeta(long timeStamp, boolean split, String encodedName, byte[] endKey, byte[] startKey, String tableName) {
         this.length = 8 + 1 + 4 + encodedName.getBytes().length + 4 + startKey.length + 4 + endKey.length  + 4 + tableName.getBytes().length;
         byte spl=0;
