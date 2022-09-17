@@ -18,9 +18,7 @@ Region               (Regions for the table)
             KV    (Blocks within a StoreFile within a Store for each Region for the table)*/
     /*表---》rowKey----》列族*/
 public class VCRegion {
-    RegionServerMeta regionServerMeta;
-    //regionID,VCRegionStores
-    byte[] regionServerID;
-    List<FileStore> fileStores;
+    RegionMeta regionMeta;
     List<FileStoreMeta> fileStoreMetas;
+    List<FileStore> fileStores;
 }
