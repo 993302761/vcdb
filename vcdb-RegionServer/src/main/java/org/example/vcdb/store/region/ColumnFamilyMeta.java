@@ -14,18 +14,13 @@ import org.example.vcdb.util.Bytes;
     long max=Long.MAX_VALUE;
     boolean unique;
     boolean isNull;
-    int Version=Integer.MAX_VALUE;
     byte type;
 */
 public class ColumnFamilyMeta {
     private byte[] data=null;
-    private int length = 0;
 
     public byte[] getData() {
         return data;
-    }
-    public int getLength() {
-        return length;
     }
     public ColumnFamilyMeta(boolean unique, boolean isNull, long min,
                             long max, CFType type){
@@ -39,12 +34,10 @@ public class ColumnFamilyMeta {
         }
         this.data = createByteArray(uni, isNil, min,
                 max,  type);
-        this.length = this.data.length;
     }
 
     public ColumnFamilyMeta(byte[] data){
         this.data=data;
-        this.length=data.length;
     }
 
     private byte[] createByteArray(byte unique, byte isNull, long min,

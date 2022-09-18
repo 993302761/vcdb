@@ -174,11 +174,11 @@ public class KeyValueSkipListSet implements NavigableSet<KV> {
 
     public int getByteSize() {
       int byteSize=0;
-      Iterator iter = iterator();        //获取key和value的set
-      while (iter.hasNext()) {
-        Object entry = iter.next();        //把hashmap转成Iterator再迭代到entry
-        byteSize+=4+((KV)entry).getLength();
-      }
+        //获取key和value的set
+        //把hashmap转成Iterator再迭代到entry
+        for (Object entry : this) {
+            byteSize += 4 + ((KV) entry).getLength();
+        }
       return byteSize;
     }
 

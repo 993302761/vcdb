@@ -118,5 +118,4 @@ public class FileStoreMeta {
     public String getNameSpace() {
         return Bytes.toString(this.data, 25 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength(), getNameSpaceLength());
     }
-
 }
