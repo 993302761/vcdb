@@ -2,13 +2,11 @@ package org.example.vcdb.store.region;
 
 import org.example.vcdb.store.region.Region.RegionMeta;
 import org.example.vcdb.store.region.Region.VCRegion;
-
-import java.net.Inet4Address;
 import java.util.List;
 
 public class RegionServer {
-    Inet4Address RegionServerIP;
-    int RSPort;
+    String regionServerMetaName;
+    RegionServerMeta regionServerMeta;
     List<VCRegion> vcRegion;
     public void readConfig(){
 

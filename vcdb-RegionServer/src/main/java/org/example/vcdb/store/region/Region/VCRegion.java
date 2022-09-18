@@ -21,8 +21,10 @@ Region               (Regions for the table)
         FileStore    (StoreFiles for each Store for each Region for the table)
             KV    (Blocks within a StoreFile within a Store for each Region for the table)*/
     /*表---》rowKey----》列族*/
+    /*一般来说一个region就对应一个表*/
 public class VCRegion {
     RegionMeta regionMeta;
     List<FileStoreMeta> fileStoreMetas;
     List<FileStore> fileStores;
+
 }

@@ -1,5 +1,8 @@
 package org.example.vcdb.store.region;
 
+import java.net.Inet4Address;
+import java.util.Map;
+
 /**
  * @ClassName RegionServerMeta
  * @Description TODO
@@ -10,5 +13,13 @@ package org.example.vcdb.store.region;
 /*
 * dbName,table,cfName----------regionMetaName*/
 public class RegionServerMeta {
+    Inet4Address regionServerIP;
+    int RSPort;
+    Map<String,String> regionMap;
+    /*db.tableName-------->regionMetaName*/
     byte[] metaByte;
+
+    public RegionServerMeta(Inet4Address regionServerIP,int rsPort,Map<String,String> regionMap){
+
+    }
 }
