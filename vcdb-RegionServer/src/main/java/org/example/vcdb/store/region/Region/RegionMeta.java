@@ -1,4 +1,4 @@
-package org.example.vcdb.store.region;
+package org.example.vcdb.store.region.Region;
 
 import java.util.HashMap;
 

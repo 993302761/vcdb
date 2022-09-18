@@ -15,9 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.example.vcdb.store.region;
-
-import org.example.vcdb.store.mem.KV;
+package org.example.vcdb.store.mem;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -149,17 +147,19 @@ public class KeyValueSkipListSet implements NavigableSet<KV> {
     public KV get(KV kv) {
         return this.delegatee.get(kv);
     }
+
     public KV get(String key) {
         Iterator iter = iterator();        //获取key和value的set
         while (iter.hasNext()) {
             ConcurrentNavigableMap.Entry entry = (ConcurrentNavigableMap.Entry) iter.next();        //把hashmap转成Iterator再迭代到entry
-            KV val = (KV)entry.getKey();//从entry获取value
-            if (key.equals(val.getRowKey())){
+            KV val = (KV) entry.getKey();//从entry获取value
+            if (key.equals(val.getRowKey())) {
                 return val;
             }
         }
         return null;
     }
+
     public int size() {
         return this.delegatee.size();
     }
@@ -173,13 +173,13 @@ public class KeyValueSkipListSet implements NavigableSet<KV> {
     }
 
     public int getByteSize() {
-      int byteSize=0;
+        int byteSize = 0;
         //获取key和value的set
         //把hashmap转成Iterator再迭代到entry
         for (Object entry : this) {
             byteSize += 4 + ((KV) entry).getLength();
         }
-      return byteSize;
+        return byteSize;
     }
 
 }

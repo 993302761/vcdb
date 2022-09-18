@@ -1,5 +1,8 @@
 package org.example.vcdb.store.region;
 
+import org.example.vcdb.store.region.Region.RegionMeta;
+import org.example.vcdb.store.region.Region.VCRegion;
+
 import java.net.Inet4Address;
 import java.util.List;
 

@@ -1,4 +1,8 @@
-package org.example.vcdb.store.region;
+package org.example.vcdb.store.region.Region;
+
+import org.example.vcdb.store.region.Region.RegionMeta;
+import org.example.vcdb.store.region.fileStore.FileStore;
+import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 
 import java.util.List;
 
