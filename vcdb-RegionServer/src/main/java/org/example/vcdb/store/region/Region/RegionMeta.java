@@ -21,6 +21,7 @@ public class RegionMeta {
     /*fileCount,metaName,fileMap,rangeMap*/
     Map<KeyRange,String> fileStoreMap;
     byte[] metaByte;
+
     public RegionMeta(String metaName,Map<KeyRange,String> fileStoreMap){
         metaByte=new byte[1024*4];
         int pos=0;
