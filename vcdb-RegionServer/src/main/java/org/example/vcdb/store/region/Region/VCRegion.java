@@ -23,6 +23,7 @@ Region               (Regions for the table)
     /*表---》rowKey----》列族*/
     /*一般来说一个region就对应一个表*/
 public class VCRegion {
+    String regionMetaName;
     RegionMeta regionMeta;
     List<FileStoreMeta> fileStoreMetas;
     List<FileStore> fileStores;
