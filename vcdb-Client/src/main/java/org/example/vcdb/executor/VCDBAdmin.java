@@ -31,7 +31,7 @@ public class VCDBAdmin {
         }
         //日志集合（内存）
         //存在本地并且grpc调用从机进行日志备份
-        recordLog(dBName.getBytes(),valueNode);
+        boolean b = recordLog(dBName.getBytes(), valueNode);
         //产生新KV加入memStore
         if (memStore.kvSet.get("")==null){
             memStore.add(new KV("".getBytes(),0,"".getBytes().length,"".getBytes(),0,"".getBytes().length,null));
@@ -46,11 +46,10 @@ public class VCDBAdmin {
         //size + 1
         memStore.size.addAndGet(kv.getLength());
     }
-    public byte recordLog(byte[] key,KV.ValueNode valueNode){
+    public boolean recordLog(byte[] key, KV.ValueNode valueNode){
         WalEdit  newWalEdit = VCLog.entry.get(key);
         newWalEdit.actions.add(valueNode);
-
-        return 1;
+        return true;
     }
     public void createTable(CreateTable createTable) {
 

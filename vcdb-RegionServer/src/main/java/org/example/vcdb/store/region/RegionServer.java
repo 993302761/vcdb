@@ -7,7 +7,9 @@ import java.util.List;
 public class RegionServer {
     String regionServerMetaName;
     RegionServerMeta regionServerMeta;
-    List<VCRegion> vcRegion;
+    //cache for region
+    List<VCRegion> loadOnRegion;
+
     public void readConfig(){
 
     }
