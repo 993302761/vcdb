@@ -1,5 +1,7 @@
 package org.example.vcdb.store.region;
 
+import org.example.vcdb.store.mem.KV;
+import org.example.vcdb.store.mem.KeyValueSkipListSet;
 import org.example.vcdb.store.region.Region.RegionMeta;
 import org.example.vcdb.store.region.Region.VCRegion;
 import java.util.List;
@@ -13,7 +15,7 @@ public class RegionServer {
     }
 
     //接受rpc调用
-    public RegionMeta getRegionMeta(){
+    public byte[] getRegionMeta(){
         return null;
     }
 }
