@@ -7,6 +7,7 @@ import org.example.vcdb.util.HasThread;
 //asyncWriter异步写入
 //asyncSyncers同步机器
 public class WalBuffer {
+    static VCLog vcLog;
     private static class AsyncSyncer extends HasThread {
         @Override
         public void run() {
