@@ -1,10 +1,12 @@
 package org.example.vcdb.store.region;
 
 import org.example.vcdb.store.mem.KeyValueSkipListSet;
+import org.example.vcdb.store.mem.MemStore;
 import org.example.vcdb.store.region.Region.VCRegion;
 import java.util.List;
 
 public class RegionServer {
+    MemStore memStore;
     String regionServerMetaName;
     RegionServerMeta regionServerMeta;
     //cache for region

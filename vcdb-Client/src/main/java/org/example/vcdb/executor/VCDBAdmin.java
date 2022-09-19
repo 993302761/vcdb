@@ -6,23 +6,17 @@ import org.example.vcdb.entity.Delete.DeleteTable;
 import org.example.vcdb.entity.Post.*;
 import org.example.vcdb.entity.Put.CreateTable;
 import org.example.vcdb.store.mem.KV;
-import org.example.vcdb.store.mem.MemStore;
 import org.example.vcdb.store.wal.VCLog;
 import org.example.vcdb.store.wal.WalBuffer;
 import org.example.vcdb.store.wal.WalEdit;
 
 import java.util.Date;
-import java.util.List;
 
 import static org.example.vcdb.store.mem.KV.byteToType;
 
 public class VCDBAdmin {
     ClientConfig clientConfig;
-    MemStore memStore;
     WalBuffer walBuffer;
-    public VCDBAdmin(){
-        memStore=new MemStore();
-    }
     public void createDB(String dBName) {
         KV.ValueNode valueNode=new KV.ValueNode((new Date()).getTime(),byteToType((byte) 0),"".getBytes(),0,"".getBytes().length,"".getBytes(),0,"".getBytes().length);
         WalEdit walEdit = VCLog.entry.get(dBName.getBytes());
@@ -32,19 +26,6 @@ public class VCDBAdmin {
         //日志集合（内存）
         //存在本地并且grpc调用从机进行日志备份
         boolean b = recordLog(dBName.getBytes(), valueNode);
-        //产生新KV加入memStore
-        if (memStore.kvSet.get("")==null){
-            memStore.add(new KV("".getBytes(),0,"".getBytes().length,"".getBytes(),0,"".getBytes().length,null));
-        }
-        KV kv=memStore.kvSet.get("");
-        List<KV.ValueNode> values = kv.getValues();
-        values.add(valueNode);
-        memStore.kvSet.remove(kv);
-        KV newKv=new KV("".getBytes(),0,"".getBytes().length,
-                "".getBytes(),0,"".getBytes().length,values);
-        memStore.add(newKv);
-        //size + 1
-        memStore.size.addAndGet(kv.getLength());
     }
     public boolean recordLog(byte[] key, KV.ValueNode valueNode){
         WalEdit  newWalEdit = VCLog.entry.get(key);
