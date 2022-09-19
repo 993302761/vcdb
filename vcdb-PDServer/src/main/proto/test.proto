@@ -1,0 +1,30 @@
+//在proto文件中定义了有哪些对外接口，以及这个方法的入参和回参。
+
+//使用proto3语法
+syntax = "proto3";
+
+//不要拆分成多个类
+option java_multiple_files = false;
+//生成java类所在的包
+option java_package = "org.example.vcdb.PDServer.proto";
+//生成外层类的类名
+option java_outer_classname = "Meta";
+
+
+
+import "google/protobuf/empty.proto";
+// 对外提供的接口
+service getRegionMeta {
+  // getRegionMeta 方法名，google.protobuf.Empt 传入参数为空， regionMeta  返回响应类
+  rpc getRegionMeta (google.protobuf.Empty) returns (regionMeta) {}
+
+}
+
+// 方法反馈对象
+message regionMeta {
+  bytes metaByte=1;
+}
+
+
+
+
