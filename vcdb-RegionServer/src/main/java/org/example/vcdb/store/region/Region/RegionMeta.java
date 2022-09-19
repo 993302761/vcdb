@@ -17,9 +17,9 @@ import java.util.Map;
 //单独存起来
 /*metaName-------------cfName.keyRange(startKey,endKey)----------fileStoreMetaNames*/
 public class RegionMeta {
-    String regionMetaName;//文件名字
-    /*fileCount,metaName,fileMap,rangeMap*/
-    Map<KeyRange,String> fileStoreMap;
+//    String regionMetaName;//文件名字
+//    /*fileCount,metaName,fileMap,rangeMap*/
+//    Map<KeyRange,String> fileStoreMap;
     byte[] metaByte;
 
     public RegionMeta(String metaName,Map<KeyRange,String> fileStoreMap){

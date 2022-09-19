@@ -2,7 +2,7 @@ package org.example.vcdb.store.mem;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-//对应的是一个表的一个版本的一个列族的数据
+//对应的是一个表的一个列族的数据
 public class MemStore {
     // Used to track when to flush
     long timeOfOldestEdit = Long.MAX_VALUE;
