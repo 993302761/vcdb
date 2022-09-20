@@ -29,12 +29,13 @@ public class KV {
         this.length = length;
     }
 
-    public int getRLength(){
-        return Bytes.toInt(this.data,0,4);
+    public int getRLength() {
+        return Bytes.toInt(this.data, 0, 4);
     }
+
     public String getRowKey() {
-        int rLength=getRLength();
-        return Bytes.toString(this.data,rLength,rLength);
+        int rLength = getRLength();
+        return Bytes.toString(this.data, rLength, rLength);
     }
 
 //    public void getAll() {
@@ -47,45 +48,45 @@ public class KV {
 //        List<ValueNode> valueNodes = byteToValues(this.data, 28 + rLength + fLength, valueLength);
 //    }
 
-    public int getFLength(){
-        return Bytes.toInt(this.data,4+getRLength());
+    public int getFLength() {
+        return Bytes.toInt(this.data, 4 + getRLength());
     }
 
-    public int getFLength(int rLength){
-        return Bytes.toInt(this.data,4+rLength);
+    public int getFLength(int rLength) {
+        return Bytes.toInt(this.data, 4 + rLength);
     }
 
-    public String getFamily(){
-        int rLength=getRLength();
-        int fLength=getFLength(rLength);
-        return Bytes.toString(this.data,8+rLength,fLength);
+    public String getFamily() {
+        int rLength = getRLength();
+        int fLength = getFLength(rLength);
+        return Bytes.toString(this.data, 8 + rLength, fLength);
     }
 
     public List<ValueNode> getValues() {
-        List<ValueNode> valueNodes=new ArrayList<>();
-        int rLength=getRLength();
-        int fLength=getFLength(rLength);
-        int pos=rLength+fLength+8;
-        int valuesLength=Bytes.toInt(this.data,pos,4);
-        pos=pos+4;
-        int valueCount=Bytes.toInt(this.data,pos,4);
-        pos=pos+4;
+        List<ValueNode> valueNodes = new ArrayList<>();
+        int rLength = getRLength();
+        int fLength = getFLength(rLength);
+        int pos = rLength + fLength + 8;
+        int valuesLength = Bytes.toInt(this.data, pos, 4);
+        pos = pos + 4;
+        int valueCount = Bytes.toInt(this.data, pos, 4);
+        pos = pos + 4;
         for (int i = 0; i < valueCount; i++) {
-            long timestamp=Bytes.toLong(this.data,pos,8);
-            pos=pos+8;
-            byte type=this.data[pos];
+            long timestamp = Bytes.toLong(this.data, pos, 8);
+            pos = pos + 8;
+            byte type = this.data[pos];
             pos++;
-            int qLength=Bytes.toInt(this.data,pos,4);
-            pos=pos+4;
-            String qualifier=Bytes.toString(this.data,pos,qLength);
-            pos=pos+qLength;
-            int vLength=Bytes.toInt(this.data,pos,4);
-            pos=pos+4;
-            String value=Bytes.toString(this.data,pos,vLength);
-            pos=pos+vLength;
-            ValueNode valueNode=new ValueNode(timestamp,byteToType(type),
-                    qualifier.getBytes(StandardCharsets.UTF_8),0, qLength,
-                    value.getBytes(StandardCharsets.UTF_8),0,vLength);
+            int qLength = Bytes.toInt(this.data, pos, 4);
+            pos = pos + 4;
+            String qualifier = Bytes.toString(this.data, pos, qLength);
+            pos = pos + qLength;
+            int vLength = Bytes.toInt(this.data, pos, 4);
+            pos = pos + 4;
+            String value = Bytes.toString(this.data, pos, vLength);
+            pos = pos + vLength;
+            ValueNode valueNode = new ValueNode(timestamp, byteToType(type),
+                    qualifier.getBytes(StandardCharsets.UTF_8), 0, qLength,
+                    value.getBytes(StandardCharsets.UTF_8), 0, vLength);
             valueNodes.add(valueNode);
         }
         return valueNodes;
@@ -100,8 +101,8 @@ public class KV {
     }
 
     public KV(byte[] data) {
-        this.data=data;
-        this.length=data.length;
+        this.data = data;
+        this.length = data.length;
     }
 
     //row is rowKey
@@ -112,7 +113,7 @@ public class KV {
         checkParameters(row, rLength, family, fLength);
         // Calculate length of tags area
         int valuesLength = 0;
-        int valueCount=0;
+        int valueCount = 0;
         if (values != null && !values.isEmpty()) {
             for (ValueNode v : values) {
                 //valueLengthSize
@@ -120,17 +121,17 @@ public class KV {
                 valueCount++;
             }
         }
-        valuesLength=valuesLength+4;
+        valuesLength = valuesLength + 4;
         byte[] bytes = new byte[(int) (getKeyValueDataStructureSize(rLength, fLength, valuesLength))];
         // Write key, value and key row length.
         int pos = 0;
         pos = Bytes.putInt(bytes, pos, rLength);
         pos = Bytes.putBytes(bytes, pos, row, rOffset, rLength);
-        pos = Bytes.putInt(bytes, pos,fLength);
+        pos = Bytes.putInt(bytes, pos, fLength);
         if (fLength != 0) {
             pos = Bytes.putBytes(bytes, pos, family, fOffset, fLength);
         }
-        pos =Bytes.putInt(bytes,pos,valuesLength);
+        pos = Bytes.putInt(bytes, pos, valuesLength);
         // Add the tags after the value part
         if (valuesLength > 0) {
             pos = Bytes.putInt(bytes, pos, valueCount);
@@ -178,8 +179,9 @@ public class KV {
             return this.code;
         }
     }
-    public static Type byteToType(byte b){
-        switch (b){
+
+    public static Type byteToType(byte b) {
+        switch (b) {
             case 0:
                 return Type.CreateDB;
             case 4:
@@ -275,36 +277,36 @@ public class KV {
         }
 
         public long getTime() {
-            return Bytes.toLong(this.bytes,0,8);
+            return Bytes.toLong(this.bytes, 0, 8);
         }
 
         public Type getType() {
-            byte type=this.bytes[8];
+            byte type = this.bytes[8];
             return byteToType(type);
         }
 
-        public int getQLength(){
-            return Bytes.toInt(this.bytes,9,4);
+        public int getQLength() {
+            return Bytes.toInt(this.bytes, 9, 4);
         }
 
         public String getQualifier() {
-            int qLength=getQLength();
-            return Bytes.toString(this.bytes,9+4,qLength);
+            int qLength = getQLength();
+            return Bytes.toString(this.bytes, 9 + 4, qLength);
         }
 
-        public int getVLength(){
-            int qLength=getQLength();
-            return Bytes.toInt(this.bytes,9+4+qLength,4);
+        public int getVLength() {
+            int qLength = getQLength();
+            return Bytes.toInt(this.bytes, 9 + 4 + qLength, 4);
         }
 
-        public int getVLength(int qLength){
-            return Bytes.toInt(this.bytes,9+4+qLength,4);
+        public int getVLength(int qLength) {
+            return Bytes.toInt(this.bytes, 9 + 4 + qLength, 4);
         }
 
-        public String getValue(){
-            int qLength=getQLength();
-            int vLength=getVLength(qLength);
-            return Bytes.toString(this.bytes,9+4+qLength+4,vLength);
+        public String getValue() {
+            int qLength = getQLength();
+            int vLength = getVLength(qLength);
+            return Bytes.toString(this.bytes, 9 + 4 + qLength + 4, vLength);
         }
 
     }

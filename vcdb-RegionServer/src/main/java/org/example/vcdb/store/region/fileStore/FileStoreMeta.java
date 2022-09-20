@@ -2,6 +2,8 @@ package org.example.vcdb.store.region.fileStore;
 
 import org.example.vcdb.util.Bytes;
 
+import java.util.List;
+
 /*
  * 数据格式
  * encodeName.meta
@@ -28,12 +30,12 @@ public class FileStoreMeta {
         this.length = data.length;
     }
 
-    public FileStoreMeta(long timeStamp, boolean split, String encodedName, byte[] endKey, byte[] startKey, String tableName, String nameSpace) {
+    public FileStoreMeta(long timeStamp, boolean split, String encodedName, byte[] endKey, byte[] startKey, String tableName, String nameSpace, List<KVRange> pageTrailer) {
         byte spl = 0;
         if (split) {
             spl = 1;
         }
-        this.data = createByteArray(timeStamp, spl, encodedName, endKey, startKey, tableName, nameSpace);
+        this.data = createByteArray(timeStamp, spl, encodedName, endKey, startKey, tableName, nameSpace,pageTrailer);
         this.length = this.data.length;
     }
 
@@ -47,7 +49,7 @@ public class FileStoreMeta {
 
     private byte[] createByteArray(long timeStamp, byte spl,
                                    String encodedName, byte[] endKey,
-                                   byte[] startKey, String tableName, String nameSpace) {
+                                   byte[] startKey, String tableName, String nameSpace,List<KVRange> pageTrailer) {
         int pos = 0;
         byte[] bytes = new byte[8 + 1 + 4 + encodedName.getBytes().length + 4 + startKey.length + 4 + endKey.length + 4 + tableName.getBytes().length + 4 + nameSpace.getBytes().length];
         pos = Bytes.putLong(bytes, pos, timeStamp);
@@ -67,6 +69,12 @@ public class FileStoreMeta {
 
         pos = Bytes.putInt(bytes, pos, nameSpace.getBytes().length);
         pos = Bytes.putBytes(bytes, pos, nameSpace.getBytes(), 0, nameSpace.getBytes().length);
+
+        pos = Bytes.putInt(this.data, pos, pageTrailer.size());
+        for (KVRange kvRange : pageTrailer) {
+            pos = Bytes.putInt(this.data, pos, kvRange.getLength());
+            pos = Bytes.putBytes(this.data, pos, kvRange.getData(), 0, kvRange.getLength());
+        }
         return bytes;
     }
 
