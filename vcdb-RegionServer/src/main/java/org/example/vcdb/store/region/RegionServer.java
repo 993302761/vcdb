@@ -10,7 +10,7 @@ import org.example.vcdb.store.region.Region.VCRegion;
 import java.util.List;
 
 public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
-    MemStore memStore;
+    List<MemStore> memStores;
     String regionServerMetaName;
     RegionServerMeta regionServerMeta;
     //cache for region

@@ -5,6 +5,4 @@ package org.example.vcdb.store.region.fileStore;
  */
 public class getRegionMeta {
 
-
-
 }
