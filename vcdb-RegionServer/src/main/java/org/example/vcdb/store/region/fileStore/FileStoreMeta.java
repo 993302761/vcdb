@@ -2,6 +2,7 @@ package org.example.vcdb.store.region.fileStore;
 
 import org.example.vcdb.util.Bytes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -125,5 +126,19 @@ public class FileStoreMeta {
 
     public String getNameSpace() {
         return Bytes.toString(this.data, 25 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength(), getNameSpaceLength());
+    }
+
+    public List<KVRange> getPageTrailer() {
+        int pos = 25 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength()+getNameSpaceLength();
+        List<KVRange> pageTrailer = new ArrayList<>();
+        int kvRangeCount = Bytes.toInt(this.data, pos, 4);
+        pos += 4;
+        for (int i = 0; i < kvRangeCount; i++) {
+            int rangeLength = Bytes.toInt(this.data, pos, 4);
+            pos += 4;
+            pageTrailer.add(new KVRange(Bytes.subByte(this.data, pos, rangeLength)));
+            pos += rangeLength;
+        }
+        return pageTrailer;
     }
 }

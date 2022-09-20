@@ -50,15 +50,12 @@ public class FileStore {
     }
 
     /*
-        int columnMetaIndex;4
-        int pageTrailerIndex;4
-        int dataSetIndex;4
-        long min=Long.MIN_VALUE;8
-        long max=Long.MAX_VALUE;8
-        boolean unique;1
-        boolean isNull;1
-        byte type;1
-        */
+    long min=Long.MIN_VALUE;8
+    long max=Long.MAX_VALUE;8
+    boolean unique;1
+    boolean isNull;1
+    byte type;1
+    */
 
     public FileStore(byte[] data) {
         this.data = data;
@@ -83,7 +80,6 @@ public class FileStore {
         this.length = this.data.length;
     }
 
-
     /*
     long min=Long.MIN_VALUE;8
     long max=Long.MAX_VALUE;8
@@ -97,6 +93,7 @@ public class FileStore {
     public void setColumnFamilyMeta(ColumnFamilyMeta columnFamilyMeta){
         Bytes.putBytes(this.data, 0, columnFamilyMeta.getData(), 0, 19);
     }
+
     /*-----------------------------------------------------------------*/
 
     public long getMin(){
@@ -130,7 +127,9 @@ public class FileStore {
     public void setType(byte val){
         Bytes.putByte(this.data,28, val);
     }
+
     /*---------------------action-------------------------------*/
+
     public Map<Integer,List<KV>> splitKVsByPage(List<KV> kvSet){
         return null;
     }
