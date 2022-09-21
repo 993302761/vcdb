@@ -3,6 +3,7 @@ package org.example.vcdb.store.region.fileStore;
 
 import org.example.vcdb.store.mem.KV;
 import org.example.vcdb.store.mem.KeyValueSkipListSet;
+import org.example.vcdb.store.region.Region.KeyRange;
 import org.example.vcdb.util.Bytes;
 import sun.security.krb5.internal.PAData;
 
@@ -156,7 +157,41 @@ public class FileStore {
     //update/add
     public void addKVs(List<KVRange> pageTrailer, List<KV> kvSet) {
         Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer,kvSet);
+        for (Map.Entry<Integer,List<KV>> entry : integerListMap.entrySet()) {
+            if(isSplitPage(entry.getKey(),entry.getValue())){
+                byte[] bytes = copySecondHalf(entry.getKey(), findMiddleIndex(entry.getKey()));
+                setNewPage(entry.getKey(),bytes);
+
+            }
+
+        }
     }
+
+    private void setNewPage(Integer key, byte[] bytes) {
+    }
+
+    private byte[] copySecondHalf(Integer key, int middleIndex) {
+        return null;
+    }
+
+    private int findMiddleIndex(Integer key) {
+        return 500*4;
+    }
+
+    private boolean isSplitPage(Integer key, List<KV> kvs) {
+        int pageIndex=4*1024*key;
+        int valueLength=0;
+        for (KV kv:kvs){
+            valueLength+=4+kv.getLength();
+        }
+        int pageContentLength = getPageContentLength(pageIndex);
+        return pageContentLength + valueLength > 4 * 1024;
+    }
+
+    private int getPageContentLength(int pageIndex) {
+        return 99;
+    }
+
     public void deleteKVs(List<KVRange> pageTrailer, List<KV> kvSet){
         Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer,kvSet);
     }
