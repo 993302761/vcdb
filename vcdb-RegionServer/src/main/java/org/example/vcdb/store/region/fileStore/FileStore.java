@@ -4,9 +4,12 @@ package org.example.vcdb.store.region.fileStore;
 import org.example.vcdb.store.mem.KV;
 import org.example.vcdb.store.mem.KeyValueSkipListSet;
 import org.example.vcdb.util.Bytes;
+import sun.security.krb5.internal.PAData;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -130,23 +133,34 @@ public class FileStore {
 
     /*---------------------action-------------------------------*/
 
-    public Map<Integer,List<KV>> splitKVsByPage(List<KV> kvSet){
-        return null;
+    public Map<Integer,List<KV>> splitKVsByPage(List<KVRange> pageTrailer, List<KV> kvSet){
+        Map<Integer,List<KV>> integerListMap=new ConcurrentHashMap<>();
+        for (KV kv:kvSet){
+            int i=1;
+            for (KVRange kvRange:pageTrailer){
+                if (kv.getRowKey().compareTo(Bytes.toString(kvRange.getEndKey()))<=0){
+                    if (integerListMap.containsKey(i)){
+                        List<KV> kvs=new ArrayList<>();
+                        kvs.add(kv);
+                        integerListMap.put(i,kvs);
+                    }else {
+                        List<KV> kvs=integerListMap.get(i);
+                        kvs.add(kv);
+                    }
+                }
+            }
+        }
+        return integerListMap;
     }
     //DataChannel<=============>fileStore
     //update/add
-    public void addKVs(List<KV> kvSet) {
-        Map<Integer, List<KV>> integerListMap = splitKVsByPage(kvSet);
+    public void addKVs(List<KVRange> pageTrailer, List<KV> kvSet) {
+        Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer,kvSet);
     }
-    public void deleteKVs(List<KV> kvSet){
-        Map<Integer, List<KV>> integerListMap = splitKVsByPage(kvSet);
+    public void deleteKVs(List<KVRange> pageTrailer, List<KV> kvSet){
+        Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer,kvSet);
     }
-    public void updateKV(KV kv) {
-        int pageIndex = getPageByKV(kv);
-    }
-    private int getPageByKV(KV kv) {
-        return 99;
-    }
+
 
     public KeyValueSkipListSet getDataSet() {
         KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());

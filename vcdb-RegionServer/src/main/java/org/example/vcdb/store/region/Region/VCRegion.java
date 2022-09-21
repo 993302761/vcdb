@@ -1,10 +1,15 @@
 package org.example.vcdb.store.region.Region;
 
+import org.example.vcdb.store.mem.KV;
 import org.example.vcdb.store.region.Region.RegionMeta;
 import org.example.vcdb.store.region.fileStore.FileStore;
 import org.example.vcdb.store.region.fileStore.FileStoreMeta;
+import org.example.vcdb.store.region.fileStore.KVRange;
+import org.example.vcdb.util.Bytes;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @ClassName VCRegion
@@ -27,4 +32,5 @@ public class VCRegion {
     RegionMeta regionMeta;
     List<FileStoreMeta> fileStoreMetas;
     List<FileStore> fileStores;
+
 }
