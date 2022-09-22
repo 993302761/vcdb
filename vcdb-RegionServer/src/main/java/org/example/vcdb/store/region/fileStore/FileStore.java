@@ -158,16 +158,24 @@ public class FileStore {
     public void SplitPage(List<KVRange> pageTrailer, List<KV> kvSet) {
         Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer,kvSet);
         for (Map.Entry<Integer,List<KV>> entry : integerListMap.entrySet()) {
-            //递归分裂
-            if(isSplitPage(entry.getKey(),entry.getValue())){
+            //递归分裂(前提是kvs大小不超过1page)
+            if(isSplitPage(entry.getKey(),entry.getValue())>0){
                 byte[] bytes = copySecondHalf(entry.getKey(), findMiddleIndex(entry.getKey()));
                 setNewPage(entry.getKey(),bytes);
                 updateTrailer(pageTrailer);
                 SplitPage(pageTrailer,kvSet);
+            }else if (isSplitPage(entry.getKey(),entry.getValue())==0){
+                insertBigKVs();
+            }else {
+                insertKVstoPage(entry.getValue());
             }
-            insertKVstoPage(entry.getValue());
         }
     }
+
+    private void insertBigKVs() {
+
+    }
+
     private void setNewPage(Integer key, byte[] bytes) {
 
     }
@@ -220,14 +228,17 @@ public class FileStore {
 
 
 
-    private boolean isSplitPage(Integer key, List<KV> kvs) {
+    private int isSplitPage(Integer key, List<KV> kvs) {
         int pageIndex=4*1024*key;
         int valueLength=0;
         for (KV kv:kvs){
             valueLength+=4+kv.getLength();
         }
+        if (valueLength>4*1024){
+            return 0;
+        }
         int pageContentLength = getPageContentLength(pageIndex);
-        return pageContentLength + valueLength > 4 * 1024;
+        return pageContentLength + valueLength > 4 * 1024?1:-1;
     }
 
     private int getPageContentLength(int pageIndex) {
