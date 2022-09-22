@@ -158,13 +158,14 @@ public class FileStore {
     public void SplitPage(List<KVRange> pageTrailer, List<KV> kvSet) {
         Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer,kvSet);
         for (Map.Entry<Integer,List<KV>> entry : integerListMap.entrySet()) {
+            int flag=isSplitPage(entry.getKey(),entry.getValue());
             //递归分裂(前提是kvs大小不超过1page)
-            if(isSplitPage(entry.getKey(),entry.getValue())>0){
+            if(flag>0){
                 byte[] bytes = copySecondHalf(entry.getKey(), findMiddleIndex(entry.getKey()));
                 setNewPage(entry.getKey(),bytes);
                 updateTrailer(pageTrailer);
                 SplitPage(pageTrailer,kvSet);
-            }else if (isSplitPage(entry.getKey(),entry.getValue())==0){
+            }else if (flag==0){
                 insertBigKVs();
             }else {
                 insertKVstoPage(entry.getValue());
