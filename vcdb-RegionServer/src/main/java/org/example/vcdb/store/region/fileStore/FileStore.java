@@ -155,28 +155,70 @@ public class FileStore {
     }
     //DataChannel<=============>fileStore
     //update/add
-    public void addKVs(List<KVRange> pageTrailer, List<KV> kvSet) {
+    public void SplitPage(List<KVRange> pageTrailer, List<KV> kvSet) {
         Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer,kvSet);
         for (Map.Entry<Integer,List<KV>> entry : integerListMap.entrySet()) {
+            //递归分裂
             if(isSplitPage(entry.getKey(),entry.getValue())){
                 byte[] bytes = copySecondHalf(entry.getKey(), findMiddleIndex(entry.getKey()));
                 setNewPage(entry.getKey(),bytes);
-
+                updateTrailer(pageTrailer);
+                SplitPage(pageTrailer,kvSet);
             }
-
+            insertKVstoPage(entry.getValue());
         }
     }
-
     private void setNewPage(Integer key, byte[] bytes) {
+
+    }
+    private void updateTrailer(List<KVRange> pageTrailer) {
+
+    }
+    private void insertKVstoPage(List<KV> value) {
+
     }
 
-    private byte[] copySecondHalf(Integer key, int middleIndex) {
-        return null;
-    }
+
 
     private int findMiddleIndex(Integer key) {
-        return 500*4;
+        int pageIndex=4*1024*key;
+        int pos=pageIndex;
+        int kvCount = Bytes.toInt(this.data, pos, 4);
+        for (int i = 0; i < kvCount; i++) {
+            int kvLength = Bytes.toInt(this.data, pos, 4);
+            pos += 4;
+            pos += kvLength;
+            if (pos-pageIndex<=2*1024){
+                pos=pos-4-kvCount;
+            }
+        }
+        return pos-pageIndex;
     }
+
+
+
+    private byte[] copySecondHalf(Integer key, int middleIndex) {
+        int pos=4*1024*key;
+        int kvCount = Bytes.toInt(this.data, pos, 4);
+        int middleCount=0;
+        for (int i = 0; i < kvCount; i++) {
+            if (pos-4*1024*key==middleIndex){
+                middleCount=kvCount-i-1;
+                break;
+            }
+            int kvLength = Bytes.toInt(this.data, pos, 4);
+            pos += 4;
+            pos += kvLength;
+        }
+        byte[] newBytes=new byte[1024*4];
+        int pos2=0;
+        pos=Bytes.putInt(newBytes,pos2,middleCount);
+        byte[] bb=Bytes.subByte(this.data,middleIndex,1024*4-middleIndex);
+        pos = Bytes.putBytes(this.data, pos, bb, 0, bb.length);
+        return newBytes;
+    }
+
+
 
     private boolean isSplitPage(Integer key, List<KV> kvs) {
         int pageIndex=4*1024*key;
@@ -210,5 +252,4 @@ public class FileStore {
         }
         return kvs;
     }
-
 }
