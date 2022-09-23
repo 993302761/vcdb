@@ -235,7 +235,7 @@ public class FileStore {
         for (KV kv:kvs){
             valueLength+=4+kv.getLength();
         }
-        if (valueLength>4*1024){
+        if (valueLength>=2*1024){
             return 0;
         }
         int pageContentLength = getPageContentLength(pageIndex);
@@ -243,7 +243,14 @@ public class FileStore {
     }
 
     private int getPageContentLength(int pageIndex) {
-        return 99;
+        int pos=4*1024*pageIndex;
+        int kvCount = Bytes.toInt(this.data, pos, 4);
+        for (int i = 0; i < kvCount; i++) {
+            int kvLength = Bytes.toInt(this.data, pos, 4);
+            pos += 4;
+            pos += kvLength;
+        }
+        return pos;
     }
 
     public void deleteKVs(List<KVRange> pageTrailer, List<KV> kvSet){
