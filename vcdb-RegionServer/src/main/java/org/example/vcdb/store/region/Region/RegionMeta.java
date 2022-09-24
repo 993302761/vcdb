@@ -1,6 +1,8 @@
 package org.example.vcdb.store.region.Region;
 
 
+import org.example.vcdb.store.region.fileStore.FileStore;
+import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 import org.example.vcdb.util.Bytes;
 
 import java.util.Map;
@@ -32,5 +34,9 @@ public class RegionMeta {
             pos=Bytes.putInt(this.metaByte,pos,entry.getKey().getData().length);
             pos = Bytes.putBytes(this.metaByte, pos, entry.getKey().getData(), 0, entry.getKey().getData().length);
         }
+    }
+    /*startKey+EndKey*/
+    public FileStoreMeta getFileStoreMeta(String s) {
+        return null;
     }
 }

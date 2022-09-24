@@ -4,6 +4,7 @@ package org.example.vcdb.store.region.fileStore;
 import org.example.vcdb.store.mem.KV;
 import org.example.vcdb.store.mem.KeyValueSkipListSet;
 import org.example.vcdb.store.region.Region.KeyRange;
+import org.example.vcdb.store.region.RegionServer;
 import org.example.vcdb.util.Bytes;
 import sun.security.krb5.internal.PAData;
 
@@ -155,92 +156,90 @@ public class FileStore {
     }
     //DataChannel<=============>fileStore
     //update/add
-    public void SplitPage(List<KVRange> pageTrailer, List<KV> kvSet) {
-        Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer,kvSet);
-        for (Map.Entry<Integer,List<KV>> entry : integerListMap.entrySet()) {
-            int flag=isSplitPage(entry.getKey(),entry.getValue());
-            //递归分裂(前提是kvs大小不超过1page)
-            if(flag>0){
-                byte[] bytes = copySecondHalf(entry.getKey(), findMiddleIndex(entry.getKey()));
-                setNewPage(entry.getKey(),bytes);
-                updateTrailer(pageTrailer);
-                SplitPage(pageTrailer,kvSet);
-            }else if (flag==0){
-                insertBigKVs();
-            }else {
+    public void SplitPage(String metaName,List<KV> kvSet) {
+        List<KVRange> pageTrailer = RegionServer.getPageTrailer(metaName);
+        Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer, kvSet);
+        for (Map.Entry<Integer, List<KV>> entry : integerListMap.entrySet()) {
+            int index = entry.getKey();
+            List<KV> kvList = entry.getValue();
+            if (isSplitPage(index, kvList)) {
+                insertBigKVs(index, kvList);
+            } else {
                 insertKVstoPage(entry.getValue());
             }
         }
     }
 
-    private void insertBigKVs() {
-
+    private void insertBigKVs(int index, List<KV> kvList) {
+        setNewPage(index,kvList);
+        updateTrailer(index);
     }
 
-    private void setNewPage(Integer key, byte[] bytes) {
-
+    private void setNewPage(int index, List<KV> kvList) {
     }
-    private void updateTrailer(List<KVRange> pageTrailer) {
+
+
+    private void updateTrailer(int index) {
 
     }
     private void insertKVstoPage(List<KV> value) {
 
     }
 
-
-
-    private int findMiddleIndex(Integer key) {
-        int pageIndex=4*1024*key;
-        int pos=pageIndex;
-        int kvCount = Bytes.toInt(this.data, pos, 4);
-        for (int i = 0; i < kvCount; i++) {
-            int kvLength = Bytes.toInt(this.data, pos, 4);
-            pos += 4;
-            pos += kvLength;
-            if (pos-pageIndex<=2*1024){
-                pos=pos-4-kvCount;
-            }
-        }
-        return pos-pageIndex;
-    }
-
-
-
-    private byte[] copySecondHalf(Integer key, int middleIndex) {
-        int pos=4*1024*key;
-        int kvCount = Bytes.toInt(this.data, pos, 4);
-        int middleCount=0;
-        for (int i = 0; i < kvCount; i++) {
-            if (pos-4*1024*key==middleIndex){
-                middleCount=kvCount-i-1;
-                break;
-            }
-            int kvLength = Bytes.toInt(this.data, pos, 4);
-            pos += 4;
-            pos += kvLength;
-        }
-        byte[] newBytes=new byte[1024*4];
-        int pos2=0;
-        pos=Bytes.putInt(newBytes,pos2,middleCount);
-        byte[] bb=Bytes.subByte(this.data,middleIndex,1024*4-middleIndex);
-        pos = Bytes.putBytes(this.data, pos, bb, 0, bb.length);
-        return newBytes;
-    }
-
-
-
-    private int isSplitPage(Integer key, List<KV> kvs) {
+    private boolean isSplitPage(Integer key, List<KV> kvs) {
         int pageIndex=4*1024*key;
         int valueLength=0;
         for (KV kv:kvs){
             valueLength+=4+kv.getLength();
         }
-        if (valueLength>=2*1024){
-            return 0;
-        }
+//        if (valueLength>=2*1024){
+//            return 0;
+//        }
         int pageContentLength = getPageContentLength(pageIndex);
-        return pageContentLength + valueLength > 4 * 1024?1:-1;
+        return pageContentLength + valueLength > 4 * 1024;
     }
+
+//    private int findMiddleIndex(Integer key) {
+//        int pageIndex=4*1024*key;
+//        int pos=pageIndex;
+//        int kvCount = Bytes.toInt(this.data, pos, 4);
+//        for (int i = 0; i < kvCount; i++) {
+//            int kvLength = Bytes.toInt(this.data, pos, 4);
+//            pos += 4;
+//            pos += kvLength;
+//            if (pos-pageIndex<=2*1024){
+//                pos=pos-4-kvCount;
+//            }
+//        }
+//        return pos-pageIndex;
+//    }
+//
+//
+//
+//    private byte[] copySecondHalf(Integer key, int middleIndex) {
+//        int pos=4*1024*key;
+//        int kvCount = Bytes.toInt(this.data, pos, 4);
+//        int middleCount=0;
+//        for (int i = 0; i < kvCount; i++) {
+//            if (pos-4*1024*key==middleIndex){
+//                middleCount=kvCount-i-1;
+//                break;
+//            }
+//            int kvLength = Bytes.toInt(this.data, pos, 4);
+//            pos += 4;
+//            pos += kvLength;
+//        }
+//        byte[] newBytes=new byte[1024*4];
+//        int pos2=0;
+//        pos=Bytes.putInt(newBytes,pos2,middleCount);
+//        byte[] bb=Bytes.subByte(this.data,middleIndex,1024*4-middleIndex);
+//        pos = Bytes.putBytes(this.data, pos, bb, 0, bb.length);
+//        return newBytes;
+//    }
+
+
+
+
 
     private int getPageContentLength(int pageIndex) {
         int pos=4*1024*pageIndex;

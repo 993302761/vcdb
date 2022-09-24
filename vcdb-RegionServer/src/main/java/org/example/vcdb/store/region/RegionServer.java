@@ -6,18 +6,36 @@ import org.example.vcdb.store.mem.KeyValueSkipListSet;
 import org.example.vcdb.store.mem.MemStore;
 import org.example.vcdb.store.proto.Meta;
 import org.example.vcdb.store.proto.getRegionMetaGrpc;
+import org.example.vcdb.store.region.Region.RegionMeta;
 import org.example.vcdb.store.region.Region.VCRegion;
+import org.example.vcdb.store.region.fileStore.FileStoreMeta;
+import org.example.vcdb.store.region.fileStore.KVRange;
 import java.util.List;
+import java.util.Map;
+
+import static org.example.vcdb.store.file.VCFileWriter.openRegionMeta;
 
 public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
     List<MemStore> memStores;
     String regionServerMetaName;
-    RegionServerMeta regionServerMeta;
+    static RegionServerMeta regionServerMeta;
     //cache for region
     List<VCRegion> loadOnRegion;
 
     public void readConfig(){
 
+    }
+
+    public static List<KVRange> getPageTrailer(String metaName){
+        String[]  str=metaName.split(":");
+        RegionMeta regionMeta = getRegionMeta(str[0]);
+        FileStoreMeta fileStoreMeta = regionMeta.getFileStoreMeta(str[1]);
+        return fileStoreMeta.getPageTrailer();
+    }
+
+    public static RegionMeta getRegionMeta(String tableName){
+        Map<String, String> regionMap = regionServerMeta.getRegionMap();
+        return openRegionMeta(regionMap.get(tableName));
     }
 
     //接受rpc调用

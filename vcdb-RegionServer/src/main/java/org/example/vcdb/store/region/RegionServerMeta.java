@@ -37,4 +37,9 @@ public class RegionServerMeta {
             pos = Bytes.putBytes(this.metaByte, pos, entry.getKey().getBytes(), 0, entry.getKey().getBytes().length);
         }
     }
+    /*db.tableName-------->regionMetaName*/
+    public Map<String,String> getRegionMap(){
+        return null;
+    }
+
 }

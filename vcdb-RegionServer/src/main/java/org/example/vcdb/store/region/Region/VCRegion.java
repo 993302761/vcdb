@@ -32,5 +32,4 @@ public class VCRegion {
     RegionMeta regionMeta;
     List<FileStoreMeta> fileStoreMetas;
     List<FileStore> fileStores;
-
 }
