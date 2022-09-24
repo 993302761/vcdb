@@ -10,12 +10,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VCFileWriter {
+public class VCFileReader {
     /*vcFileMeta*/
     private List<Path> files = new ArrayList<Path>();
-    public static void getStoreFiles(){
-
-    }
     public static RegionServerMeta openRegionServerMeta(String fileName){
         return null;
     }
@@ -28,6 +25,8 @@ public class VCFileWriter {
     public static FileStore openFileStore(String fileName){
         return null;
     }
-
+    public static byte[] openFileStorePage(int pageIndex,String fileName){
+        return null;
+    }
 
 }

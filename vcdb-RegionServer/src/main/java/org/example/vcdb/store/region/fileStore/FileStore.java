@@ -36,14 +36,13 @@ public class FileStore {
      * */
     //pageCountMax=2^31/2^11=2^20
     private byte[] data = null;
-    private int length = 0;
 
     public byte[] getData() {
         return data;
     }
 
     public int getLength() {
-        return length;
+        return this.data.length;
     }
 
     public int getPageTrailerLength(List<KVRange> pageTrailer) {
@@ -64,27 +63,29 @@ public class FileStore {
 
     public FileStore(byte[] data) {
         this.data = data;
-        this.length = data.length;
     }
 
     public FileStore(ColumnFamilyMeta columnFamilyMeta, KeyValueSkipListSet dataSet) {
         //fileStoreMeta也会随时更新
         this.data = new byte[4 * 1024 * 16];
         int pos = 0;
-        pos = Bytes.putBytes(this.data, pos, columnFamilyMeta.getData(), 0, 19);
-
-
-        pos = (1024 * 4);
+        Bytes.putBytes(this.data, pos, columnFamilyMeta.getData(), 0, 19);
+        appendPage(1,dataSet);
+    }
+    public void appendPage(int pageIndex,KeyValueSkipListSet dataSet){
+        int pos=0;
+        pos = pageIndex*(1024 * 4)+4;
         int dataSetCount = dataSet.size();
         pos = Bytes.putInt(this.data, pos, dataSetCount);
+        int pageSize=0;
         //获取key和value的set
         for (KV kv : dataSet) {
+            pageSize+=kv.getLength();
             pos = Bytes.putInt(this.data, pos, kv.getLength());
             pos = Bytes.putBytes(this.data, pos, kv.getData(), 0, kv.getLength());
         }
-        this.length = this.data.length;
+        Bytes.putInt(this.data,0,pageSize);
     }
-
     /*
     long min=Long.MIN_VALUE;8
     long max=Long.MAX_VALUE;8

@@ -13,7 +13,7 @@ import org.example.vcdb.store.region.fileStore.KVRange;
 import java.util.List;
 import java.util.Map;
 
-import static org.example.vcdb.store.file.VCFileWriter.openRegionMeta;
+import static org.example.vcdb.store.file.VCFileReader.openRegionMeta;
 
 public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
     List<MemStore> memStores;
