@@ -1,5 +1,7 @@
 package org.example.vcdb.store.file;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -7,15 +9,16 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
- * @ClassName VCFIleWritter
+ * @ClassName TestWriter
  * @Description TODO
  * @Author lqc
- * @Date 2022/9/24 下午9:06
+ * @Date 2022/9/25 下午6:13
  * @Version 1.0
  */
 
-public class VCFIleWriter {
-    public static void setRegionServerMeta(byte[] content,String fileName){
+public class TestWriter {
+    @Test
+    public void testWriter(){
         RandomAccessFile aFile = null;
         try {
             aFile = new RandomAccessFile("/x2/vcdb/regionServerMeta", "rw");
@@ -43,10 +46,16 @@ public class VCFIleWriter {
                 System.out.println((char) b);
             }
             System.out.println("-------------------");
-//            System.out.print((char) buf.get());
-            for (int i = 0; i < 9; i++) {
-                System.out.print(buf.get(11));
-            }
+            ByteBuffer buf1 = ByteBuffer.allocateDirect(100);
+            buf1.put("ssssssssssssssssssssssssssss".getBytes());
+            buf1.limit("ssssssssssssssssssssssssssss".getBytes().length);
+            buf1.flip();
+            fileChannel.position(0);
+            fileChannel.write(buf1);
+            fileChannel.force(true);
+            buf1.clear();
+            buf1.compact();
+            buf1.rewind();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -58,23 +67,5 @@ public class VCFIleWriter {
                 e.printStackTrace();
             }
         }
-    }
-    public static void setRegionMeta(byte[] content,String fileName){
-
-    }
-    public static void setFileStoreMeta(byte[] content,String fileName){
-
-    }
-    public static void setFileStore(byte[] content,String fileName){
-
-    }
-    public static void setFileStorePage(byte[] content,int pageIndex,String fileName){
-
-    }
-    public static void appendDataSetToFileStorePage(byte[] DataSet,int pageIndex,String fileName){
-
-    }
-    public static void setPageLength(int Length,int pageIndex,String fileName){
-
     }
 }
