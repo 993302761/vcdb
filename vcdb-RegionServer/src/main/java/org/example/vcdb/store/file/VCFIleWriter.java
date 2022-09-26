@@ -16,49 +16,35 @@ import java.nio.channels.FileChannel;
 
 public class VCFIleWriter {
     public static void setRegionServerMeta(byte[] content,String fileName){
-        RandomAccessFile aFile = null;
+        RandomAccessFile RegionServerMetaFile = null;
         try {
-            aFile = new RandomAccessFile("/x2/vcdb/regionServerMeta", "rw");
-            FileChannel fileChannel = aFile.getChannel();
-            ByteBuffer buf = ByteBuffer.allocateDirect(1024);
-            //读操作
-            int bytesRead = fileChannel.read(buf);
-            //读写切换
-            buf.flip();
-            System.out.println(bytesRead);
-            System.out.println("-------------------");
-//            while (bytesRead != -1) {
-////                while (buf.position() < 3) {
-////                    System.out.print((char) buf.get());
-////                }
-////                System.out.println();
-////                buf.compact();
-////                bytesRead = fileChannel.read(buf);
-////                System.out.println(bytesRead);
-//
-//            }
-            while (buf.position()!=bytesRead){
-                byte b = buf.get();
-                System.out.println(b);
-                System.out.println((char) b);
-            }
-            System.out.println("-------------------");
-//            System.out.print((char) buf.get());
-            for (int i = 0; i < 9; i++) {
-                System.out.print(buf.get(11));
-            }
+            //getFromMap
+            RegionServerMetaFile = new RandomAccessFile("/x2/vcdb/"+fileName, "rw");
+            FileChannel fileChannel = RegionServerMetaFile.getChannel();
+            ByteBuffer contentBuf = ByteBuffer.allocateDirect(100);
+            contentBuf.put(content);
+            contentBuf.limit(content.length);
+            contentBuf.flip();
+            fileChannel.position(0);
+            while (contentBuf.hasRemaining()) fileChannel.write(contentBuf);
+            /*上面的代码是获取文件通道的位置和大小。truncate()方法是截取1024大小的数据，
+            指定长度后面的部分将被删除。以及将数据强制刷新到硬盘中，因为系统会将数据先保存在内存中，
+            不保证数据会立即写入到硬盘中，所以有这个需求，就可以直接强制数据写入内存中。*/
+            fileChannel.truncate(content.length);
+            fileChannel.force(true);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             try {
-                if (aFile != null) {
-                    aFile.close();
+                if (RegionServerMetaFile != null) {
+                    RegionServerMetaFile.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
+
     public static void setRegionMeta(byte[] content,String fileName){
 
     }
