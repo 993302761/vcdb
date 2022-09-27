@@ -3,6 +3,7 @@ package org.example.vcdb.store.region.fileStore;
 import org.example.vcdb.util.Bytes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /*
@@ -47,12 +48,18 @@ public class FileStoreMeta {
     public int getLength() {
         return length;
     }
-
+    private int getPageTrailerLength(List<KVRange> pageTrailer) {
+        int length=0;
+        for (KVRange kvRange:pageTrailer) {
+            length=length+4+kvRange.getLength();
+        }
+        return length;
+    }
     private byte[] createByteArray(long timeStamp, byte spl,
                                    String encodedName, byte[] endKey,
                                    byte[] startKey, String tableName, String nameSpace,List<KVRange> pageTrailer) {
         int pos = 0;
-        byte[] bytes = new byte[8 + 1 + 4 + encodedName.getBytes().length + 4 + startKey.length + 4 + endKey.length + 4 + tableName.getBytes().length + 4 + nameSpace.getBytes().length];
+        byte[] bytes = new byte[8 + 1 + 4 + encodedName.getBytes().length + 4 + startKey.length + 4 + endKey.length + 4 + tableName.getBytes().length + 4 + nameSpace.getBytes().length+4+getPageTrailerLength(pageTrailer)];
         pos = Bytes.putLong(bytes, pos, timeStamp);
         pos = Bytes.putByte(bytes, pos, spl);
 
@@ -71,13 +78,15 @@ public class FileStoreMeta {
         pos = Bytes.putInt(bytes, pos, nameSpace.getBytes().length);
         pos = Bytes.putBytes(bytes, pos, nameSpace.getBytes(), 0, nameSpace.getBytes().length);
 
-        pos = Bytes.putInt(this.data, pos, pageTrailer.size());
+        pos = Bytes.putInt(bytes, pos, pageTrailer.size());
         for (KVRange kvRange : pageTrailer) {
-            pos = Bytes.putInt(this.data, pos, kvRange.getLength());
-            pos = Bytes.putBytes(this.data, pos, kvRange.getData(), 0, kvRange.getLength());
+            pos = Bytes.putInt(bytes, pos, kvRange.getLength());
+            pos = Bytes.putBytes(bytes, pos, kvRange.getData(), 0, kvRange.getLength());
         }
         return bytes;
     }
+
+
 
 
     public long getTimeStamp() {
@@ -121,15 +130,15 @@ public class FileStoreMeta {
     }
 
     public int getNameSpaceLength() {
-        return Bytes.toInt(this.data, 21 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength(), 4);
+        return Bytes.toInt(this.data, 25 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength(), 4);
     }
 
     public String getNameSpace() {
-        return Bytes.toString(this.data, 25 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength(), getNameSpaceLength());
+        return Bytes.toString(this.data, 29 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength(), getNameSpaceLength());
     }
 
     public List<KVRange> getPageTrailer() {
-        int pos = 25 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength()+getNameSpaceLength();
+        int pos = 29 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength()+getNameSpaceLength();
         List<KVRange> pageTrailer = new ArrayList<>();
         int kvRangeCount = Bytes.toInt(this.data, pos, 4);
         pos += 4;
@@ -140,5 +149,20 @@ public class FileStoreMeta {
             pos += rangeLength;
         }
         return pageTrailer;
+    }
+    public void dis(){
+        System.out.println(getTimeStamp());
+        System.out.println(isSplit());
+        System.out.println(getEncodeNameLength());
+        System.out.println(getEncodedName());
+        System.out.println(getStartKeyLength());
+        System.out.println(Arrays.toString(getStartKey()));
+        System.out.println(getEndKeyLength());
+        System.out.println(Arrays.toString(getEndKey()));
+        System.out.println(getTableNameLength());
+        System.out.println(getTableName());
+        System.out.println(getNameSpaceLength());
+        System.out.println(getNameSpace());
+        System.out.println(getPageTrailer());
     }
 }

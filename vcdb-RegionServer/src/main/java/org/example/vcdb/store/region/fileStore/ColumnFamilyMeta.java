@@ -43,7 +43,7 @@ public class ColumnFamilyMeta {
     private byte[] createByteArray(byte unique, byte isNull, long min,
                                    long max, CFType type
                                    ) {
-        byte[] bytes = new byte[1+1+8+8+4+1];
+        byte[] bytes = new byte[8+8+1+1+1];
         int pos=0;
         pos= Bytes.putByte(bytes,pos,unique);
         pos=Bytes.putByte(bytes,pos,isNull);
@@ -70,6 +70,13 @@ public class ColumnFamilyMeta {
         return byteToCFType(data[18]);
     }
 
+    public void dis(){
+        System.out.println(isUnique());
+        System.out.println(isNull());
+        System.out.println(getMin());
+        System.out.println(getMax());
+        System.out.println( getType());
+    }
     public static enum CFType {
         TINYINT((byte) 42),
         SMALLINT((byte) 44),

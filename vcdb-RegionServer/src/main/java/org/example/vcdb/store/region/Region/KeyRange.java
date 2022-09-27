@@ -18,7 +18,7 @@ public class KeyRange {
     }
 
     public KeyRange(String cfName, String startKey, String endKey) {
-        data=new byte[1024*4];
+        data=new byte[4+cfName.getBytes().length+4+startKey.getBytes().length+4+endKey.getBytes().length];
         int pos=0;
         pos=Bytes.putInt(this.data,pos,cfName.getBytes().length);
         pos = Bytes.putBytes(this.data, pos, cfName.getBytes(), 0,cfName.getBytes().length);
@@ -26,5 +26,8 @@ public class KeyRange {
         pos = Bytes.putBytes(this.data, pos, startKey.getBytes(), 0,startKey.getBytes().length);
         pos=Bytes.putInt(this.data,pos,endKey.getBytes().length);
         pos = Bytes.putBytes(this.data, pos, endKey.getBytes(), 0,endKey.getBytes().length);
+    }
+    public KeyRange(byte[] bytes){
+        this.data=bytes;
     }
 }

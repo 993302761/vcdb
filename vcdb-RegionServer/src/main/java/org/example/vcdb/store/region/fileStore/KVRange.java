@@ -3,6 +3,8 @@ package org.example.vcdb.store.region.fileStore;
 
 import org.example.vcdb.util.Bytes;
 
+import java.util.Arrays;
+
 
 /**
  * @ClassName KVRange
@@ -53,5 +55,18 @@ public class KVRange {
     public int getLength() {
         return bytes.length;
     }
+    public void dis(){
+        System.out.println(getStartKeyLength());
+        System.out.println(Arrays.toString(getStartKey()));
+        System.out.println(getEndKeyLength());
+        System.out.println(Arrays.toString(getEndKey()));
+    }
 
+    @Override
+    public String toString() {
+        return "KVRange{" +
+                "startKey=" + Bytes.toString(getStartKey()) +"\n"+
+                "endKey=" + Bytes.toString(getEndKey()) +
+                '}'+"\n";
+    }
 }
