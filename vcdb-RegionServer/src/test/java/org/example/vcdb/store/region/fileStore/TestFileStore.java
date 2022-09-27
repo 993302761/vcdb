@@ -20,13 +20,6 @@ import java.util.List;
 public class TestFileStore {
     @Test
     public void testFileStore(){
-        ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(true, false, 1, 100, ColumnFamilyMeta.byteToCFType((byte) 44));
-        System.out.println(cfMeta.isUnique());
-        System.out.println(cfMeta.isNull());
-        System.out.println(cfMeta.getMin());
-        System.out.println(cfMeta.getMax());
-        System.out.println(cfMeta.getType());
-        System.out.println("===================================");
         List<KVRange> list=new ArrayList<>();
         for (int i = 1; i < 4; i++) {
             list.add(new KVRange("startKey"+i,"endKey"+i));
@@ -35,6 +28,11 @@ public class TestFileStore {
                 "fileStoreMeta1", "r1".getBytes(), "r2".getBytes(), "table1","db1",list);
         fileStoreMeta.dis();
         System.out.println("===================================");
+
+        ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(true, false, 1, 100, ColumnFamilyMeta.byteToCFType((byte) 44));
+        cfMeta.dis();
+        System.out.println("=======================================");
+
         byte[] row = "row1".getBytes(StandardCharsets.UTF_8);
         byte[] family = "fam1".getBytes(StandardCharsets.UTF_8);
         List<KV.ValueNode> values = new ArrayList<>();
