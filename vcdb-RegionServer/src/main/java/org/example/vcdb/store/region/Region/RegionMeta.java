@@ -24,6 +24,9 @@ public class RegionMeta {
 //    Map<KeyRange,String> fileStoreMap;
     byte[] metaByte;
 
+    public RegionMeta(byte[] metaByte){
+        this.metaByte=metaByte;
+    }
     public RegionMeta(String metaName,Map<KeyRange,String> fileStoreMap){
         metaByte=new byte[1024*4];
         int pos=0;
@@ -70,9 +73,12 @@ public class RegionMeta {
         System.out.println(getMapCount());
         System.out.println(getFileStoreMap());
     }
-    /*startKey+EndKey*/
-    public FileStoreMeta getFileStoreMeta(String s) {
+    /*CfName+startKey+EndKey*/
+    public FileStoreMeta getFileStoreMeta(String cfName) {
         return null;
     }
 
+    public byte[] getData() {
+        return this.metaByte;
+    }
 }

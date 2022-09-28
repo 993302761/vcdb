@@ -24,6 +24,10 @@ public class RegionServerMeta {
     /*db.tableName-------->regionMetaName*/
     byte[] metaByte;
 
+    public RegionServerMeta(byte[] data){
+        this.metaByte=data;
+    }
+
     public RegionServerMeta(String metaName,byte[] ip4,
                             int rsPort,Map<String,String> regionMap){
         metaByte=new byte[1024*4];
@@ -81,5 +85,9 @@ public class RegionServerMeta {
         System.out.println(getRSPort());
         System.out.println(getMapCount());
         System.out.println(getRegionMap());
+    }
+
+    public byte[] getData() {
+        return this.metaByte;
     }
 }

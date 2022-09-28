@@ -27,7 +27,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
     }
 
     public static List<KVRange> getPageTrailer(String metaName){
-        String[]  str=metaName.split(":");
+        String[] str=metaName.split(":");
         RegionMeta regionMeta = getRegionMeta(str[0]);
         FileStoreMeta fileStoreMeta = regionMeta.getFileStoreMeta(str[1]);
         return fileStoreMeta.getPageTrailer();

@@ -15,13 +15,13 @@ import java.nio.channels.FileChannel;
  */
 
 public class VCFIleWriter {
-    public static void setRegionServerMeta(byte[] content,String fileName){
-        RandomAccessFile RegionServerMetaFile = null;
+    public static void writerAll(byte[] content, String fileName){
+        RandomAccessFile accessFile = null;
         try {
             //getFromMap
-            RegionServerMetaFile = new RandomAccessFile("/x2/vcdb/"+fileName, "rw");
-            FileChannel fileChannel = RegionServerMetaFile.getChannel();
-            ByteBuffer contentBuf = ByteBuffer.allocateDirect(100);
+            accessFile = new RandomAccessFile("/x2/vcdb/"+fileName, "rw");
+            FileChannel fileChannel = accessFile.getChannel();
+            ByteBuffer contentBuf = ByteBuffer.allocateDirect(content.length);
             contentBuf.put(content);
             contentBuf.limit(content.length);
             contentBuf.flip();
@@ -36,8 +36,8 @@ public class VCFIleWriter {
             e.printStackTrace();
         } finally {
             try {
-                if (RegionServerMetaFile != null) {
-                    RegionServerMetaFile.close();
+                if (accessFile != null) {
+                    accessFile.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();

@@ -25,11 +25,11 @@ public class FileStoreMeta {
 //    private String nameSpace = null;
 
     private final byte[] data;
-    private int length = 0;
+
 
     public FileStoreMeta(byte[] data) {
         this.data = data;
-        this.length = data.length;
+
     }
 
     public FileStoreMeta(long timeStamp, boolean split, String encodedName, byte[] endKey, byte[] startKey, String tableName, String nameSpace, List<KVRange> pageTrailer) {
@@ -38,7 +38,7 @@ public class FileStoreMeta {
             spl = 1;
         }
         this.data = createByteArray(timeStamp, spl, encodedName, endKey, startKey, tableName, nameSpace,pageTrailer);
-        this.length = this.data.length;
+
     }
 
     public byte[] getData() {
@@ -46,7 +46,7 @@ public class FileStoreMeta {
     }
 
     public int getLength() {
-        return length;
+        return this.data.length;
     }
     private int getPageTrailerLength(List<KVRange> pageTrailer) {
         int length=0;
