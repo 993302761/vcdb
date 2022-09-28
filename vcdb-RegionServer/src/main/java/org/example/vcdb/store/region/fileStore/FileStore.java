@@ -75,8 +75,22 @@ public class FileStore {
             pos = Bytes.putInt(this.data, pos, kv.getLength());
             pos = Bytes.putBytes(this.data, pos, kv.getData(), 0, kv.getLength());
         }
-        Bytes.putInt(this.data,pos,pageSize);
+        Bytes.putInt(this.data,pageIndex*(1024 * 4),pageSize);
         System.out.println("----------------------");
+    }
+    public static byte[] kvsToByteArray(KeyValueSkipListSet dataSet){
+        int pageSize=0;
+        byte[] bytes = new byte[4 * 1024];
+        int pos=4;
+        int dataSetCount = dataSet.size();
+        pos = Bytes.putInt(bytes, pos, dataSetCount);
+        for (KV kv : dataSet) {
+            pageSize+=kv.getLength();
+            pos = Bytes.putInt(bytes, pos, kv.getLength());
+            pos = Bytes.putBytes(bytes, pos, kv.getData(), 0, kv.getLength());
+        }
+        Bytes.putInt(bytes,0,pageSize);
+        return bytes;
     }
     /*
     long min=Long.MIN_VALUE;8
@@ -132,7 +146,7 @@ public class FileStore {
         System.out.println(getMin());
         System.out.println(getMax());
         System.out.println(ColumnFamilyMeta.byteToCFType(getType()));
-        System.out.println(getDataSet());
+        System.out.println(getDataSet(1));
     }
 
     public Map<Integer,List<KV>> splitKVsByPage(List<KVRange> pageTrailer, List<KV> kvSet){
@@ -211,9 +225,12 @@ public class FileStore {
         Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer,kvSet);
     }
 
-    public KeyValueSkipListSet getDataSet() {
+    public KeyValueSkipListSet getDataSet(int pageIndex) {
         KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
-        int pos=19;
+        int pos=pageIndex*(1024 * 4);
+        int kvsLength=Bytes.toInt(this.data, pos, 4);
+        System.out.println("kvsLength:"+kvsLength);
+        pos += 4;
         int kvCount = Bytes.toInt(this.data, pos, 4);
         pos += 4;
         for (int i = 0; i < kvCount; i++) {

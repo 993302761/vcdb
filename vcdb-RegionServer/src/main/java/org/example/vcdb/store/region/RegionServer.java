@@ -2,6 +2,7 @@ package org.example.vcdb.store.region;
 
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
+import org.example.vcdb.store.file.VCFileReader;
 import org.example.vcdb.store.mem.KeyValueSkipListSet;
 import org.example.vcdb.store.mem.MemStore;
 import org.example.vcdb.store.proto.Meta;
@@ -12,8 +13,6 @@ import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 import org.example.vcdb.store.region.fileStore.KVRange;
 import java.util.List;
 import java.util.Map;
-
-import static org.example.vcdb.store.file.VCFileReader.openRegionMeta;
 
 public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
     List<MemStore> memStores;
@@ -35,7 +34,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
 
     public static RegionMeta getRegionMeta(String tableName){
         Map<String, String> regionMap = regionServerMeta.getRegionMap();
-        return openRegionMeta(regionMap.get(tableName));
+        return new RegionMeta(VCFileReader.readAll(regionMap.get(tableName))) ;
     }
 
     //接受rpc调用

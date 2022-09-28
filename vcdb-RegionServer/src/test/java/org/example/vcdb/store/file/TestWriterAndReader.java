@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.example.vcdb.store.region.fileStore.FileStore.kvsToByteArray;
+
 /**
  * @ClassName TestWriter
  * @Description TODO
@@ -92,9 +94,35 @@ public class TestWriterAndReader {
         KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
         kvs.add(kv);
         FileStore fileStore=new FileStore(cfMeta,kvs);
-        VCFIleWriter.writerAll(fileStore.getData(), "fileStoreMeta/fileStoreMeta1");
-        FileStore fileStore1=new FileStore(VCFileReader.readAll("fileStoreMeta/fileStoreMeta1"));
+        VCFIleWriter.writerAll(fileStore.getData(), "fileStore/fileStore1");
+        FileStore fileStore1=new FileStore(VCFileReader.readAll("fileStore/fileStore1"));
         fileStore1.dis();
         System.out.println("------------------------------------------");
+    }
+    @Test
+    public void testSetPage(){
+        /*-------------------------page-----------------------*/
+        ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(true, false, 1, 100, ColumnFamilyMeta.byteToCFType((byte) 44));
+        byte[] row = "row1".getBytes(StandardCharsets.UTF_8);
+        byte[] family = "fam1".getBytes(StandardCharsets.UTF_8);
+        List<KV.ValueNode> values = new ArrayList<>();
+        for (int i = 1; i <= 2; i++) {
+            long time = (new Date()).getTime();
+            KV.Type type = KV.byteToType((byte) 4);
+            byte[] qualifier = ("qualifier" + i).getBytes(StandardCharsets.UTF_8);
+            byte[] value = ("value" + i).getBytes(StandardCharsets.UTF_8);
+            values.add(new KV.ValueNode(time, type, qualifier, 0, qualifier.length, value, 0, value.length));
+        }
+        KV kv = new KV(row, 0, row.length, family, 0, family.length, values);
+        KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
+        kvs.add(kv);
+        FileStore fileStore=new FileStore(cfMeta,kvs);
+        VCFIleWriter.writerAll(fileStore.getData(), "fileStore/fileStore1");
+        FileStore fileStore1=new FileStore(VCFileReader.readAll("fileStore/fileStore1"));
+        fileStore1.dis();
+        System.out.println("------------------------------------------");
+        VCFIleWriter.setFileStorePage(kvsToByteArray(kvs),1,"fileStore/fileStore1");
+        FileStore fileStore2=new FileStore(VCFileReader.readAll("fileStore/fileStore1"));
+        fileStore2.dis();
     }
 }
