@@ -45,15 +45,6 @@ public class VCFIleWriter {
         }
     }
 
-    public static void setRegionMeta(byte[] content,String fileName){
-
-    }
-    public static void setFileStoreMeta(byte[] content,String fileName){
-
-    }
-    public static void setFileStore(byte[] content,String fileName){
-
-    }
     public static void setFileStorePage(byte[] content,int pageIndex,String fileName){
 
     }

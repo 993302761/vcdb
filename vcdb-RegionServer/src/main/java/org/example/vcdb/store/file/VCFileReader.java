@@ -53,18 +53,6 @@ public class VCFileReader {
         }
         return bytes;
     }
-    public static RegionServerMeta openRegionServerMeta(String fileName){
-        return null;
-    }
-    public static RegionMeta openRegionMeta(String fileName){
-        return null;
-    }
-    public static FileStoreMeta openFileStoreMeta(String fileName){
-        return null;
-    }
-    public static FileStore openFileStore(String fileName){
-        return null;
-    }
     public static byte[] openFileStorePage(int pageIndex,String fileName){
         return null;
     }
