@@ -29,6 +29,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TestWriterAndReader {
     @Test
     public void testWriter() {
+    }
+    @Test
+    public void testRegionServer(){
         /*-----------------regionServer-------------------*/
         Map<String, String> map = new ConcurrentHashMap<>();
         for (int i = 1; i < 3; i++) {
@@ -42,6 +45,9 @@ public class TestWriterAndReader {
         RegionServerMeta serverMeta1 = new RegionServerMeta(VCFileReader.readAll("regionServerMeta"));
         serverMeta1.dis();
         System.out.println("------------------------------------------");
+    }
+    @Test
+    public void testRegion(){
         /*--------------------region--------------------------*/
         String metaName = "regionMeta1";
         Map<KeyRange, String> regionMap = new ConcurrentHashMap<>();
@@ -53,6 +59,9 @@ public class TestWriterAndReader {
         RegionMeta regionMeta1=new RegionMeta(VCFileReader.readAll("region/regionServerMeta"));
         regionMeta1.dis();
         System.out.println("------------------------------------------");
+    }
+    @Test
+    public void testFileStoreMeta(){
         /*------------------------fileStoreMeta---------------------------------*/
         List<KVRange> list=new ArrayList<>();
         for (int i = 1; i < 4; i++) {
@@ -64,6 +73,9 @@ public class TestWriterAndReader {
         FileStoreMeta fileStoreMeta1=new FileStoreMeta(VCFileReader.readAll("fileStoreMeta/fileStoreMeta1"));
         fileStoreMeta1.dis();
         System.out.println("------------------------------------------");
+    }
+    @Test
+    public void testFileStore(){
         /*------------------------------fileStore--------------------------*/
         ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(true, false, 1, 100, ColumnFamilyMeta.byteToCFType((byte) 44));
         byte[] row = "row1".getBytes(StandardCharsets.UTF_8);
