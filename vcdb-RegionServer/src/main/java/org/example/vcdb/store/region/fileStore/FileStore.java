@@ -65,31 +65,35 @@ public class FileStore {
         appendPage(1,dataSet);
     }
     public void appendPage(int pageIndex,KeyValueSkipListSet dataSet){
-        int pos=pageIndex*(1024 * 4)+4;
+        int pos=pageIndex*(1024 * 4);
         int dataSetCount = dataSet.size();
         pos = Bytes.putInt(this.data, pos, dataSetCount);
-        int pageSize=0;
         //获取key和value的set
         for (KV kv : dataSet) {
-            pageSize+=kv.getLength();
             pos = Bytes.putInt(this.data, pos, kv.getLength());
             pos = Bytes.putBytes(this.data, pos, kv.getData(), 0, kv.getLength());
         }
-        Bytes.putInt(this.data,pageIndex*(1024 * 4),pageSize);
         System.out.println("----------------------");
     }
     public static byte[] kvsToByteArray(KeyValueSkipListSet dataSet){
-        int pageSize=0;
         byte[] bytes = new byte[4 * 1024];
-        int pos=4;
-        int dataSetCount = dataSet.size();
-        pos = Bytes.putInt(bytes, pos, dataSetCount);
+        int pos=0;
         for (KV kv : dataSet) {
-            pageSize+=kv.getLength();
             pos = Bytes.putInt(bytes, pos, kv.getLength());
             pos = Bytes.putBytes(bytes, pos, kv.getData(), 0, kv.getLength());
         }
-        Bytes.putInt(bytes,0,pageSize);
+        return bytes;
+    }
+    public static byte[] kvsToPageByteArray(KeyValueSkipListSet dataSet){
+        byte[] bytes = new byte[4 * 1024];
+        int pos=0;
+        int dataSetCount = dataSet.size();
+        pos = Bytes.putInt(bytes, pos, dataSetCount);
+        for (KV kv : dataSet) {
+            pos = Bytes.putInt(bytes, pos, kv.getLength());
+            pos = Bytes.putBytes(bytes, pos, kv.getData(), 0, kv.getLength());
+        }
+        System.out.println("++++++++++"+pos);
         return bytes;
     }
     /*
@@ -228,9 +232,6 @@ public class FileStore {
     public KeyValueSkipListSet getDataSet(int pageIndex) {
         KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
         int pos=pageIndex*(1024 * 4);
-        int kvsLength=Bytes.toInt(this.data, pos, 4);
-        System.out.println("kvsLength:"+kvsLength);
-        pos += 4;
         int kvCount = Bytes.toInt(this.data, pos, 4);
         pos += 4;
         for (int i = 0; i < kvCount; i++) {
@@ -240,5 +241,11 @@ public class FileStore {
             pos += kvLength;
         }
         return kvs;
+    }
+    public static void disDataSet(KeyValueSkipListSet kvs){
+        for (KV kv:kvs){
+            kv.dis();
+            System.out.println("______________________________");
+        }
     }
 }

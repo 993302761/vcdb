@@ -5,6 +5,7 @@ import org.example.vcdb.store.region.Region.RegionMeta;
 import org.example.vcdb.store.region.RegionServerMeta;
 import org.example.vcdb.store.region.fileStore.FileStore;
 import org.example.vcdb.store.region.fileStore.FileStoreMeta;
+import org.example.vcdb.util.Bytes;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -55,6 +56,30 @@ public class VCFileReader {
     }
     public static byte[] openFileStorePage(int pageIndex,String fileName){
         return null;
+    }
+    public static int ReadKvsCountForPage(int pageIndex,String fileName){
+        RandomAccessFile aFile = null;
+        try {
+            aFile = new RandomAccessFile("/x2/vcdb/" + fileName, "rw");
+            FileChannel fileChannel = aFile.getChannel();
+            long size=aFile.length();
+            //判断一下size是否Over int.max
+            ByteBuffer buf = ByteBuffer.allocateDirect(4);
+            int bytesRead = fileChannel.read(buf,pageIndex*(1024*4));
+            buf.flip();
+            return Bytes.toInt(conVer(buf));
+        }catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (aFile != null) {
+                    aFile.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return 0;
     }
 
 }

@@ -1,6 +1,8 @@
 package org.example.vcdb.store.file;
 
 
+import org.example.vcdb.util.Bytes;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -73,8 +75,56 @@ public class VCFIleWriter {
             }
         }
     }
-    public static void appendDataSetToFileStorePage(byte[] DataSet,int pageIndex,String fileName){
-
+    //只有当页内空间够的时候，才可以调用这些方法
+    public static void appendDataSetToFileStorePage(int pageLength,byte[] kvs,int pageIndex,String fileName){
+        RandomAccessFile accessFile = null;
+        try {
+            //getFromMap
+            accessFile = new RandomAccessFile("/x2/vcdb/"+fileName, "rw");
+            FileChannel fileChannel = accessFile.getChannel();
+            ByteBuffer contentBuf = ByteBuffer.allocateDirect(kvs.length);
+            contentBuf.put(kvs);
+            contentBuf.limit(kvs.length);
+            contentBuf.flip();
+            while (contentBuf.hasRemaining()) fileChannel.write(contentBuf,pageIndex*4*1024+pageLength);
+            fileChannel.force(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (accessFile != null) {
+                    accessFile.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    //只有当页内空间够的时候，才可以调用这些方法
+    public static void updateKvsCountFOrFileStorePage(int count,int pageIndex,String fileName){
+        RandomAccessFile accessFile = null;
+        try {
+            //getFromMap
+            accessFile = new RandomAccessFile("/x2/vcdb/"+fileName, "rw");
+            FileChannel fileChannel = accessFile.getChannel();
+            ByteBuffer contentBuf = ByteBuffer.allocateDirect(4);
+            int newCount=VCFileReader.ReadKvsCountForPage(pageIndex,fileName)+ count;
+            contentBuf.put(Bytes.toBytes(newCount));
+            contentBuf.limit(4);
+            contentBuf.flip();
+            while (contentBuf.hasRemaining()) fileChannel.write(contentBuf,pageIndex*4*1024);
+            fileChannel.force(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (accessFile != null) {
+                    accessFile.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
     public static void setPageLength(int Length,int pageIndex,String fileName){
 

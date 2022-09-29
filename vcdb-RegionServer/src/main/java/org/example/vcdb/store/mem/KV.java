@@ -152,6 +152,15 @@ public class KV {
         return getKeyDataStructureSize(rLength, fLength) + 4 + valuesLength;
     }
 
+    public void dis() {
+        System.out.println(getFamily());
+        System.out.println(getRowKey());
+        for (ValueNode valueNode:getValues()){
+            valueNode.dis();
+        }
+
+    }
+
     public static enum Type {
         CreateDB((byte) 0),
         createTable((byte) 4),
@@ -307,6 +316,12 @@ public class KV {
             int qLength = getQLength();
             int vLength = getVLength(qLength);
             return Bytes.toString(this.bytes, 9 + 4 + qLength + 4, vLength);
+        }
+        public void dis(){
+            System.out.println(getQualifier());
+            System.out.println(getTime());
+            System.out.println(getType());
+            System.out.println(getValue());
         }
 
     }
