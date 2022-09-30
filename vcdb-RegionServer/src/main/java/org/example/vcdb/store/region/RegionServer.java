@@ -33,6 +33,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
     }
 
     public static RegionMeta getRegionMeta(String tableName){
+        //取出的应该缓存
         Map<String, String> regionMap = regionServerMeta.getRegionMap();
         return new RegionMeta(VCFileReader.readAll(regionMap.get(tableName))) ;
     }
