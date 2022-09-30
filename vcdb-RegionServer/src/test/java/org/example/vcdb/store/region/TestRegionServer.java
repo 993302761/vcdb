@@ -25,4 +25,8 @@ public class TestRegionServer {
         RegionServerMeta serverMeta=new RegionServerMeta("regionServerMeta",ip4,port,map);
         serverMeta.dis();
     }
+    @Test
+    public void testPageTrailer(){
+
+    }
 }

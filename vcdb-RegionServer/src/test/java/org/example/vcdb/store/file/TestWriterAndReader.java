@@ -2,14 +2,12 @@ package org.example.vcdb.store.file;
 
 import org.example.vcdb.store.mem.KV;
 import org.example.vcdb.store.mem.KeyValueSkipListSet;
-import org.example.vcdb.store.region.Region.KeyRange;
 import org.example.vcdb.store.region.Region.RegionMeta;
 import org.example.vcdb.store.region.RegionServerMeta;
 import org.example.vcdb.store.region.fileStore.ColumnFamilyMeta;
 import org.example.vcdb.store.region.fileStore.FileStore;
 import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 import org.example.vcdb.store.region.fileStore.KVRange;
-import org.example.vcdb.util.Bytes;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -53,9 +51,9 @@ public class TestWriterAndReader {
     public void testRegion(){
         /*--------------------region--------------------------*/
         String metaName = "regionMeta1";
-        Map<KeyRange, String> regionMap = new ConcurrentHashMap<>();
+        Map<String, String> regionMap = new ConcurrentHashMap<>();
         for (int i = 1; i < 4; i++) {
-            regionMap.put(new KeyRange("cf" + i, "rowKey" + i, "endKey" + i), "fileStoreMeta" + i);
+            regionMap.put("cf" + i, "fileStoreMeta" + i);
         }
         RegionMeta regionMeta = new RegionMeta(metaName, regionMap);
         VCFIleWriter.writerAll(regionMeta.getData(), "region/regionServerMeta");
