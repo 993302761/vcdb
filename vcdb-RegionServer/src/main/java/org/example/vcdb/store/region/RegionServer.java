@@ -84,7 +84,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
     public static RegionMeta getRegionMeta(String tableName){
         //取出的应该缓存
         Map<String, String> regionMap = regionServerMeta.getRegionMap();
-        return new RegionMeta(VCFileReader.readAll(regionMap.get(tableName))) ;
+        return new RegionMeta(VCFileReader.readAll(regionMap.get(tableName)));
     }
 
     //接受rpc调用
@@ -99,10 +99,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
         responseObserver.onNext(regionMeta);
         //告知本次处理完毕
         responseObserver.onCompleted();
-    }
-    //添加数据集合
-    public int addKVSet(KeyValueSkipListSet kvSet){
-        return 1;
     }
     //合并KV里的ValueNode
     public int MergeKV(String dbName,String tableName,String cfName,String rowKey,int versionFrom,int versionTo){
