@@ -21,8 +21,14 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
     //cache for region
     List<VCRegion> loadOnRegion;
 
-    public void readConfig(){
+    public void readConfig(String fileName){
+        regionServerMeta=new RegionServerMeta(VCFileReader.readAll(fileName));
+    }
+    public RegionServer(){
 
+    }
+    public RegionServer(String fileName){
+        regionServerMeta=new RegionServerMeta(VCFileReader.readAll(fileName));
     }
 
     public static List<KVRange> getPageTrailer(String metaName){

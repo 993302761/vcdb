@@ -34,13 +34,13 @@ public class TestWriterAndReader {
     @Test
     public void testRegionServer(){
         /*-----------------regionServer-------------------*/
-        Map<String, String> map = new ConcurrentHashMap<>();
+        Map<String,String> map=new ConcurrentHashMap<>();
         for (int i = 1; i < 3; i++) {
-            map.put("db.table" + i, "regionMeta" + i);
+            map.put("db.table"+i,"region/regionMeta"+i);
         }
-        byte[] ip4 = new byte[]{127, 0, 0, 1};
-        int port = 9091;
-        RegionServerMeta serverMeta = new RegionServerMeta("regionServerMeta", ip4, port, map);
+        byte[] ip4=new byte[]{127,0,0,1};
+        int port=9091;
+        RegionServerMeta serverMeta=new RegionServerMeta("regionServerMeta",ip4,port,map);
 //        serverMeta.dis();
         VCFIleWriter.writerAll(serverMeta.getData(), "regionServerMeta");
         RegionServerMeta serverMeta1 = new RegionServerMeta(VCFileReader.readAll("regionServerMeta"));
@@ -53,11 +53,11 @@ public class TestWriterAndReader {
         String metaName = "regionMeta1";
         Map<String, String> regionMap = new ConcurrentHashMap<>();
         for (int i = 1; i < 4; i++) {
-            regionMap.put("cf" + i, "fileStoreMeta" + i);
+            regionMap.put("cf" + i, "fileStoreMeta/fileStoreMeta" + i);
         }
         RegionMeta regionMeta = new RegionMeta(metaName, regionMap);
-        VCFIleWriter.writerAll(regionMeta.getData(), "region/regionServerMeta");
-        RegionMeta regionMeta1=new RegionMeta(VCFileReader.readAll("region/regionServerMeta"));
+        VCFIleWriter.writerAll(regionMeta.getData(), "region/regionMeta1");
+        RegionMeta regionMeta1=new RegionMeta(VCFileReader.readAll("region/regionMeta1"));
         regionMeta1.dis();
         System.out.println("------------------------------------------");
     }

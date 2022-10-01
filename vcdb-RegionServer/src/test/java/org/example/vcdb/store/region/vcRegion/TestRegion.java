@@ -20,7 +20,7 @@ public class TestRegion {
         String metaName="regionMeta1";
         Map<String,String> map=new ConcurrentHashMap<>();
         for (int i = 1; i < 4; i++) {
-            map.put("cf"+i,"fileStoreMeta"+i);
+            map.put("cf"+i,"fileStoreMeta/fileStoreMeta"+i);
         }
         RegionMeta regionMeta=new RegionMeta(metaName,map);
         regionMeta.dis();

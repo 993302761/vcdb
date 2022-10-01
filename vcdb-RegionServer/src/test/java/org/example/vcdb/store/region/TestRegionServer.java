@@ -1,7 +1,9 @@
 package org.example.vcdb.store.region;
 
+import org.example.vcdb.store.region.fileStore.KVRange;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -15,10 +17,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class TestRegionServer {
     @Test
+    public void testRegionServer(){
+        RegionServer regionServer=new RegionServer("regionServerMeta");
+        List<KVRange> pageTrailer = RegionServer.getPageTrailer("db.table1:cf1");
+        System.out.println(pageTrailer);
+    }
+
+
+    @Test
     public void testRegionServerMeta(){
         Map<String,String> map=new ConcurrentHashMap<>();
         for (int i = 1; i < 3; i++) {
-            map.put("db.table"+i,"regionMeta"+i);
+            map.put("db.table"+i,"region/regionMeta"+i);
         }
         byte[] ip4=new byte[]{127,0,0,1};
         int port=9091;
