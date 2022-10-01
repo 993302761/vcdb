@@ -52,13 +52,13 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
         Map<Integer,List<KV>> integerListMap=new ConcurrentHashMap<>();
         for (KV kv:kvSet){
             int i=1;
-            for (KVRange kvRange:pageTrailer){
-                if (kv.getRowKey().compareTo(Bytes.toString(kvRange.getEndKey()))<=0){
+            for (int j = 0; j < pageTrailer.size(); j++) {
+                if (kv.getRowKey().compareTo(Bytes.toString(pageTrailer.get(i).getEndKey()))<=0||pageTrailer.get(i+1)==null){
                     if (integerListMap.containsKey(i)){
                         List<KV> kvs=new ArrayList<>();
                         kvs.add(kv);
                         integerListMap.put(i,kvs);
-                    }else {
+                    } else {
                         List<KV> kvs=integerListMap.get(i);
                         kvs.add(kv);
                     }
