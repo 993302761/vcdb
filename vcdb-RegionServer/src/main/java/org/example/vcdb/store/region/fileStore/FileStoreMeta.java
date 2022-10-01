@@ -32,7 +32,9 @@ public class FileStoreMeta {
 
     }
 
-    public FileStoreMeta(long timeStamp, boolean split, String encodedName, byte[] endKey, byte[] startKey, String tableName, String nameSpace, List<KVRange> pageTrailer) {
+    public FileStoreMeta(long timeStamp, boolean split, String encodedName,
+                         byte[] endKey, byte[] startKey, String tableName,
+                         String nameSpace, List<KVRange> pageTrailer) {
         byte spl = 0;
         if (split) {
             spl = 1;

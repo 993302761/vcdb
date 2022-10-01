@@ -1,5 +1,7 @@
 package org.example.vcdb.store.region;
 
+import org.example.vcdb.store.region.Region.RegionMeta;
+import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 import org.example.vcdb.store.region.fileStore.KVRange;
 import org.junit.Test;
 
@@ -18,9 +20,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TestRegionServer {
     @Test
     public void testRegionServer(){
-        RegionServer regionServer=new RegionServer("regionServerMeta");
-        List<KVRange> pageTrailer = RegionServer.getPageTrailer("db.table1:cf1");
-        System.out.println(pageTrailer);
+        RegionServer.readConfig("regionServerMeta");
+        RegionMeta regionMeta = RegionServer.getRegionMeta("db.table1");
+        FileStoreMeta cf1 = RegionServer.getFileStoreMeta(regionMeta, "cf1");
+        cf1.dis();
+//        List<KVRange> pageTrailer = RegionServer.getPageTrailer("db.table1:cf1");
+//        System.out.println(pageTrailer);
     }
 
 
@@ -34,9 +39,5 @@ public class TestRegionServer {
         int port=9091;
         RegionServerMeta serverMeta=new RegionServerMeta("regionServerMeta",ip4,port,map);
         serverMeta.dis();
-    }
-    @Test
-    public void testPageTrailer(){
-
     }
 }

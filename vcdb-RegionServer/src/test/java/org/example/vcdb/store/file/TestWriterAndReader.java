@@ -69,7 +69,7 @@ public class TestWriterAndReader {
             list.add(new KVRange(1111,"startKey"+i,"endKey"+i));
         }
         FileStoreMeta fileStoreMeta = new FileStoreMeta((new Date()).getTime(), false,
-                "fileStoreMeta1", "r1".getBytes(), "r2".getBytes(), "table1","db1",list);
+                "fileStore/fileStore1", "r1".getBytes(), "r2".getBytes(), "table1","db1",list);
         VCFIleWriter.writerAll(fileStoreMeta.getData(), "fileStoreMeta/fileStoreMeta1");
         FileStoreMeta fileStoreMeta1=new FileStoreMeta(VCFileReader.readAll("fileStoreMeta/fileStoreMeta1"));
         fileStoreMeta1.dis();

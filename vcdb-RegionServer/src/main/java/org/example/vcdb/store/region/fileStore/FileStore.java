@@ -3,14 +3,9 @@ package org.example.vcdb.store.region.fileStore;
 
 import org.example.vcdb.store.mem.KV;
 import org.example.vcdb.store.mem.KeyValueSkipListSet;
-import org.example.vcdb.store.region.RegionServer;
 import org.example.vcdb.util.Bytes;
-
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+
 
 
 /**
@@ -77,6 +72,16 @@ public class FileStore {
     public static byte[] kvsToByteArray(KeyValueSkipListSet dataSet){
         byte[] bytes = new byte[4 * 1024];
         int pos=0;
+        for (KV kv : dataSet) {
+            pos = Bytes.putInt(bytes, pos, kv.getLength());
+            pos = Bytes.putBytes(bytes, pos, kv.getData(), 0, kv.getLength());
+        }
+        return bytes;
+    }
+
+    public static byte[] kvsToByteArray(List<KV> dataSet){
+        int pos=0;
+        byte[] bytes = new byte[4 * 1024];
         for (KV kv : dataSet) {
             pos = Bytes.putInt(bytes, pos, kv.getLength());
             pos = Bytes.putBytes(bytes, pos, kv.getData(), 0, kv.getLength());
@@ -152,56 +157,22 @@ public class FileStore {
         System.out.println(getDataSet(1));
     }
 
-    public Map<Integer,List<KV>> splitKVsByPage(List<KVRange> pageTrailer, List<KV> kvSet){
-        Map<Integer,List<KV>> integerListMap=new ConcurrentHashMap<>();
-        for (KV kv:kvSet){
-            int i=1;
-            for (KVRange kvRange:pageTrailer){
-                if (kv.getRowKey().compareTo(Bytes.toString(kvRange.getEndKey()))<=0){
-                    if (integerListMap.containsKey(i)){
-                        List<KV> kvs=new ArrayList<>();
-                        kvs.add(kv);
-                        integerListMap.put(i,kvs);
-                    }else {
-                        List<KV> kvs=integerListMap.get(i);
-                        kvs.add(kv);
-                    }
-                }
-            }
-        }
-        return integerListMap;
-    }
+
     //DataChannel<=============>fileStore
     //update/add
-    public void SplitPage(String metaName,List<KV> kvSet) {
-        List<KVRange> pageTrailer = RegionServer.getPageTrailer(metaName);
-        Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer, kvSet);
-        for (Map.Entry<Integer, List<KV>> entry : integerListMap.entrySet()) {
-            int index = entry.getKey();
-            List<KV> kvList = entry.getValue();
-            if (isSplitPage(index, kvList)) {
-                insertBigKVs(index, kvList);
-            } else {
-                insertKVstoPage(entry.getValue());
-            }
-        }
-    }
-
-    private void insertBigKVs(int index, List<KV> kvList) {
-        setNewPage(index,kvList);
-        updateTrailer(index);
-    }
-
-    private void setNewPage(int index, List<KV> kvList) {
-    }
-
-
-    private void updateTrailer(int index) {
-
-    }
-    private void insertKVstoPage(List<KV> value) {
-
-    }
+//    public void SplitPage(String metaName,List<KV> kvSet) {
+//        List<KVRange> pageTrailer = RegionServer.getPageTrailer(metaName);
+//        Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer, kvSet);
+//        for (Map.Entry<Integer, List<KV>> entry : integerListMap.entrySet()) {
+//            int index = entry.getKey();
+//            List<KV> kvList = entry.getValue();
+//            if (isSplitPage(index, kvList)) {
+//                insertBigKVs(index, kvList);
+//            } else {
+//                insertKVstoPage(entry.getValue());
+//            }
+//        }
+//    }
 
     private boolean isSplitPage(Integer key, List<KV> kvs) {
         int pageIndex=4*1024*key;
@@ -222,10 +193,6 @@ public class FileStore {
             pos += kvLength;
         }
         return pos;
-    }
-
-    public void deleteKVs(List<KVRange> pageTrailer, List<KV> kvSet){
-        Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer,kvSet);
     }
 
     public KeyValueSkipListSet getDataSet(int pageIndex) {
