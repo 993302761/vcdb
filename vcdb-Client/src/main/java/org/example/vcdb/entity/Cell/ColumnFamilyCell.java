@@ -12,7 +12,6 @@ public class ColumnFamilyCell{
     private long max=Long.MAX_VALUE;
     private Boolean unique;
     private Boolean isNull;
-    private int Version=Integer.MAX_VALUE;
 //    private String method;
 
     public String getCf_name() {
@@ -39,9 +38,6 @@ public class ColumnFamilyCell{
         return isNull;
     }
 
-    public int getVersion() {
-        return Version;
-    }
 
 //    public String getMethod() {
 //        return method;
@@ -69,10 +65,6 @@ public class ColumnFamilyCell{
 
     public void setNull(boolean aNull) {
         isNull = aNull;
-    }
-
-    public void setVersion(int version) {
-        Version = version;
     }
 
 //    public void setMethod(String method) {

@@ -2,6 +2,7 @@ package org.example.vcdb.store.region.Region;
 
 
 import org.example.vcdb.store.file.VCFileReader;
+import org.example.vcdb.store.region.RegionServer;
 import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 import org.example.vcdb.util.Bytes;
 
@@ -28,6 +29,13 @@ public class RegionMeta {
     public RegionMeta(byte[] metaByte){
         this.metaByte=metaByte;
     }
+    public RegionMeta(String metaName){
+        metaByte=new byte[1024*4];
+        int pos=0;
+        pos= Bytes.putInt(this.metaByte,pos,metaName.getBytes().length);
+        pos = Bytes.putBytes(this.metaByte, pos, metaName.getBytes(), 0,metaName.getBytes().length);
+    }
+
     public RegionMeta(String metaName,Map<String,String> fileStoreMap){
         metaByte=new byte[1024*4];
         int pos=0;
@@ -66,6 +74,16 @@ public class RegionMeta {
             map.put(cfName,regionMetaName);
         }
         return map;
+    }
+    public void setFileStoreMap(Map<String,String> fileStoreMap){
+        int pos=4+getNameLength();
+        pos=Bytes.putInt(this.metaByte,pos,fileStoreMap.size());
+        for (Map.Entry<String,String> entry : fileStoreMap.entrySet()) {
+            pos=Bytes.putInt(this.metaByte,pos,entry.getKey().getBytes().length);
+            pos = Bytes.putBytes(this.metaByte, pos, entry.getKey().getBytes(), 0, entry.getKey().getBytes().length);
+            pos=Bytes.putInt(this.metaByte,pos,entry.getValue().getBytes().length);
+            pos = Bytes.putBytes(this.metaByte, pos, entry.getValue().getBytes(), 0, entry.getValue().getBytes().length);
+        }
     }
 
     public void dis(){

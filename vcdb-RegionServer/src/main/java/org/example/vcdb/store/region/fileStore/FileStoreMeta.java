@@ -24,11 +24,40 @@ public class FileStoreMeta {
 //    private String tableName = null;
 //    private String nameSpace = null;
 
-    private final byte[] data;
+    private byte[] data;
 
 
     public FileStoreMeta(byte[] data) {
         this.data = data;
+
+    }
+
+    public FileStoreMeta(long timeStamp, boolean split, String encodedName,
+                         byte[] endKey, byte[] startKey, String tableName,
+                         String nameSpace) {
+        byte spl = 0;
+        if (split) {
+            spl = 1;
+        }
+        int pos = 0;
+        byte[] bytes = new byte[8 + 1 + 4 + encodedName.getBytes().length + 4 + startKey.length + 4 + endKey.length + 4 + tableName.getBytes().length + 4 + nameSpace.getBytes().length];
+        pos = Bytes.putLong(bytes, pos, timeStamp);
+        pos = Bytes.putByte(bytes, pos, spl);
+
+        pos = Bytes.putInt(bytes, pos, encodedName.getBytes().length);
+        pos = Bytes.putBytes(bytes, pos, encodedName.getBytes(), 0, encodedName.getBytes().length);
+
+        pos = Bytes.putInt(bytes, pos, startKey.length);
+        pos = Bytes.putBytes(bytes, pos, startKey, 0, startKey.length);
+
+        pos = Bytes.putInt(bytes, pos, endKey.length);
+        pos = Bytes.putBytes(bytes, pos, endKey, 0, endKey.length);
+
+        pos = Bytes.putInt(bytes, pos, tableName.getBytes().length);
+        pos = Bytes.putBytes(bytes, pos, tableName.getBytes(), 0, tableName.getBytes().length);
+
+        pos = Bytes.putInt(bytes, pos, nameSpace.getBytes().length);
+        pos = Bytes.putBytes(bytes, pos, nameSpace.getBytes(), 0, nameSpace.getBytes().length);
 
     }
 
@@ -39,7 +68,7 @@ public class FileStoreMeta {
         if (split) {
             spl = 1;
         }
-        this.data = createByteArray(timeStamp, spl, encodedName, endKey, startKey, tableName, nameSpace,pageTrailer);
+        this.data = createByteArray(timeStamp, spl, encodedName, endKey, startKey, tableName, nameSpace, pageTrailer);
 
     }
 
@@ -50,18 +79,20 @@ public class FileStoreMeta {
     public int getLength() {
         return this.data.length;
     }
+
     private int getPageTrailerLength(List<KVRange> pageTrailer) {
-        int length=0;
-        for (KVRange kvRange:pageTrailer) {
-            length=length+4+kvRange.getLength();
+        int length = 0;
+        for (KVRange kvRange : pageTrailer) {
+            length = length + 4 + kvRange.getLength();
         }
         return length;
     }
+
     private byte[] createByteArray(long timeStamp, byte spl,
                                    String encodedName, byte[] endKey,
-                                   byte[] startKey, String tableName, String nameSpace,List<KVRange> pageTrailer) {
+                                   byte[] startKey, String tableName, String nameSpace, List<KVRange> pageTrailer) {
         int pos = 0;
-        byte[] bytes = new byte[8 + 1 + 4 + encodedName.getBytes().length + 4 + startKey.length + 4 + endKey.length + 4 + tableName.getBytes().length + 4 + nameSpace.getBytes().length+4+getPageTrailerLength(pageTrailer)];
+        byte[] bytes = new byte[8 + 1 + 4 + encodedName.getBytes().length + 4 + startKey.length + 4 + endKey.length + 4 + tableName.getBytes().length + 4 + nameSpace.getBytes().length + 4 + getPageTrailerLength(pageTrailer)];
         pos = Bytes.putLong(bytes, pos, timeStamp);
         pos = Bytes.putByte(bytes, pos, spl);
 
@@ -87,8 +118,6 @@ public class FileStoreMeta {
         }
         return bytes;
     }
-
-
 
 
     public long getTimeStamp() {
@@ -140,7 +169,7 @@ public class FileStoreMeta {
     }
 
     public List<KVRange> getPageTrailer() {
-        int pos = 29 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength()+getNameSpaceLength();
+        int pos = 29 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength() + getNameSpaceLength();
         List<KVRange> pageTrailer = new ArrayList<>();
         int kvRangeCount = Bytes.toInt(this.data, pos, 4);
         pos += 4;
@@ -152,7 +181,8 @@ public class FileStoreMeta {
         }
         return pageTrailer;
     }
-    public void dis(){
+
+    public void dis() {
         System.out.println(getTimeStamp());
         System.out.println(isSplit());
         System.out.println(getEncodeNameLength());

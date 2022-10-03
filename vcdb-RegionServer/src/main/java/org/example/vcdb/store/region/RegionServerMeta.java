@@ -28,6 +28,17 @@ public class RegionServerMeta {
         this.metaByte=data;
     }
 
+    public void RegionServerMeta(String metaName,byte[] ip4, int rsPort){
+        metaByte=new byte[1024*4];
+        int pos=0;
+        pos=Bytes.putInt(this.metaByte,pos,metaName.getBytes().length);
+        pos = Bytes.putBytes(this.metaByte, pos, metaName.getBytes(), 0,metaName.getBytes().length);
+        for (byte b:ip4){
+            pos=Bytes.putByte(this.metaByte,pos,b);
+        }
+        pos=Bytes.putInt(this.metaByte,pos,rsPort);
+    }
+
     public RegionServerMeta(String metaName,byte[] ip4,
                             int rsPort,Map<String,String> regionMap){
         metaByte=new byte[1024*4];
@@ -89,5 +100,16 @@ public class RegionServerMeta {
 
     public byte[] getData() {
         return this.metaByte;
+    }
+
+    public void setRegionMap(Map<String, String> regionMap) {
+        int pos=12+getNameLength();
+        pos=Bytes.putInt(this.metaByte,pos,regionMap.size());
+        for (Map.Entry<String,String> entry : regionMap.entrySet()) {
+            pos=Bytes.putInt(this.metaByte,pos,entry.getKey().getBytes().length);
+            pos = Bytes.putBytes(this.metaByte, pos, entry.getKey().getBytes(), 0, entry.getKey().getBytes().length);
+            pos=Bytes.putInt(this.metaByte,pos,entry.getValue().getBytes().length);
+            pos = Bytes.putBytes(this.metaByte, pos, entry.getValue().getBytes(), 0, entry.getValue().getBytes().length);
+        }
     }
 }
