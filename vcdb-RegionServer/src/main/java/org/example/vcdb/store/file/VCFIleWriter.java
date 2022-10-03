@@ -46,7 +46,30 @@ public class VCFIleWriter {
             }
         }
     }
-
+    public static void writeALL(byte[] content,int offset, String fileName){
+        RandomAccessFile accessFile = null;
+        try {
+            //getFromMap
+            accessFile = new RandomAccessFile("/x2/vcdb/"+fileName, "rw");
+            FileChannel fileChannel = accessFile.getChannel();
+            ByteBuffer contentBuf = ByteBuffer.allocateDirect(content.length);
+            contentBuf.put(content);
+            contentBuf.limit(content.length);
+            contentBuf.flip();
+            while (contentBuf.hasRemaining()) fileChannel.write(contentBuf,offset);
+            fileChannel.force(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (accessFile != null) {
+                    accessFile.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     public static void setFileStorePage(byte[] content,int pageIndex,String fileName){
         if(content.length!=4*1024){
             System.out.println("这不是一个页");
@@ -126,7 +149,5 @@ public class VCFIleWriter {
             }
         }
     }
-    public static void setPageLength(int Length,int pageIndex,String fileName){
 
-    }
 }
