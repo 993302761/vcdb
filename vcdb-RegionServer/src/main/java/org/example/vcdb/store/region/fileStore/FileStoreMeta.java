@@ -58,7 +58,7 @@ public class FileStoreMeta {
 
         pos = Bytes.putInt(bytes, pos, nameSpace.getBytes().length);
         pos = Bytes.putBytes(bytes, pos, nameSpace.getBytes(), 0, nameSpace.getBytes().length);
-
+        this.data=bytes;
     }
 
     public FileStoreMeta(long timeStamp, boolean split, String encodedName,

@@ -67,6 +67,23 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
         }
         return integerListMap;
     }
+
+    public static void updateRegionServerMeta(){
+
+    }
+
+    public static void updateRegionMeta(){
+
+    }
+
+    public static boolean isUpdateFileStoreMeta(){
+        return false;
+    }
+
+    public static void updateFileStoreMeta(){
+
+    }
+
     //先假设没有split的情况
     public void addKVs(String dbAndCf,KeyValueSkipListSet kvs){
         String[] str=dbAndCf.split(":");

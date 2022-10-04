@@ -64,6 +64,7 @@ public class TestRegionServer {
         String tabName="table2";
         String regionMetaFileName="region/regionMeta22";
         String fileStoreName="fileStore/fileStore2";
+        String fileStoreMetaName="fileStoreMeta/fileStoreMeta2";
         /*createTable*/
         /*注册该表到RegionServerMeta*/
         /*先读出RegionServerMeta*/
@@ -79,7 +80,7 @@ public class TestRegionServer {
         /*创建regionMeta*/
         Map<String, String> fileStoreMap = new ConcurrentHashMap<>();
         for (int i = 1; i < 4; i++) {
-            regionMap.put("cf" + i, "fileStoreMeta/fileStoreMeta" + i);
+            fileStoreMap.put("cf" + i, "fileStoreMeta/fileStoreMeta" + i);
         }
         RegionMeta regionMeta = new RegionMeta(regionMetaFileName, fileStoreMap);
         VCFIleWriter.writerAll(regionMeta.getData(), regionMetaFileName);
@@ -87,7 +88,7 @@ public class TestRegionServer {
         /*创建fileStoreMeta*/
         FileStoreMeta fileStoreMeta = new FileStoreMeta((new Date()).getTime(), false,
                 fileStoreName, "r1".getBytes(), "r2".getBytes(), tabName,dbName);
-        VCFIleWriter.writerAll(fileStoreMeta.getData(), fileStoreName);
+        VCFIleWriter.writerAll(fileStoreMeta.getData(), fileStoreMetaName);
 
         /*创建fileStore*/
         ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(true, false, 1, 100, ColumnFamilyMeta.byteToCFType((byte) 44));
@@ -100,12 +101,18 @@ public class TestRegionServer {
         //通过tableName找到regionMeta,通过cfName找到fileStore
         String dbName="db2";
         String tabName="table2";
-        String cfName="cf1";
+        String cfName="cf2";
+
         RegionServer.readConfig("regionServerMeta");
+        RegionServer.regionServerMeta.dis();
         RegionMeta regionMeta = RegionServer.getRegionMeta(dbName+"."+tabName);
         FileStoreMeta fileStoreMeta = RegionServer.getFileStoreMeta(regionMeta, cfName);
-        List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
-        //创建一个kvs并且插入
+        System.out.println(fileStoreMeta.getEncodedName());
+
+
+
+
+        //创建一个kvs
         byte[] row = "row2".getBytes(StandardCharsets.UTF_8);
         byte[] family = "fam2".getBytes(StandardCharsets.UTF_8);
         List<KV.ValueNode> values = new ArrayList<>();
@@ -119,11 +126,27 @@ public class TestRegionServer {
         KV kv = new KV(row, 0, row.length, family, 0, family.length, values);
         KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
         kvs.add(kv);
-        int pageIndex=1;
-        VCFIleWriter.updateKvsCountFOrFileStorePage(kvs.size(),pageIndex,fileStoreMeta.getEncodedName());
-        VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(pageIndex).getPageLength(),kvsToByteArray(kvs),1,fileStoreMeta.getEncodedName());
-        FileStore fileStore2=new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName()));
-        disDataSet(fileStore2.getDataSet(pageIndex));
-        fileStore2.dis();
+
+
+        try {
+            List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
+            int pageIndex=1;
+            VCFIleWriter.updateKvsCountFOrFileStorePage(kvs.size(),pageIndex,fileStoreMeta.getEncodedName());
+            VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(pageIndex).getPageLength(),kvsToByteArray(kvs),pageIndex,fileStoreMeta.getEncodedName());
+            FileStore fileStore2=new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName()));
+            disDataSet(fileStore2.getDataSet(pageIndex));
+            fileStore2.dis();
+        }catch (Exception e){
+            int pageIndex=1;
+//            VCFIleWriter.updateKvsCountFOrFileStorePage(kvs.size(),pageIndex,fileStoreMeta.getEncodedName());
+            VCFIleWriter.appendDataSetToFileStorePage(0,Bytes.toBytes((int)1),pageIndex,fileStoreMeta.getEncodedName());
+            VCFIleWriter.appendDataSetToFileStorePage(4,kvsToByteArray(kvs),pageIndex,fileStoreMeta.getEncodedName());
+            FileStore fileStore2=new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName()));
+            disDataSet(fileStore2.getDataSet(pageIndex));
+            fileStore2.dis();
+        }
+
+
+
     }
 }
