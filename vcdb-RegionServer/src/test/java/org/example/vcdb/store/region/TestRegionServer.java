@@ -9,8 +9,13 @@ import org.example.vcdb.store.region.fileStore.ColumnFamilyMeta;
 import org.example.vcdb.store.region.fileStore.FileStore;
 import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 import org.example.vcdb.store.region.fileStore.KVRange;
+import org.example.vcdb.util.Bytes;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,6 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
+
+import static org.example.vcdb.store.region.fileStore.FileStore.disDataSet;
+import static org.example.vcdb.store.region.fileStore.FileStore.kvsToByteArray;
 
 /**
  * @ClassName TestRegionServer
@@ -85,5 +93,37 @@ public class TestRegionServer {
         ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(true, false, 1, 100, ColumnFamilyMeta.byteToCFType((byte) 44));
         FileStore fileStore=new FileStore(cfMeta);
         VCFIleWriter.writerAll(fileStore.getData(), fileStoreName);
+    }
+
+    @Test
+    public void testAddKVs(){
+        //通过tableName找到regionMeta,通过cfName找到fileStore
+        String dbName="db2";
+        String tabName="table2";
+        String cfName="cf1";
+        RegionServer.readConfig("regionServerMeta");
+        RegionMeta regionMeta = RegionServer.getRegionMeta(dbName+"."+tabName);
+        FileStoreMeta fileStoreMeta = RegionServer.getFileStoreMeta(regionMeta, cfName);
+        List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
+        //创建一个kvs并且插入
+        byte[] row = "row2".getBytes(StandardCharsets.UTF_8);
+        byte[] family = "fam2".getBytes(StandardCharsets.UTF_8);
+        List<KV.ValueNode> values = new ArrayList<>();
+        for (int i = 3; i <= 4; i++) {
+            long time = (new Date()).getTime();
+            KV.Type type = KV.byteToType((byte) 4);
+            byte[] qualifier = ("qualifier" + i).getBytes(StandardCharsets.UTF_8);
+            byte[] value = ("value" + i).getBytes(StandardCharsets.UTF_8);
+            values.add(new KV.ValueNode(time, type, qualifier, 0, qualifier.length, value, 0, value.length));
+        }
+        KV kv = new KV(row, 0, row.length, family, 0, family.length, values);
+        KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
+        kvs.add(kv);
+        int pageIndex=1;
+        VCFIleWriter.updateKvsCountFOrFileStorePage(kvs.size(),pageIndex,fileStoreMeta.getEncodedName());
+        VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(pageIndex).getPageLength(),kvsToByteArray(kvs),1,fileStoreMeta.getEncodedName());
+        FileStore fileStore2=new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName()));
+        disDataSet(fileStore2.getDataSet(pageIndex));
+        fileStore2.dis();
     }
 }
