@@ -111,10 +111,9 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
     }
 
     //先假设没有split的情况
-    public void addKVs(String dbAndCf,KeyValueSkipListSet kvs){
-        String[] str=dbAndCf.split(":");
-        RegionMeta regionMeta = getRegionMeta(str[0]);
-        FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta,str[1]);
+    public void addKVs(String dbName,String tabName,String cfName,KeyValueSkipListSet kvs){
+        RegionMeta regionMeta = getRegionMeta(dbName+"."+ tabName);
+        FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta,cfName);
         //fileName of fileStore
         String fileName = fileStoreMeta.getEncodedName();
         List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
