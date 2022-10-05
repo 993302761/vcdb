@@ -1,6 +1,7 @@
 package org.example.vcdb.store.region.fileStore;
 
 
+import org.example.vcdb.store.mem.KV;
 import org.example.vcdb.util.Bytes;
 
 import java.util.Arrays;
@@ -74,5 +75,17 @@ public class KVRange {
                 "startKey=" + Bytes.toString(getStartKey()) +"\n"+
                 "endKey=" + Bytes.toString(getEndKey()) +
                 '}'+"\n";
+    }
+
+    public void setMinKey(KV kv) {
+        int pos=8;
+        pos = Bytes.putInt(bytes, pos, kv.getRowKey().getBytes().length);
+        pos = Bytes.putBytes(bytes, pos, kv.getRowKey().getBytes(), 0, kv.getRowKey().getBytes().length);
+    }
+
+    public void setMaxKey(KV kv) {
+        int pos=12 + getStartKeyLength();
+        pos = Bytes.putInt(bytes, pos, kv.getRowKey().getBytes().length);
+        pos = Bytes.putBytes(bytes, pos, kv.getRowKey().getBytes(), 0, kv.getRowKey().getBytes().length);
     }
 }

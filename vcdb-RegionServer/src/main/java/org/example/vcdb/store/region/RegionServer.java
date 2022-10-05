@@ -11,6 +11,7 @@ import org.example.vcdb.store.proto.Meta;
 import org.example.vcdb.store.proto.getRegionMetaGrpc;
 import org.example.vcdb.store.region.Region.RegionMeta;
 import org.example.vcdb.store.region.Region.VCRegion;
+import org.example.vcdb.store.region.fileStore.ColumnFamilyMeta;
 import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 import org.example.vcdb.store.region.fileStore.KVRange;
 import org.example.vcdb.util.Bytes;
@@ -76,12 +77,24 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
 
     }
 
-    public static boolean isUpdateFileStoreMeta(){
-        return false;
+    public static List<KVRange> updatePageTrailer(List<KVRange> pageTrailer,Map<Integer,List<KV>> kvs){
+        for (Map.Entry<Integer,List<KV>> entry : kvs.entrySet()) {
+            KVRange kvRange = pageTrailer.get(entry.getKey() - 1);
+            for (KV kv:entry.getValue()){
+                if (kv.getRowKey().compareTo(Bytes.toString(kvRange.getStartKey()))<0){
+                    kvRange.setMinKey(kv);
+                    pageTrailer.set(entry.getKey(),kvRange);
+                }else if (kv.getRowKey().compareTo(Bytes.toString(kvRange.getStartKey()))>0){
+                    kvRange.setMaxKey(kv);
+                    pageTrailer.set(entry.getKey(),kvRange);
+                }
+            }
+        }
+        return pageTrailer;
     }
 
-    public static void updateFileStoreMeta(){
-
+    public static void updateColumnFamilyMeta(String fileStoreName, ColumnFamilyMeta columnFamilyMeta){
+        VCFIleWriter.writeALL(columnFamilyMeta.getData(),0,fileStoreName);
     }
 
     //先假设没有split的情况
