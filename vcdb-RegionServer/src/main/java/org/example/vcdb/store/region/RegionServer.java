@@ -49,6 +49,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
         FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta,str[1]);
         return fileStoreMeta.getPageTrailer();
     }
+
     public static Map<Integer,List<KV>> splitKVsByPage(List<KVRange> pageTrailer, KeyValueSkipListSet kvSet){
         Map<Integer,List<KV>> integerListMap=new ConcurrentHashMap<>();
         for (KV kv:kvSet){
@@ -69,12 +70,24 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
         return integerListMap;
     }
 
-    public static void updateRegionServerMeta(){
-
+    public static void addTabName(String dbName,String tabName,String regionMetaFileName){
+        RegionServerMeta serverMeta = new RegionServerMeta(VCFileReader.readAll("regionServerMeta"));
+        Map<String, String> regionMap = serverMeta.getRegionMap();
+        /*应该查重*/
+        regionMap.put(dbName +"."+tabName,regionMetaFileName);
+        /*替换新map*/
+        serverMeta.setRegionMap(regionMap);
+        /*写入文件*/
+        VCFIleWriter.writerAll(serverMeta.getData(), "regionServerMeta");
     }
 
-    public static void updateRegionMeta(){
-
+    public static void updateRegionMeta(String fileName,String cfName,String fileStoreMetaName){
+        RegionMeta regionMeta = new RegionMeta(VCFileReader.readAll(fileName));
+        regionMeta.getFileStoreMap();
+        Map<String, String> fileStoreMap = regionMeta.getFileStoreMap();
+        fileStoreMap.put(cfName,fileStoreMetaName);
+        regionMeta.setFileStoreMap(fileStoreMap);
+        VCFIleWriter.writerAll(regionMeta.getData(), fileName);
     }
 
     public static List<KVRange> updatePageTrailer(List<KVRange> pageTrailer,Map<Integer,List<KV>> kvs){
