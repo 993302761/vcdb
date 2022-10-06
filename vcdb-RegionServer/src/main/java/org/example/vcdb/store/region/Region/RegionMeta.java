@@ -92,10 +92,14 @@ public class RegionMeta {
         System.out.println(getMapCount());
         System.out.println(getFileStoreMap());
     }
-    /*CfName+startKey+EndKey*/
+    /*CfName*/
     public FileStoreMeta getFileStoreMeta(String key) {
         Map<String, String> fileStoreMap = getFileStoreMap();
         return new FileStoreMeta(VCFileReader.readAll(fileStoreMap.get(key)));
+    }
+    public String getFileStoreName(String key){
+        Map<String, String> fileStoreMap = getFileStoreMap();
+        return fileStoreMap.get(key);
     }
 
     public byte[] getData() {

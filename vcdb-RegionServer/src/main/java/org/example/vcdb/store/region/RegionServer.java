@@ -43,10 +43,9 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
         return regionMeta.getFileStoreMeta(cfName);
     }
 
-    public static List<KVRange> getPageTrailer(String dbAndCf){
-        String[] str=dbAndCf.split(":");
-        RegionMeta regionMeta = getRegionMeta(str[0]);
-        FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta,str[1]);
+    public static List<KVRange> getPageTrailer(String tabName,String cfName){
+        RegionMeta regionMeta = getRegionMeta(tabName);
+        FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta,cfName);
         return fileStoreMeta.getPageTrailer();
     }
 
@@ -78,7 +77,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
         /*替换新map*/
         serverMeta.setRegionMap(regionMap);
         /*写入文件*/
-        VCFIleWriter.writerAll(serverMeta.getData(), "regionServerMeta");
+        VCFIleWriter.writeAll(serverMeta.getData(), "regionServerMeta");
     }
 
     public static void updateRegionMeta(String fileName,String cfName,String fileStoreMetaName){
@@ -87,7 +86,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
         Map<String, String> fileStoreMap = regionMeta.getFileStoreMap();
         fileStoreMap.put(cfName,fileStoreMetaName);
         regionMeta.setFileStoreMap(fileStoreMap);
-        VCFIleWriter.writerAll(regionMeta.getData(), fileName);
+        VCFIleWriter.writeAll(regionMeta.getData(), fileName);
     }
 
     public static List<KVRange> updatePageTrailer(List<KVRange> pageTrailer,Map<Integer,List<KV>> kvs){
@@ -107,17 +106,31 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
     }
 
     public static void updateColumnFamilyMeta(String fileStoreName, ColumnFamilyMeta columnFamilyMeta){
-        VCFIleWriter.writeALL(columnFamilyMeta.getData(),0,fileStoreName);
+        VCFIleWriter.writeAll(columnFamilyMeta.getData(),0,fileStoreName);
     }
 
     //先假设没有split的情况
     public void addKVs(String dbName,String tabName,String cfName,KeyValueSkipListSet kvs){
+        //取出regionMeta
         RegionMeta regionMeta = getRegionMeta(dbName+"."+ tabName);
         FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta,cfName);
         //fileName of fileStore
         String fileName = fileStoreMeta.getEncodedName();
         List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
+
+        //根据pageTrailer拆分传入的kvs
         Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer, kvs);
+
+        //找到需要更新的元数据
+        List<KVRange> newPageTrailer = RegionServer.updatePageTrailer(pageTrailer, integerListMap);
+
+        //更新元数据
+        fileStoreMeta.setPageTrailer(newPageTrailer);
+
+        //元数据写入文件
+        VCFIleWriter.writeAll(fileStoreMeta.getData(),regionMeta.getFileStoreName(cfName));
+
+        //写入kvs
         for (Map.Entry<Integer, List<KV>> entry : integerListMap.entrySet()) {
             VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(entry.getKey()).getPageLength(),kvsToByteArray(entry.getValue()),entry.getKey(),fileName);
         }

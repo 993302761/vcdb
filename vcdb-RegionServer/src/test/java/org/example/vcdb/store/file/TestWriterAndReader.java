@@ -42,7 +42,7 @@ public class TestWriterAndReader {
         int port=9091;
         RegionServerMeta serverMeta=new RegionServerMeta("regionServerMeta",ip4,port,map);
 //        serverMeta.dis();
-        VCFIleWriter.writerAll(serverMeta.getData(), "regionServerMeta");
+        VCFIleWriter.writeAll(serverMeta.getData(), "regionServerMeta");
         RegionServerMeta serverMeta1 = new RegionServerMeta(VCFileReader.readAll("regionServerMeta"));
         serverMeta1.dis();
         System.out.println("------------------------------------------");
@@ -56,7 +56,7 @@ public class TestWriterAndReader {
             regionMap.put("cf" + i, "fileStoreMeta/fileStoreMeta" + i);
         }
         RegionMeta regionMeta = new RegionMeta(metaName, regionMap);
-        VCFIleWriter.writerAll(regionMeta.getData(), "region/regionMeta1");
+        VCFIleWriter.writeAll(regionMeta.getData(), "region/regionMeta1");
         RegionMeta regionMeta1=new RegionMeta(VCFileReader.readAll("region/regionMeta1"));
         regionMeta1.dis();
         System.out.println("------------------------------------------");
@@ -70,7 +70,7 @@ public class TestWriterAndReader {
         }
         FileStoreMeta fileStoreMeta = new FileStoreMeta((new Date()).getTime(), false,
                 "fileStore/fileStore1", "r1".getBytes(), "r2".getBytes(), "table1","db1",list);
-        VCFIleWriter.writerAll(fileStoreMeta.getData(), "fileStoreMeta/fileStoreMeta1");
+        VCFIleWriter.writeAll(fileStoreMeta.getData(), "fileStoreMeta/fileStoreMeta1");
         FileStoreMeta fileStoreMeta1=new FileStoreMeta(VCFileReader.readAll("fileStoreMeta/fileStoreMeta1"));
         fileStoreMeta1.dis();
         System.out.println("------------------------------------------");
@@ -93,7 +93,7 @@ public class TestWriterAndReader {
         KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
         kvs.add(kv);
         FileStore fileStore=new FileStore(cfMeta,kvs);
-        VCFIleWriter.writerAll(fileStore.getData(), "fileStore/fileStore1");
+        VCFIleWriter.writeAll(fileStore.getData(), "fileStore/fileStore1");
         FileStore fileStore1=new FileStore(VCFileReader.readAll("fileStore/fileStore1"));
         fileStore1.dis();
         System.out.println("------------------------------------------");
@@ -116,7 +116,7 @@ public class TestWriterAndReader {
         KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
         kvs.add(kv);
         FileStore fileStore=new FileStore(cfMeta,kvs);
-        VCFIleWriter.writerAll(fileStore.getData(), "fileStore/fileStore1");
+        VCFIleWriter.writeAll(fileStore.getData(), "fileStore/fileStore1");
         FileStore fileStore1=new FileStore(VCFileReader.readAll("fileStore/fileStore1"));
         fileStore1.dis();
         System.out.println("------------------------------------------");

@@ -17,7 +17,7 @@ import java.nio.channels.FileChannel;
  */
 
 public class VCFIleWriter {
-    public static void writerAll(byte[] content, String fileName){
+    public static void writeAll(byte[] content, String fileName){
         RandomAccessFile accessFile = null;
         try {
             //getFromMap
@@ -46,7 +46,7 @@ public class VCFIleWriter {
             }
         }
     }
-    public static void writeALL(byte[] content,int offset, String fileName){
+    public static void writeAll(byte[] content,int offset, String fileName){
         RandomAccessFile accessFile = null;
         try {
             //getFromMap

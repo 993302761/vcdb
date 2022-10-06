@@ -12,17 +12,12 @@ import org.example.vcdb.store.region.fileStore.KVRange;
 import org.example.vcdb.util.Bytes;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 import static org.example.vcdb.store.region.fileStore.FileStore.disDataSet;
 import static org.example.vcdb.store.region.fileStore.FileStore.kvsToByteArray;
@@ -75,7 +70,7 @@ public class TestRegionServer {
         /*替换新map*/
         serverMeta.setRegionMap(regionMap);
         /*写入文件*/
-        VCFIleWriter.writerAll(serverMeta.getData(), "regionServerMeta");
+        VCFIleWriter.writeAll(serverMeta.getData(), "regionServerMeta");
 
         /*创建regionMeta*/
         Map<String, String> fileStoreMap = new ConcurrentHashMap<>();
@@ -83,17 +78,17 @@ public class TestRegionServer {
             fileStoreMap.put("cf" + i, "fileStoreMeta/fileStoreMeta" + i);
         }
         RegionMeta regionMeta = new RegionMeta(regionMetaFileName, fileStoreMap);
-        VCFIleWriter.writerAll(regionMeta.getData(), regionMetaFileName);
+        VCFIleWriter.writeAll(regionMeta.getData(), regionMetaFileName);
 
         /*创建fileStoreMeta*/
         FileStoreMeta fileStoreMeta = new FileStoreMeta((new Date()).getTime(), false,
                 fileStoreName, "r1".getBytes(), "r2".getBytes(), tabName,dbName);
-        VCFIleWriter.writerAll(fileStoreMeta.getData(), fileStoreMetaName);
+        VCFIleWriter.writeAll(fileStoreMeta.getData(), fileStoreMetaName);
 
         /*创建fileStore*/
         ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(true, false, 1, 100, ColumnFamilyMeta.byteToCFType((byte) 44));
         FileStore fileStore=new FileStore(cfMeta);
-        VCFIleWriter.writerAll(fileStore.getData(), fileStoreName);
+        VCFIleWriter.writeAll(fileStore.getData(), fileStoreName);
     }
 
     @Test
@@ -108,9 +103,6 @@ public class TestRegionServer {
         RegionMeta regionMeta = RegionServer.getRegionMeta(dbName+"."+tabName);
         FileStoreMeta fileStoreMeta = RegionServer.getFileStoreMeta(regionMeta, cfName);
         System.out.println(fileStoreMeta.getEncodedName());
-
-
-
 
         //创建一个kvs
         byte[] row = "row2".getBytes(StandardCharsets.UTF_8);
@@ -145,8 +137,6 @@ public class TestRegionServer {
             disDataSet(fileStore2.getDataSet(pageIndex));
             fileStore2.dis();
         }
-
-
 
     }
 }

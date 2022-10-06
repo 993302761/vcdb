@@ -199,4 +199,13 @@ public class FileStoreMeta {
         System.out.println(getNameSpace());
         System.out.println(getPageTrailer());
     }
+
+    public void setPageTrailer(List<KVRange> pageTrailer) {
+        int pos = 29 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength() + getNameSpaceLength();
+        pos = Bytes.putInt(this.data, pos, pageTrailer.size());
+        for (KVRange kvRange : pageTrailer) {
+            pos = Bytes.putInt(this.data, pos, kvRange.getLength());
+            pos = Bytes.putBytes(this.data, pos, kvRange.getData(), 0, kvRange.getLength());
+        }
+    }
 }
