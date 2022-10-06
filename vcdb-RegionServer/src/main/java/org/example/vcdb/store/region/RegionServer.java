@@ -48,7 +48,16 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
         FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta,cfName);
         return fileStoreMeta.getPageTrailer();
     }
+    /*1  BigKVs
+    * 0  MiddleKVs
+    * -1 TinyKVs */
+    public static byte isSplitPage(int pageIndex,KeyValueSkipListSet kvs){
+        return 1;
+    }
 
+    public static void splitPage(){
+
+    }
     public static Map<Integer,List<KV>> splitKVsByPage(List<KVRange> pageTrailer, KeyValueSkipListSet kvSet){
         Map<Integer,List<KV>> integerListMap=new ConcurrentHashMap<>();
         for (KV kv:kvSet){
