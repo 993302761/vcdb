@@ -74,7 +74,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
             kvs1.addKVs(kvs);
             int tempLength=0;
             int kvPageCount=0;
-            KeyValueSkipListSet newKVs=new KeyValueSkipListSet(new KV.KVComparator());
+            List<KV> newKVs=new ArrayList<>();
             for (KV kv:kvs1){
                 newKVs.add(kv);
                 tempLength+=kv.getLength();
@@ -100,6 +100,19 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
             VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(pageIndex).getPageLength(),kvsToByteArray(kvs),pageIndex,fileStoreMeta.getEncodedName());
         }
     }
+
+    private static void insertNewPage(KV kv, List<KVRange> pageTrailer) {
+
+    }
+
+
+    private static void insertNewPage(List<KV> newKVs, List<KVRange> pageTrailer) {
+
+    }
+
+    private static void insertOldPage(List<KV> newKVs, List<KVRange> pageTrailer, int pageIndex) {
+    }
+
     public static Map<Integer,List<KV>> splitKVsByPage(List<KVRange> pageTrailer, KeyValueSkipListSet kvSet){
         Map<Integer,List<KV>> integerListMap=new ConcurrentHashMap<>();
         for (KV kv:kvSet){
