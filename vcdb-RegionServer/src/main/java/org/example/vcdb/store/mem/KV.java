@@ -35,7 +35,7 @@ public class KV {
 
     public String getRowKey() {
         int rLength = getRLength();
-        return Bytes.toString(this.data, rLength, rLength);
+        return Bytes.toString(this.data, 4, rLength);
     }
 
 //    public void getAll() {
@@ -158,7 +158,6 @@ public class KV {
         for (ValueNode valueNode:getValues()){
             valueNode.dis();
         }
-
     }
 
     public static enum Type {

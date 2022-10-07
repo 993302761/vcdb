@@ -139,4 +139,42 @@ public class TestRegionServer {
         }
 
     }
+
+    @Test
+    public void testKvs(){
+        KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
+        List<KV.ValueNode> values = new ArrayList<>();
+
+        for (int i = 1; i <= 2; i++) {
+            long time = (new Date()).getTime();
+            KV.Type type = KV.byteToType((byte) 4);
+            byte[] qualifier = ("qualifier" + i).getBytes(StandardCharsets.UTF_8);
+            byte[] value = ("value" + i).getBytes(StandardCharsets.UTF_8);
+            values.add(new KV.ValueNode(time, type, qualifier, 0, qualifier.length, value, 0, value.length));
+        }
+
+        for (int i = 2; i < 7; i++) {
+            kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length, ("family"+i).getBytes(), 0, ("family"+i).getBytes().length, values));
+        }
+
+        kvs.add(new KV(("row2").getBytes(), 0, ("row2").getBytes().length, ("family2").getBytes(), 0, ("family2").getBytes().length, values));
+        kvs.add(new KV(("row1").getBytes(), 0, ("row1").getBytes().length, ("family1").getBytes(), 0, ("family1").getBytes().length, values));
+
+//        for (KV kv:kvs){
+//            System.out.println(kv.getRowKey());
+//        }
+
+        KeyValueSkipListSet kvs1 = new KeyValueSkipListSet(new KV.KVComparator());
+        for (int i = 7; i < 12; i++) {
+            kvs1.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length, ("family"+i).getBytes(), 0, ("family"+i).getBytes().length, values));
+        }
+        kvs.addKVs(kvs1);
+
+        for (KV kv:kvs){
+            System.out.println(kv.getRLength());
+            System.out.println(kv.getRowKey());
+        }
+
+        System.out.println(kvs);
+    }
 }

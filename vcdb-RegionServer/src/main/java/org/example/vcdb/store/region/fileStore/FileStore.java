@@ -105,6 +105,19 @@ public class FileStore {
         System.out.println("++++++++++"+pos);
         return bytes;
     }
+    public static KeyValueSkipListSet byteArrayToKvs(byte[] byteArray){
+        KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
+        int pos=0;
+        int kvCount = Bytes.toInt(byteArray, pos, 4);
+        pos += 4;
+        for (int i = 0; i < kvCount; i++) {
+            int kvLength = Bytes.toInt(byteArray, pos, 4);
+            pos += 4;
+            kvs.add(new KV(Bytes.subByte(byteArray, pos, kvLength)));
+            pos += kvLength;
+        }
+        return kvs;
+    }
     /*
     long min=Long.MIN_VALUE;8
     long max=Long.MAX_VALUE;8
@@ -163,8 +176,8 @@ public class FileStore {
     }
 
 
-    //DataChannel<=============>fileStore
-    //update/add
+//    DataChannel<=============>fileStore
+//    update/add
 //    public void SplitPage(String metaName,List<KV> kvSet) {
 //        List<KVRange> pageTrailer = RegionServer.getPageTrailer(metaName);
 //        Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer, kvSet);

@@ -20,71 +20,90 @@ package org.example.vcdb.store.mem;
 import java.util.*;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.function.Predicate;
 
 
 public class KeyValueSkipListSet implements NavigableSet<KV> {
-    private final ConcurrentNavigableMap<KV, KV> delegatee;
+    private final ConcurrentNavigableMap<KV, KV> concurrentNavigableMap;
 
     public KeyValueSkipListSet(final KV.KVComparator c) {
-        this.delegatee = new ConcurrentSkipListMap(c);
+        this.concurrentNavigableMap = new ConcurrentSkipListMap(c);
     }
 
     KeyValueSkipListSet(final ConcurrentNavigableMap<KV, KV> m) {
-        this.delegatee = m;
-    }
-
-    public KV ceiling(KV e) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public Iterator<KV> descendingIterator() {
-        return this.delegatee.descendingMap().values().iterator();
-    }
-
-    public NavigableSet<KV> descendingSet() {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public KV floor(KV e) {
-        throw new UnsupportedOperationException("Not implemented");
+        this.concurrentNavigableMap = m;
     }
 
     public SortedSet<KV> headSet(final KV toElement) {
         return headSet(toElement, false);
     }
-
-    public NavigableSet<KV> headSet(final KV toElement,
-                                    boolean inclusive) {
-        return new KeyValueSkipListSet(this.delegatee.headMap(toElement, inclusive));
+    public void addKVs(KeyValueSkipListSet kvs){
+        for (KV kv:kvs){
+            add(kv);
+        }
+    }
+    @Override
+    public KV lower(KV kv) {
+        return null;
     }
 
-    public KV higher(KV e) {
+    @Override
+    public KV floor(KV kv) {
+        return null;
+    }
+
+    @Override
+    public KV ceiling(KV kv) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public Iterator<KV> iterator() {
-        return this.delegatee.values().iterator();
-    }
-
-    public KV lower(KV e) {
+    @Override
+    public KV higher(KV kv) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    @Override
     public KV pollFirst() {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    @Override
     public KV pollLast() {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public SortedSet<KV> subSet(KV fromElement, KV toElement) {
+    @Override
+    public Iterator<KV> iterator() {
+        return this.concurrentNavigableMap.values().iterator();
+    }
+
+    @Override
+    public Object[] toArray() {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public NavigableSet<KV> subSet(KV fromElement,
-                                   boolean fromInclusive, KV toElement, boolean toInclusive) {
+    @Override
+    public <T> T[] toArray(T[] a) {
         throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public Iterator<KV> descendingIterator() {
+        return this.concurrentNavigableMap.descendingMap().values().iterator();
+    }
+
+    @Override
+    public NavigableSet<KV> descendingSet() {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public NavigableSet<KV> subSet(KV fromElement, boolean fromInclusive, KV toElement, boolean toInclusive) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public NavigableSet<KV> headSet(final KV toElement,
+                                    boolean inclusive) {
+        return new KeyValueSkipListSet(this.concurrentNavigableMap.headMap(toElement, inclusive));
     }
 
     public SortedSet<KV> tailSet(KV fromElement) {
@@ -92,84 +111,88 @@ public class KeyValueSkipListSet implements NavigableSet<KV> {
     }
 
     public NavigableSet<KV> tailSet(KV fromElement, boolean inclusive) {
-        return new KeyValueSkipListSet(this.delegatee.tailMap(fromElement, inclusive));
+        return new KeyValueSkipListSet(this.concurrentNavigableMap.tailMap(fromElement, inclusive));
     }
 
+    @Override
     public Comparator<? super KV> comparator() {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public KV first() {
-        return this.delegatee.get(this.delegatee.firstKey());
-    }
-
-    public KV last() {
-        return this.delegatee.get(this.delegatee.lastKey());
-    }
-
-    public boolean add(KV e) {
-        return this.delegatee.put(e, e) == null;
-    }
-
-    public boolean addAll(Collection<? extends KV> c) {
+    @Override
+    public SortedSet<KV> subSet(KV fromElement, KV toElement) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    public KV first() {
+        return this.concurrentNavigableMap.get(this.concurrentNavigableMap.firstKey());
+    }
+
+    public KV last() {
+        return this.concurrentNavigableMap.get(this.concurrentNavigableMap.lastKey());
+    }
+
+    public boolean add(KV e) {
+        return this.concurrentNavigableMap.put(e, e) == null;
+    }
+
     public void clear() {
-        this.delegatee.clear();
+        this.concurrentNavigableMap.clear();
     }
 
     public boolean contains(Object o) {
         //noinspection SuspiciousMethodCalls
-        return this.delegatee.containsKey(o);
+        return this.concurrentNavigableMap.containsKey(o);
     }
 
+    public boolean isEmpty() {
+        return this.concurrentNavigableMap.isEmpty();
+    }
+
+    public boolean remove(Object o) {
+        return this.concurrentNavigableMap.remove(o) != null;
+    }
+
+    @Override
     public boolean containsAll(Collection<?> c) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public boolean isEmpty() {
-        return this.delegatee.isEmpty();
-    }
-
-    public boolean remove(Object o) {
-        return this.delegatee.remove(o) != null;
-    }
-
-    public boolean removeAll(Collection<?> c) {
+    @Override
+    public boolean addAll(Collection<? extends KV> c) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    @Override
     public boolean retainAll(Collection<?> c) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public boolean removeIf(Predicate<? super KV> filter) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
     public KV get(KV kv) {
-        return this.delegatee.get(kv);
+        return this.concurrentNavigableMap.get(kv);
     }
 
     public KV get(String key) {
-        Iterator iter = iterator();        //获取key和value的set
-        while (iter.hasNext()) {
-            ConcurrentNavigableMap.Entry entry = (ConcurrentNavigableMap.Entry) iter.next();        //把hashmap转成Iterator再迭代到entry
-            KV val = (KV) entry.getKey();//从entry获取value
-            if (key.equals(val.getRowKey())) {
-                return val;
+        for (KV kv:this){
+            if (key.equals(kv.getRowKey())) {
+                return kv;
             }
         }
         return null;
     }
 
     public int size() {
-        return this.delegatee.size();
-    }
-
-    public Object[] toArray() {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public <T> T[] toArray(T[] a) {
-        throw new UnsupportedOperationException("Not implemented");
+        return this.concurrentNavigableMap.size();
     }
 
     public int getByteSize() {

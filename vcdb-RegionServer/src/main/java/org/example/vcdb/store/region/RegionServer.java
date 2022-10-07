@@ -16,11 +16,14 @@ import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 import org.example.vcdb.store.region.fileStore.KVRange;
 import org.example.vcdb.util.Bytes;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.example.vcdb.store.region.fileStore.FileStore.byteArrayToKvs;
 import static org.example.vcdb.store.region.fileStore.FileStore.kvsToByteArray;
 
 public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
@@ -48,15 +51,54 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
         FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta,cfName);
         return fileStoreMeta.getPageTrailer();
     }
-    /*1  BigKVs
-    * 0  MiddleKVs
-    * -1 TinyKVs */
-    public static byte isSplitPage(int pageIndex,KeyValueSkipListSet kvs){
-        return 1;
-    }
-
-    public static void splitPage(){
-
+    /*0  BigKVs
+    * 1  MiddleKVs
+    * 2  TinyKVs
+    * 3
+    * 4   */
+    /*
+    * 什么时候啊需要分裂
+    * 1.kvs.length+page.length>4096*/
+    /*怎么分裂
+    * 1. 把page里的Kvs和新的kvs加载到内存，再分裂*/
+    public static void splitPage(String tabName,String cfName,int pageIndex,KeyValueSkipListSet kvs){
+        RegionMeta regionMeta = getRegionMeta(tabName);
+        FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta,cfName);
+        String fileStoreName=fileStoreMeta.getEncodedName();
+        List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
+        int pageLength = pageTrailer.get(pageIndex-1).getPageLength();
+        byte[] kvByteArray = kvsToByteArray(kvs);
+        if (pageLength+kvByteArray.length>4*1024){
+            byte[] bytes = VCFileReader.readAll(fileStoreName);
+            KeyValueSkipListSet kvs1 = byteArrayToKvs(bytes);
+            kvs1.addKVs(kvs);
+            int tempLength=0;
+            int kvPageCount=0;
+            KeyValueSkipListSet newKVs=new KeyValueSkipListSet(new KV.KVComparator());
+            for (KV kv:kvs1){
+                newKVs.add(kv);
+                tempLength+=kv.getLength();
+                if (kvPageCount==0){
+                    insertOldPage(newKVs,pageTrailer,pageIndex);
+                    newKVs.clear();
+                    tempLength=0;
+                    kvPageCount+=1;
+                }
+                if (tempLength>3*1024){
+                    if (kv.getLength()>3*1024){
+                        insertNewPage(kv,pageTrailer);
+                        newKVs.remove(kv);
+                    } else {
+                        insertNewPage(newKVs,pageTrailer);
+                        newKVs.clear();
+                        tempLength=0;
+                    }
+                }
+            }
+        }else {
+            VCFIleWriter.updateKvsCountFOrFileStorePage(kvs.size(),pageIndex,fileStoreMeta.getEncodedName());
+            VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(pageIndex).getPageLength(),kvsToByteArray(kvs),pageIndex,fileStoreMeta.getEncodedName());
+        }
     }
     public static Map<Integer,List<KV>> splitKVsByPage(List<KVRange> pageTrailer, KeyValueSkipListSet kvSet){
         Map<Integer,List<KV>> integerListMap=new ConcurrentHashMap<>();
@@ -168,4 +210,5 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
     public int MergeKV(String dbName,String tableName,String cfName,String rowKey,int versionFrom,int versionTo){
         return 1;
     }
+
 }
