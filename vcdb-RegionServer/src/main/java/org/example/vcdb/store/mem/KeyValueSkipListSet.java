@@ -42,6 +42,11 @@ public class KeyValueSkipListSet implements NavigableSet<KV> {
             add(kv);
         }
     }
+    public void addKVs(List<KV> kvs){
+        for (KV kv:kvs){
+            add(kv);
+        }
+    }
     @Override
     public KV lower(KV kv) {
         return null;

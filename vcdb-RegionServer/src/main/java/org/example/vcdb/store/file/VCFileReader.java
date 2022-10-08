@@ -55,6 +55,27 @@ public class VCFileReader {
         return bytes;
     }
     public static byte[] openFileStorePage(int pageIndex,String fileName){
+        RandomAccessFile aFile = null;
+        try {
+            aFile = new RandomAccessFile("/x2/vcdb/" + fileName, "rw");
+            FileChannel fileChannel = aFile.getChannel();
+            long size=aFile.length();
+            //判断一下size是否Over int.max
+            ByteBuffer buf = ByteBuffer.allocateDirect(4*1024);
+            int bytesRead = fileChannel.read(buf,pageIndex*(1024*4));
+            buf.flip();
+            return conVer(buf);
+        }catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (aFile != null) {
+                    aFile.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         return null;
     }
     public static int ReadKvsCountForPage(int pageIndex,String fileName){

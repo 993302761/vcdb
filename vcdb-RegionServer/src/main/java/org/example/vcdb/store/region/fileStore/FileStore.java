@@ -74,6 +74,21 @@ public class FileStore {
         }
         System.out.println("----------------------");
     }
+
+    public static int getKVsLength(KeyValueSkipListSet dataSet){
+        int length=0;
+        for (KV kv:dataSet){
+            length+=4+kv.getLength();
+        }
+        return length;
+    }
+    public static int getKVsLength(List<KV> dataSet){
+        int length=0;
+        for (KV kv:dataSet){
+            length+=4+kv.getLength();
+        }
+        return length;
+    }
     public static byte[] kvsToByteArray(KeyValueSkipListSet dataSet){
         byte[] bytes = new byte[4 * 1024];
         int pos=0;
@@ -87,12 +102,15 @@ public class FileStore {
     public static byte[] kvsToByteArray(List<KV> dataSet){
         int pos=0;
         byte[] bytes = new byte[4 * 1024];
+        int dataSetCount = dataSet.size();
+        pos = Bytes.putInt(bytes, pos, dataSetCount);
         for (KV kv : dataSet) {
             pos = Bytes.putInt(bytes, pos, kv.getLength());
             pos = Bytes.putBytes(bytes, pos, kv.getData(), 0, kv.getLength());
         }
         return bytes;
     }
+
     public static byte[] kvsToPageByteArray(KeyValueSkipListSet dataSet){
         byte[] bytes = new byte[4 * 1024];
         int pos=0;
@@ -110,11 +128,13 @@ public class FileStore {
         int pos=0;
         int kvCount = Bytes.toInt(byteArray, pos, 4);
         pos += 4;
-        for (int i = 0; i < kvCount; i++) {
-            int kvLength = Bytes.toInt(byteArray, pos, 4);
-            pos += 4;
-            kvs.add(new KV(Bytes.subByte(byteArray, pos, kvLength)));
-            pos += kvLength;
+        if (kvCount!=0){
+            for (int i = 0; i < kvCount; i++) {
+                int kvLength = Bytes.toInt(byteArray, pos, 4);
+                pos += 4;
+                kvs.add(new KV(Bytes.subByte(byteArray, pos, kvLength)));
+                pos += kvLength;
+            }
         }
         return kvs;
     }
@@ -228,7 +248,8 @@ public class FileStore {
     }
     public static void disDataSet(KeyValueSkipListSet kvs){
         for (KV kv:kvs){
-            kv.dis();
+//            kv.dis();
+            System.out.println(kv.getRowKey());
             System.out.println("______________________________");
         }
     }

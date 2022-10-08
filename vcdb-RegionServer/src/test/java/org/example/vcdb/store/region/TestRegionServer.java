@@ -11,6 +11,7 @@ import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 import org.example.vcdb.store.region.fileStore.KVRange;
 import org.example.vcdb.util.Bytes;
 import org.junit.Test;
+import org.omg.CORBA.PUBLIC_MEMBER;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -97,6 +98,7 @@ public class TestRegionServer {
         String dbName="db2";
         String tabName="table2";
         String cfName="cf2";
+        int pageIndex=1;
 
         RegionServer.readConfig("regionServerMeta");
         RegionServer.regionServerMeta.dis();
@@ -115,29 +117,30 @@ public class TestRegionServer {
             byte[] value = ("value" + i).getBytes(StandardCharsets.UTF_8);
             values.add(new KV.ValueNode(time, type, qualifier, 0, qualifier.length, value, 0, value.length));
         }
+
         KV kv = new KV(row, 0, row.length, family, 0, family.length, values);
         KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
         kvs.add(kv);
-
-
         try {
             List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
-            int pageIndex=1;
             VCFIleWriter.updateKvsCountFOrFileStorePage(kvs.size(),pageIndex,fileStoreMeta.getEncodedName());
             VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(pageIndex).getPageLength(),kvsToByteArray(kvs),pageIndex,fileStoreMeta.getEncodedName());
             FileStore fileStore2=new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName()));
             disDataSet(fileStore2.getDataSet(pageIndex));
             fileStore2.dis();
+            RegionServer.updatePageTrailer(kvs,fileStoreMeta.getPageTrailer(),pageIndex);
         }catch (Exception e){
-            int pageIndex=1;
-//            VCFIleWriter.updateKvsCountFOrFileStorePage(kvs.size(),pageIndex,fileStoreMeta.getEncodedName());
+            List<KVRange> pageTrailer = new ArrayList<>();
             VCFIleWriter.appendDataSetToFileStorePage(0,Bytes.toBytes((int)1),pageIndex,fileStoreMeta.getEncodedName());
             VCFIleWriter.appendDataSetToFileStorePage(4,kvsToByteArray(kvs),pageIndex,fileStoreMeta.getEncodedName());
             FileStore fileStore2=new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName()));
             disDataSet(fileStore2.getDataSet(pageIndex));
             fileStore2.dis();
+            List<KVRange> kvRanges = RegionServer.updatePageTrailer(kvs, pageTrailer, pageIndex);
+            System.out.println(kvRanges);
+            fileStoreMeta.setPageTrailer(kvRanges);
+            VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, regionMeta.getfileStoreMetaName(cfName));
         }
-
     }
 
     @Test
@@ -174,7 +177,87 @@ public class TestRegionServer {
             System.out.println(kv.getRLength());
             System.out.println(kv.getRowKey());
         }
-
+        System.out.println(kvs.first().getRowKey());
+        System.out.println(kvs.last().getRowKey());
         System.out.println(kvs);
+    }
+
+    @Test
+    public void addKVsWithoutSplit(){
+        testCreateDB();
+        String dbName="db2";
+        String tabName="table2";
+        String cfName="cf2";
+        KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
+        List<KV.ValueNode> values = new ArrayList<>();
+
+        for (int i = 1; i <= 2; i++) {
+            long time = (new Date()).getTime();
+            KV.Type type = KV.byteToType((byte) 4);
+            byte[] qualifier = ("qualifier" + i).getBytes(StandardCharsets.UTF_8);
+            byte[] value = ("value" + i).getBytes(StandardCharsets.UTF_8);
+            values.add(new KV.ValueNode(time, type, qualifier, 0, qualifier.length, value, 0, value.length));
+        }
+
+        for (int i = 0; i < 40; i++) {
+            kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length, ("family"+i).getBytes(), 0, ("family"+i).getBytes().length, values));
+        }
+//        for (int i = 40; i < 80; i++) {
+//            kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length, ("family"+i).getBytes(), 0, ("family"+i).getBytes().length, values));
+//        }
+        RegionServer.readConfig("regionServerMeta");
+        RegionServer.regionServerMeta.dis();
+        RegionMeta regionMeta = RegionServer.getRegionMeta(dbName+"."+tabName);
+        FileStoreMeta fileStoreMeta = RegionServer.getFileStoreMeta(regionMeta, cfName);
+        System.out.println(fileStoreMeta.getPageTrailer());
+        Map<Integer, List<KV>> integerListMap = RegionServer.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
+        for (Map.Entry<Integer,List<KV>> entry : integerListMap.entrySet()) {
+            RegionServer.insertPageWithSplit(dbName+"."+tabName,cfName,entry.getKey(),entry.getValue());
+        }
+        ttt();
+    }
+
+    @Test
+    public void addKVsWithSplit(){
+        String dbName="db2";
+        String tabName="table2";
+        String cfName="cf2";
+        KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
+        List<KV.ValueNode> values = new ArrayList<>();
+
+        for (int i = 1; i <= 2; i++) {
+            long time = (new Date()).getTime();
+            KV.Type type = KV.byteToType((byte) 4);
+            byte[] qualifier = ("qualifier" + i).getBytes(StandardCharsets.UTF_8);
+            byte[] value = ("value" + i).getBytes(StandardCharsets.UTF_8);
+            values.add(new KV.ValueNode(time, type, qualifier, 0, qualifier.length, value, 0, value.length));
+        }
+
+        for (int i = 40; i < 80; i++) {
+            kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length,
+                    ("family"+i).getBytes(), 0, ("family"+i).getBytes().length, values));
+        }
+        RegionServer.readConfig("regionServerMeta");
+        RegionServer.regionServerMeta.dis();
+        RegionMeta regionMeta = RegionServer.getRegionMeta(dbName+"."+tabName);
+        FileStoreMeta fileStoreMeta = RegionServer.getFileStoreMeta(regionMeta, cfName);
+        System.out.println(fileStoreMeta.getPageTrailer());
+        Map<Integer, List<KV>> integerListMap = RegionServer.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
+        for (Map.Entry<Integer,List<KV>> entry : integerListMap.entrySet()) {
+            RegionServer.insertPageWithSplit(dbName+"."+tabName,cfName,entry.getKey(),entry.getValue());
+        }
+        ttt();
+    }
+
+
+
+    @Test
+    public void ttt(){
+        FileStore fileStore2=new FileStore(VCFileReader.readAll("fileStore/fileStore2"));
+        FileStore.disDataSet(fileStore2.getDataSet(1));
+        System.out.println("==========================================");
+        FileStore.disDataSet(fileStore2.getDataSet(2));
+        FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll("fileStoreMeta/fileStoreMeta2"));
+        fileStoreMeta.dis();
     }
 }

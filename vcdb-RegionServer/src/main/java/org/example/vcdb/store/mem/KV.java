@@ -98,6 +98,7 @@ public class KV {
         this.data = createByteArray(row, rOffset, rLength,
                 family, fOffset, fLength, values);
         this.length = this.data.length;
+//        System.out.println(this.length+"-=-=-=-=-==-=-=-=-=-=-=-=");
     }
 
     public KV(byte[] data) {

@@ -21,151 +21,178 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.example.vcdb.store.region.fileStore.FileStore.byteArrayToKvs;
-import static org.example.vcdb.store.region.fileStore.FileStore.kvsToByteArray;
+import static org.example.vcdb.store.region.fileStore.FileStore.*;
 
-public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
+public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
     //cache for fileStores
     List<MemStore> memStores;
     static RegionServerMeta regionServerMeta;
     //cache for region
     List<VCRegion> loadOnRegion;
 
-    public static void readConfig(String fileName){
-        regionServerMeta=new RegionServerMeta(VCFileReader.readAll(fileName));
-    }
-    public RegionServer(){
-    }
-    public RegionServer(String fileName){
-        regionServerMeta=new RegionServerMeta(VCFileReader.readAll(fileName));
+    public static void readConfig(String fileName) {
+        regionServerMeta = new RegionServerMeta(VCFileReader.readAll(fileName));
     }
 
-    public static FileStoreMeta getFileStoreMeta(RegionMeta regionMeta, String cfName){
+    public RegionServer() {
+    }
+
+    public RegionServer(String fileName) {
+        regionServerMeta = new RegionServerMeta(VCFileReader.readAll(fileName));
+    }
+
+    public static FileStoreMeta getFileStoreMeta(RegionMeta regionMeta, String cfName) {
         return regionMeta.getFileStoreMeta(cfName);
     }
 
-    public static List<KVRange> getPageTrailer(String tabName,String cfName){
+    public static List<KVRange> getPageTrailer(String tabName, String cfName) {
         RegionMeta regionMeta = getRegionMeta(tabName);
-        FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta,cfName);
+        FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta, cfName);
         return fileStoreMeta.getPageTrailer();
     }
+
     /*0  BigKVs
-    * 1  MiddleKVs
-    * 2  TinyKVs
-    * 3
-    * 4   */
+     * 1  MiddleKVs
+     * 2  TinyKVs
+     * 3
+     * 4   */
     /*
-    * 什么时候啊需要分裂
-    * 1.kvs.length+page.length>4096*/
+     * 什么时候啊需要分裂
+     * 1.kvs.length+page.length>4096*/
     /*怎么分裂
-    * 1. 把page里的Kvs和新的kvs加载到内存，再分裂*/
-    public static void insertPageWithSplit(String tabName,String cfName,int pageIndex,KeyValueSkipListSet kvs){
+     * 1. 把page里的Kvs和新的kvs加载到内存，再分裂*/
+    public static void insertPageWithSplit(String tabName, String cfName, int pageIndex, List<KV> kvs) {
         RegionMeta regionMeta = getRegionMeta(tabName);
-        FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta,cfName);
-        String fileStoreName=fileStoreMeta.getEncodedName();
+        FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta, cfName);
+        String fileStoreName = fileStoreMeta.getEncodedName();
         List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
-        int pageLength = pageTrailer.get(pageIndex-1).getPageLength();
-        byte[] kvByteArray = kvsToByteArray(kvs);
-        if (pageLength+kvByteArray.length>4*1024){
-            byte[] bytes = VCFileReader.readAll(fileStoreName);
+        int pageLength = pageTrailer.get(pageIndex).getPageLength();
+        if (pageLength + getKVsLength(kvs) > 4 * 1024) {
+            byte[] bytes = VCFileReader.openFileStorePage(pageIndex+1,fileStoreName);
             KeyValueSkipListSet kvs1 = byteArrayToKvs(bytes);
             kvs1.addKVs(kvs);
-            int tempLength=0;
-            int kvPageCount=0;
-            List<KV> newKVs=new ArrayList<>();
-            for (KV kv:kvs1){
+            int tempLength = 0;
+            boolean flag=true;
+            List<KV> newKVs = new ArrayList<>();
+            for (KV kv : kvs1) {
                 newKVs.add(kv);
-                tempLength+=kv.getLength();
-
-                if (tempLength>3*1024){
-                    if (kv.getLength()>3*1024){
-                        insertNewPage(kv,pageTrailer,fileStoreName,fileStoreMeta,regionMeta.getfileStoreMetaName(cfName));
+                tempLength += kv.getLength();
+                if (tempLength > 3 * 1024) {
+                    if (flag) {
+                        pageTrailer.remove(pageIndex);
+                        insertOldPage(newKVs, pageTrailer, pageIndex,
+                                fileStoreName, fileStoreMeta, regionMeta.getfileStoreMetaName(cfName));
+                        System.out.println("insertOldPage=========================");
+                        newKVs.clear();
+                        tempLength = 0;
+                        flag= false;
+                        continue;
+                    }
+                    if (kv.getLength() > 3 * 1024) {
+                        insertNewPage(kv, pageTrailer, fileStoreName, fileStoreMeta, regionMeta.getfileStoreMetaName(cfName));
                         newKVs.remove(kv);
                     } else {
-                        if (kvPageCount==0){
-                            insertOldPage(newKVs,pageTrailer,pageIndex,fileStoreName,fileStoreMeta,regionMeta.getfileStoreMetaName(cfName));
-                            newKVs.clear();
-                            tempLength=0;
-                            kvPageCount+=1;
-                        } else {
-                            insertNewPage(newKVs,pageTrailer,fileStoreName,fileStoreMeta,regionMeta.getfileStoreMetaName(cfName));
-                            newKVs.clear();
-                            tempLength=0;
-                        }
+                        System.out.println("===========================");
+                        insertNewPage(newKVs, pageTrailer, fileStoreName, fileStoreMeta, regionMeta.getfileStoreMetaName(cfName));
+                        System.out.println("insertNewPage+++++++++++++++++++");
+                        newKVs.clear();
+                        tempLength = 0;
                     }
                 }
             }
-        }else {
-            VCFIleWriter.updateKvsCountFOrFileStorePage(kvs.size(),pageIndex,fileStoreMeta.getEncodedName());
-            VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(pageIndex).getPageLength(),kvsToByteArray(kvs),pageIndex,fileStoreMeta.getEncodedName());
+        } else {
+            //不分裂
+            VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(pageIndex).getPageLength(), kvsToByteArray(kvs), pageIndex+1, fileStoreMeta.getEncodedName());
+            //更新元数据
+            List<KVRange> list = updatePageTrailer(kvs, pageTrailer, pageIndex);
+            fileStoreMeta.setPageTrailer(list);
+            VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, regionMeta.getfileStoreMetaName(cfName));
         }
     }
 
-    private static void insertNewPage(KV kv, List<KVRange> pageTrailer,String fileStoreName,FileStoreMeta fileStoreMeta,String fileStoreMetaName) {
-        int pageTrailerIndex=pageTrailer.size();
-        pageTrailer.set(pageTrailerIndex,new KVRange(4+kv.getLength(),kv.getRowKey(),kv.getRowKey()));
+    private static void insertNewPage(KV kv, List<KVRange> pageTrailer,
+                                      String fileStoreName, FileStoreMeta fileStoreMeta,
+                                      String fileStoreMetaName) {
+        int pageTrailerIndex = pageTrailer.size();
+        pageTrailer.set(pageTrailerIndex, new KVRange(4 + kv.getLength(), kv.getRowKey(), kv.getRowKey()));
         fileStoreMeta.setPageTrailer(pageTrailer);
-        VCFIleWriter.writeAll(fileStoreMeta.getData(),0,fileStoreMetaName);
-        List<KV> kvs=new ArrayList<>();
+        VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, fileStoreMetaName);
+        List<KV> kvs = new ArrayList<>();
         kvs.add(kv);
         byte[] bytes = kvsToByteArray(kvs);
-        VCFIleWriter.writeAll(bytes,pageTrailerIndex,fileStoreName);
+        VCFIleWriter.setFileStorePage(bytes, pageTrailerIndex+1, fileStoreName);
     }
 
 
-    private static void insertNewPage(List<KV> newKVs, List<KVRange> pageTrailer,String fileStoreName,FileStoreMeta fileStoreMeta,String fileStoreMetaName) {
-        int pageTrailerIndex=pageTrailer.size();
-        List<KVRange> list = updatePageTrailer(newKVs, pageTrailer, pageTrailerIndex);
+    private static void insertNewPage(List<KV> newKVs, List<KVRange> pageTrailer,
+                                      String fileStoreName, FileStoreMeta fileStoreMeta,
+                                      String fileStoreMetaName) {
+        int pageTrailerIndex = pageTrailer.size();
+        List<KVRange> list = updatePageTrailer2(newKVs, pageTrailer, pageTrailerIndex);
         fileStoreMeta.setPageTrailer(list);
-        VCFIleWriter.writeAll(fileStoreMeta.getData(),0,fileStoreMetaName);
+        VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, fileStoreMetaName);
         byte[] bytes = kvsToByteArray(newKVs);
-        VCFIleWriter.writeAll(bytes,pageTrailerIndex,fileStoreName);
+        VCFIleWriter.setFileStorePage(bytes, pageTrailerIndex+1, fileStoreName);
     }
 
-    private static void insertOldPage(List<KV> newKVs, List<KVRange> pageTrailer, int pageIndex,String fileStoreName,FileStoreMeta fileStoreMeta,String fileStoreMetaName) {
-        List<KVRange> list = updatePageTrailer(newKVs, pageTrailer, pageIndex);
+    private static void insertOldPage(List<KV> newKVs, List<KVRange> pageTrailer,
+                                      int pageIndex, String fileStoreName, FileStoreMeta fileStoreMeta, String fileStoreMetaName) {
+        List<KVRange> list = updatePageTrailer2(newKVs, pageTrailer, pageIndex);
         fileStoreMeta.setPageTrailer(list);
-        VCFIleWriter.writeAll(fileStoreMeta.getData(),0,fileStoreMetaName);
+        VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, fileStoreMetaName);
         byte[] bytes = kvsToByteArray(newKVs);
-        VCFIleWriter.writeAll(bytes,pageIndex,fileStoreName);
+        VCFIleWriter.setFileStorePage(bytes, pageIndex+1, fileStoreName);
     }
 
-    public static Map<Integer,List<KV>> splitKVsByPage(List<KVRange> pageTrailer, KeyValueSkipListSet kvSet){
-        Map<Integer,List<KV>> integerListMap=new ConcurrentHashMap<>();
-        for (KV kv:kvSet){
-            int i=1;
+    public static Map<Integer, List<KV>> splitKVsByPage(List<KVRange> pageTrailer, KeyValueSkipListSet kvSet) {
+        Map<Integer, List<KV>> integerListMap = new ConcurrentHashMap<>();
+        for (KV kv : kvSet) {
             for (int j = 0; j < pageTrailer.size(); j++) {
-                if (kv.getRowKey().compareTo(Bytes.toString(pageTrailer.get(i).getEndKey()))<=0||pageTrailer.get(i+1)==null){
-                    if (integerListMap.containsKey(i)){
-                        List<KV> kvs=new ArrayList<>();
-                        kvs.add(kv);
-                        integerListMap.put(i,kvs);
-                    } else {
-                        List<KV> kvs=integerListMap.get(i);
-                        kvs.add(kv);
+                try {
+                    if (kv.getRowKey().compareTo(Bytes.toString(pageTrailer.get(j).getEndKey())) <=0 || pageTrailer.get(j + 1) == null) {
+                        if (!integerListMap.containsKey(j)) {
+                            List<KV> kvs = new ArrayList<>();
+                            kvs.add(kv);
+                            integerListMap.put(j, kvs);
+                        } else {
+                            List<KV> kvs = integerListMap.get(j);
+                            kvs.add(kv);
+                        }
+                    }
+                }catch (Exception e){
+                    if (kv.getRowKey().compareTo(Bytes.toString(pageTrailer.get(j).getEndKey())) <=0) {
+                        if (!integerListMap.containsKey(j)) {
+                            List<KV> kvs = new ArrayList<>();
+                            kvs.add(kv);
+                            integerListMap.put(j, kvs);
+                        } else {
+                            List<KV> kvs = integerListMap.get(j);
+                            kvs.add(kv);
+                        }
                     }
                 }
+
             }
         }
         return integerListMap;
     }
 
-    public static void addTabName(String dbName,String tabName,String regionMetaFileName){
+    public static void addTabName(String dbName, String tabName, String regionMetaFileName) {
         RegionServerMeta serverMeta = new RegionServerMeta(VCFileReader.readAll("regionServerMeta"));
         Map<String, String> regionMap = serverMeta.getRegionMap();
         /*应该查重*/
-        regionMap.put(dbName +"."+tabName,regionMetaFileName);
+        regionMap.put(dbName + "." + tabName, regionMetaFileName);
         /*替换新map*/
         serverMeta.setRegionMap(regionMap);
         /*写入文件*/
         VCFIleWriter.writeAll(serverMeta.getData(), "regionServerMeta");
     }
 
-    public static void updateRegionMeta(String fileName,String cfName,String fileStoreMetaName){
+    public static void updateRegionMeta(String fileName, String cfName, String fileStoreMetaName) {
         RegionMeta regionMeta = new RegionMeta(VCFileReader.readAll(fileName));
         regionMeta.getFileStoreMap();
         Map<String, String> fileStoreMap = regionMeta.getFileStoreMap();
-        fileStoreMap.put(cfName,fileStoreMetaName);
+        fileStoreMap.put(cfName, fileStoreMetaName);
         regionMeta.setFileStoreMap(fileStoreMap);
         VCFIleWriter.writeAll(regionMeta.getData(), fileName);
     }
@@ -186,31 +213,66 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
 //        return pageTrailer;
 //    }
 
-    public static List<KVRange> updatePageTrailer(List<KV> newKVs, List<KVRange> pageTrailer, int pageIndex){
-        String minKey="";
-        String maxKey="";
-        int pageLength=4+kvsToByteArray(newKVs).length;
-        for (KV kv:newKVs){
-            if (minKey.compareTo(kv.getRowKey())<0){
-                minKey=kv.getRowKey();
+    public static List<KVRange> updatePageTrailer(List<KV> newKVs, List<KVRange> pageTrailer, int pageIndex) {
+        String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzz";
+        String maxKey = "\0";
+        int pageLength = getKVsLength(newKVs);
+        for (KV kv : newKVs) {
+            if (minKey.compareTo(kv.getRowKey()) > 0) {
+                minKey = kv.getRowKey();
             }
-            if (maxKey.compareTo(kv.getRowKey())>0){
-                maxKey=kv.getRowKey();
+            if (maxKey.compareTo(kv.getRowKey()) < 0) {
+                maxKey = kv.getRowKey();
             }
         }
-        pageTrailer.set(pageIndex-1,new KVRange(pageLength,minKey,maxKey));
+        pageTrailer.set(pageIndex , new KVRange(pageLength, minKey, maxKey));
         return pageTrailer;
     }
 
-    public static void updateColumnFamilyMeta(String fileStoreName, ColumnFamilyMeta columnFamilyMeta){
-        VCFIleWriter.writeAll(columnFamilyMeta.getData(),0,fileStoreName);
+    public static List<KVRange> updatePageTrailer(KeyValueSkipListSet newKVs, List<KVRange> pageTrailer, int pageIndex) {
+        String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
+        String maxKey = "\0";
+        int pageLength = getKVsLength(newKVs);
+        minKey=newKVs.first().getRowKey();
+        maxKey=newKVs.last().getRowKey();
+        pageTrailer.set(pageIndex,new KVRange(pageLength, minKey, maxKey));
+        return pageTrailer;
+    }
+    public static List<KVRange> updatePageTrailer2(List<KV> newKVs, List<KVRange> pageTrailer, int pageIndex) {
+        String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzz";
+        String maxKey = "\0";
+        int pageLength = getKVsLength(newKVs);
+        for (KV kv : newKVs) {
+            if (minKey.compareTo(kv.getRowKey()) > 0) {
+                minKey = kv.getRowKey();
+            }
+            if (maxKey.compareTo(kv.getRowKey()) < 0) {
+                maxKey = kv.getRowKey();
+            }
+        }
+        pageTrailer.add(pageIndex , new KVRange(pageLength, minKey, maxKey));
+        return pageTrailer;
+    }
+
+    public static List<KVRange> updatePageTrailer2(KeyValueSkipListSet newKVs, List<KVRange> pageTrailer, int pageIndex) {
+        String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
+        String maxKey = "\0";
+        int pageLength = getKVsLength(newKVs);
+        minKey=newKVs.first().getRowKey();
+        maxKey=newKVs.last().getRowKey();
+        pageTrailer.add(pageIndex,new KVRange(pageLength, minKey, maxKey));
+        return pageTrailer;
+    }
+
+    public static void updateColumnFamilyMeta(String fileStoreName, ColumnFamilyMeta columnFamilyMeta) {
+        VCFIleWriter.writeAll(columnFamilyMeta.getData(), 0, fileStoreName);
     }
 
     //先假设没有split的情况
-    public void addKVs(String dbName,String tabName,String cfName,KeyValueSkipListSet kvs){
+    public void addKVs(String dbName, String tabName, String cfName, KeyValueSkipListSet kvs) {
         //取出regionMeta
-        RegionMeta regionMeta = getRegionMeta(dbName+"."+ tabName);
-        FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta,cfName);
+        RegionMeta regionMeta = getRegionMeta(dbName + "." + tabName);
+        FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta, cfName);
         //fileName of fileStore
         String fileName = fileStoreMeta.getEncodedName();
         List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
@@ -220,11 +282,11 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
 
         //写入kvs
         for (Map.Entry<Integer, List<KV>> entry : integerListMap.entrySet()) {
-            VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(entry.getKey()).getPageLength(),kvsToByteArray(entry.getValue()),entry.getKey(),fileName);
+            VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(entry.getKey()).getPageLength(), kvsToByteArray(entry.getValue()), entry.getKey(), fileName);
         }
     }
 
-    public static RegionMeta getRegionMeta(String tableName){
+    public static RegionMeta getRegionMeta(String tableName) {
         //取出的应该缓存
         Map<String, String> regionMap = regionServerMeta.getRegionMap();
         return new RegionMeta(VCFileReader.readAll(regionMap.get(tableName)));
@@ -235,7 +297,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
     // responseObserver 为返回值
     @Override
     public void getRegionMeta(Empty request, StreamObserver<Meta.regionMeta> responseObserver) {
-        Meta.regionMeta regionMeta= null;
+        Meta.regionMeta regionMeta = null;
         //获取元数据
 
         //返回元数据
@@ -243,8 +305,9 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
         //告知本次处理完毕
         responseObserver.onCompleted();
     }
+
     //合并KV里的ValueNode
-    public int MergeKV(String dbName,String tableName,String cfName,String rowKey,int versionFrom,int versionTo){
+    public int MergeKV(String dbName, String tableName, String cfName, String rowKey, int versionFrom, int versionTo) {
         return 1;
     }
 

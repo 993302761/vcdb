@@ -1,10 +1,14 @@
 package org.example.vcdb.store.region.fileStore;
 
+import org.example.vcdb.store.mem.KV;
+import org.example.vcdb.store.mem.KeyValueSkipListSet;
 import org.example.vcdb.util.Bytes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.example.vcdb.store.region.fileStore.FileStore.kvsToByteArray;
 
 /*
  * 数据格式
@@ -40,7 +44,8 @@ public class FileStoreMeta {
             spl = 1;
         }
         int pos = 0;
-        byte[] bytes = new byte[8 + 1 + 4 + encodedName.getBytes().length + 4 + startKey.length + 4 + endKey.length + 4 + tableName.getBytes().length + 4 + nameSpace.getBytes().length];
+//        byte[] bytes = new byte[8 + 1 + 4 + encodedName.getBytes().length + 4 + startKey.length + 4 + endKey.length + 4 + tableName.getBytes().length + 4 + nameSpace.getBytes().length + 4 + getPageTrailerLength(pageTrailer)];
+        byte[] bytes = new byte[4 * 1024];
         pos = Bytes.putLong(bytes, pos, timeStamp);
         pos = Bytes.putByte(bytes, pos, spl);
 
@@ -58,9 +63,13 @@ public class FileStoreMeta {
 
         pos = Bytes.putInt(bytes, pos, nameSpace.getBytes().length);
         pos = Bytes.putBytes(bytes, pos, nameSpace.getBytes(), 0, nameSpace.getBytes().length);
-        this.data=bytes;
-    }
 
+        pos = Bytes.putInt(bytes, pos, 1);
+        KVRange kvRange = new KVRange(0, "", "zzzzzzzzzzzzzzzzz");
+        pos = Bytes.putInt(bytes, pos, kvRange.getLength());
+        pos = Bytes.putBytes(bytes, pos, kvRange.getData(), 0, kvRange.getLength());
+        this.data = bytes;
+    }
 
 
     public FileStoreMeta(long timeStamp, boolean split, String encodedName,
@@ -94,7 +103,8 @@ public class FileStoreMeta {
                                    String encodedName, byte[] endKey,
                                    byte[] startKey, String tableName, String nameSpace, List<KVRange> pageTrailer) {
         int pos = 0;
-        byte[] bytes = new byte[8 + 1 + 4 + encodedName.getBytes().length + 4 + startKey.length + 4 + endKey.length + 4 + tableName.getBytes().length + 4 + nameSpace.getBytes().length + 4 + getPageTrailerLength(pageTrailer)];
+//        byte[] bytes = new byte[8 + 1 + 4 + encodedName.getBytes().length + 4 + startKey.length + 4 + endKey.length + 4 + tableName.getBytes().length + 4 + nameSpace.getBytes().length + 4 + getPageTrailerLength(pageTrailer)];
+        byte[] bytes = new byte[4 * 1024];
         pos = Bytes.putLong(bytes, pos, timeStamp);
         pos = Bytes.putByte(bytes, pos, spl);
 
@@ -208,4 +218,23 @@ public class FileStoreMeta {
             pos = Bytes.putBytes(this.data, pos, kvRange.getData(), 0, kvRange.getLength());
         }
     }
+
+//    public void initSetPageTrailer(KeyValueSkipListSet kvs) {
+//        byte[] bytes = kvsToByteArray(kvs);
+//
+//        String minKey = "";
+//        String maxKey = "";
+//        List<KVRange> kvRanges=new ArrayList<>();
+//        int pageLength = 4 + kvsToByteArray(kvs).length;
+//        for (KV kv : kvs) {
+//            if (minKey.compareTo(kv.getRowKey()) < 0) {
+//                minKey = kv.getRowKey();
+//            }
+//            if (maxKey.compareTo(kv.getRowKey()) > 0) {
+//                maxKey = kv.getRowKey();
+//            }
+//        }
+//        kvRanges.add(new KVRange(pageLength, minKey, maxKey));
+//        this.setPageTrailer(kvRanges);
+//    }
 }
