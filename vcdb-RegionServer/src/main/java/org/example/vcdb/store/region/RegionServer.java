@@ -16,9 +16,7 @@ import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 import org.example.vcdb.store.region.fileStore.KVRange;
 import org.example.vcdb.util.Bytes;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,7 +59,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
     * 1.kvs.length+page.length>4096*/
     /*怎么分裂
     * 1. 把page里的Kvs和新的kvs加载到内存，再分裂*/
-    public static void splitPage(String tabName,String cfName,int pageIndex,KeyValueSkipListSet kvs){
+    public static void insertPageWithSplit(String tabName,String cfName,int pageIndex,KeyValueSkipListSet kvs){
         RegionMeta regionMeta = getRegionMeta(tabName);
         FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta,cfName);
         String fileStoreName=fileStoreMeta.getEncodedName();
@@ -78,20 +76,22 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
             for (KV kv:kvs1){
                 newKVs.add(kv);
                 tempLength+=kv.getLength();
-                if (kvPageCount==0){
-                    insertOldPage(newKVs,pageTrailer,pageIndex);
-                    newKVs.clear();
-                    tempLength=0;
-                    kvPageCount+=1;
-                }
+
                 if (tempLength>3*1024){
                     if (kv.getLength()>3*1024){
-                        insertNewPage(kv,pageTrailer);
+                        insertNewPage(kv,pageTrailer,fileStoreName,fileStoreMeta,regionMeta.getfileStoreMetaName(cfName));
                         newKVs.remove(kv);
                     } else {
-                        insertNewPage(newKVs,pageTrailer);
-                        newKVs.clear();
-                        tempLength=0;
+                        if (kvPageCount==0){
+                            insertOldPage(newKVs,pageTrailer,pageIndex,fileStoreName,fileStoreMeta,regionMeta.getfileStoreMetaName(cfName));
+                            newKVs.clear();
+                            tempLength=0;
+                            kvPageCount+=1;
+                        } else {
+                            insertNewPage(newKVs,pageTrailer,fileStoreName,fileStoreMeta,regionMeta.getfileStoreMetaName(cfName));
+                            newKVs.clear();
+                            tempLength=0;
+                        }
                     }
                 }
             }
@@ -101,16 +101,33 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
         }
     }
 
-    private static void insertNewPage(KV kv, List<KVRange> pageTrailer) {
-
+    private static void insertNewPage(KV kv, List<KVRange> pageTrailer,String fileStoreName,FileStoreMeta fileStoreMeta,String fileStoreMetaName) {
+        int pageTrailerIndex=pageTrailer.size();
+        pageTrailer.set(pageTrailerIndex,new KVRange(4+kv.getLength(),kv.getRowKey(),kv.getRowKey()));
+        fileStoreMeta.setPageTrailer(pageTrailer);
+        VCFIleWriter.writeAll(fileStoreMeta.getData(),0,fileStoreMetaName);
+        List<KV> kvs=new ArrayList<>();
+        kvs.add(kv);
+        byte[] bytes = kvsToByteArray(kvs);
+        VCFIleWriter.writeAll(bytes,pageTrailerIndex,fileStoreName);
     }
 
 
-    private static void insertNewPage(List<KV> newKVs, List<KVRange> pageTrailer) {
-
+    private static void insertNewPage(List<KV> newKVs, List<KVRange> pageTrailer,String fileStoreName,FileStoreMeta fileStoreMeta,String fileStoreMetaName) {
+        int pageTrailerIndex=pageTrailer.size();
+        List<KVRange> list = updatePageTrailer(newKVs, pageTrailer, pageTrailerIndex);
+        fileStoreMeta.setPageTrailer(list);
+        VCFIleWriter.writeAll(fileStoreMeta.getData(),0,fileStoreMetaName);
+        byte[] bytes = kvsToByteArray(newKVs);
+        VCFIleWriter.writeAll(bytes,pageTrailerIndex,fileStoreName);
     }
 
-    private static void insertOldPage(List<KV> newKVs, List<KVRange> pageTrailer, int pageIndex) {
+    private static void insertOldPage(List<KV> newKVs, List<KVRange> pageTrailer, int pageIndex,String fileStoreName,FileStoreMeta fileStoreMeta,String fileStoreMetaName) {
+        List<KVRange> list = updatePageTrailer(newKVs, pageTrailer, pageIndex);
+        fileStoreMeta.setPageTrailer(list);
+        VCFIleWriter.writeAll(fileStoreMeta.getData(),0,fileStoreMetaName);
+        byte[] bytes = kvsToByteArray(newKVs);
+        VCFIleWriter.writeAll(bytes,pageIndex,fileStoreName);
     }
 
     public static Map<Integer,List<KV>> splitKVsByPage(List<KVRange> pageTrailer, KeyValueSkipListSet kvSet){
@@ -153,19 +170,35 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
         VCFIleWriter.writeAll(regionMeta.getData(), fileName);
     }
 
-    public static List<KVRange> updatePageTrailer(List<KVRange> pageTrailer,Map<Integer,List<KV>> kvs){
-        for (Map.Entry<Integer,List<KV>> entry : kvs.entrySet()) {
-            KVRange kvRange = pageTrailer.get(entry.getKey() - 1);
-            for (KV kv:entry.getValue()){
-                if (kv.getRowKey().compareTo(Bytes.toString(kvRange.getStartKey()))<0){
-                    kvRange.setMinKey(kv);
-                    pageTrailer.set(entry.getKey(),kvRange);
-                }else if (kv.getRowKey().compareTo(Bytes.toString(kvRange.getStartKey()))>0){
-                    kvRange.setMaxKey(kv);
-                    pageTrailer.set(entry.getKey(),kvRange);
-                }
+//    public static List<KVRange> updatePageTrailer(List<KVRange> pageTrailer,Map<Integer,List<KV>> kvs){
+//        for (Map.Entry<Integer,List<KV>> entry : kvs.entrySet()) {
+//            KVRange kvRange = pageTrailer.get(entry.getKey() - 1);
+//            for (KV kv:entry.getValue()){
+//                if (kv.getRowKey().compareTo(Bytes.toString(kvRange.getStartKey()))<0){
+//                    kvRange.setMinKey(kv);
+//                    pageTrailer.set(entry.getKey(),kvRange);
+//                }else if (kv.getRowKey().compareTo(Bytes.toString(kvRange.getStartKey()))>0){
+//                    kvRange.setMaxKey(kv);
+//                    pageTrailer.set(entry.getKey(),kvRange);
+//                }
+//            }
+//        }
+//        return pageTrailer;
+//    }
+
+    public static List<KVRange> updatePageTrailer(List<KV> newKVs, List<KVRange> pageTrailer, int pageIndex){
+        String minKey="";
+        String maxKey="";
+        int pageLength=4+kvsToByteArray(newKVs).length;
+        for (KV kv:newKVs){
+            if (minKey.compareTo(kv.getRowKey())<0){
+                minKey=kv.getRowKey();
+            }
+            if (maxKey.compareTo(kv.getRowKey())>0){
+                maxKey=kv.getRowKey();
             }
         }
+        pageTrailer.set(pageIndex-1,new KVRange(pageLength,minKey,maxKey));
         return pageTrailer;
     }
 
@@ -184,15 +217,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase{
 
         //根据pageTrailer拆分传入的kvs
         Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer, kvs);
-
-        //找到需要更新的元数据
-        List<KVRange> newPageTrailer = RegionServer.updatePageTrailer(pageTrailer, integerListMap);
-
-        //更新元数据
-        fileStoreMeta.setPageTrailer(newPageTrailer);
-
-        //元数据写入文件
-        VCFIleWriter.writeAll(fileStoreMeta.getData(),regionMeta.getFileStoreName(cfName));
 
         //写入kvs
         for (Map.Entry<Integer, List<KV>> entry : integerListMap.entrySet()) {

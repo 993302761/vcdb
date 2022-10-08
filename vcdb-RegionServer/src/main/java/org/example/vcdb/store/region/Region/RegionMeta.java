@@ -97,7 +97,7 @@ public class RegionMeta {
         Map<String, String> fileStoreMap = getFileStoreMap();
         return new FileStoreMeta(VCFileReader.readAll(fileStoreMap.get(key)));
     }
-    public String getFileStoreName(String key){
+    public String getfileStoreMetaName(String key){
         Map<String, String> fileStoreMap = getFileStoreMap();
         return fileStoreMap.get(key);
     }
