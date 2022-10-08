@@ -206,10 +206,8 @@ public class TestRegionServer {
 //            kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length, ("family"+i).getBytes(), 0, ("family"+i).getBytes().length, values));
 //        }
         RegionServer.readConfig("regionServerMeta");
-        RegionServer.regionServerMeta.dis();
         RegionMeta regionMeta = RegionServer.getRegionMeta(dbName+"."+tabName);
         FileStoreMeta fileStoreMeta = RegionServer.getFileStoreMeta(regionMeta, cfName);
-        System.out.println(fileStoreMeta.getPageTrailer());
         Map<Integer, List<KV>> integerListMap = RegionServer.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
         for (Map.Entry<Integer,List<KV>> entry : integerListMap.entrySet()) {
             RegionServer.insertPageWithSplit(dbName+"."+tabName,cfName,entry.getKey(),entry.getValue());
@@ -233,18 +231,18 @@ public class TestRegionServer {
             values.add(new KV.ValueNode(time, type, qualifier, 0, qualifier.length, value, 0, value.length));
         }
 
-        for (int i = 40; i < 80; i++) {
+        for (int i = 80 ; i < 120; i++) {
             kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length,
                     ("family"+i).getBytes(), 0, ("family"+i).getBytes().length, values));
         }
         RegionServer.readConfig("regionServerMeta");
-        RegionServer.regionServerMeta.dis();
         RegionMeta regionMeta = RegionServer.getRegionMeta(dbName+"."+tabName);
         FileStoreMeta fileStoreMeta = RegionServer.getFileStoreMeta(regionMeta, cfName);
-        System.out.println(fileStoreMeta.getPageTrailer());
         Map<Integer, List<KV>> integerListMap = RegionServer.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
         for (Map.Entry<Integer,List<KV>> entry : integerListMap.entrySet()) {
-            RegionServer.insertPageWithSplit(dbName+"."+tabName,cfName,entry.getKey(),entry.getValue());
+            if (!entry.getValue().isEmpty()){
+                RegionServer.insertPageWithSplit(dbName+"."+tabName,cfName,entry.getKey(),entry.getValue());
+            }
         }
         ttt();
     }
@@ -254,9 +252,12 @@ public class TestRegionServer {
     @Test
     public void ttt(){
         FileStore fileStore2=new FileStore(VCFileReader.readAll("fileStore/fileStore2"));
+
         FileStore.disDataSet(fileStore2.getDataSet(1));
         System.out.println("==========================================");
         FileStore.disDataSet(fileStore2.getDataSet(2));
+        System.out.println("==========================================");
+        FileStore.disDataSet(fileStore2.getDataSet(3));
         FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll("fileStoreMeta/fileStoreMeta2"));
         fileStoreMeta.dis();
     }

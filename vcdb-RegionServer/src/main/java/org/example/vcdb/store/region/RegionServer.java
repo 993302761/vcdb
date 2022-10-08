@@ -100,6 +100,12 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                     }
                 }
             }
+            if (!newKVs.isEmpty()){
+                System.out.println("===========================");
+                insertNewPage(newKVs, pageTrailer, fileStoreName, fileStoreMeta, regionMeta.getfileStoreMetaName(cfName));
+                System.out.println("insertNewPage+++++++++++++++++++");
+                newKVs.clear();
+            }
         } else {
             //不分裂
             VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(pageIndex).getPageLength(), kvsToByteArray(kvs), pageIndex+1, fileStoreMeta.getEncodedName());
@@ -146,32 +152,21 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
     public static Map<Integer, List<KV>> splitKVsByPage(List<KVRange> pageTrailer, KeyValueSkipListSet kvSet) {
         Map<Integer, List<KV>> integerListMap = new ConcurrentHashMap<>();
-        for (KV kv : kvSet) {
-            for (int j = 0; j < pageTrailer.size(); j++) {
+        for (int j = 0; j < pageTrailer.size(); j++) {
+            List<KV> kvs = new ArrayList<>();
+            for (KV kv : kvSet) {
                 try {
-                    if (kv.getRowKey().compareTo(Bytes.toString(pageTrailer.get(j).getEndKey())) <=0 || pageTrailer.get(j + 1) == null) {
-                        if (!integerListMap.containsKey(j)) {
-                            List<KV> kvs = new ArrayList<>();
-                            kvs.add(kv);
-                            integerListMap.put(j, kvs);
-                        } else {
-                            List<KV> kvs = integerListMap.get(j);
-                            kvs.add(kv);
-                        }
+                    pageTrailer.get(j + 1);
+                    if ((kv.getRowKey().compareTo(Bytes.toString(pageTrailer.get(j).getEndKey())) <= 0
+                            && kv.getRowKey().compareTo(Bytes.toString(pageTrailer.get(j).getStartKey())) >= 0)) {
+                        kvs.add(kv);
+                        kvSet.remove(kv);
                     }
-                }catch (Exception e){
-                    if (kv.getRowKey().compareTo(Bytes.toString(pageTrailer.get(j).getEndKey())) <=0) {
-                        if (!integerListMap.containsKey(j)) {
-                            List<KV> kvs = new ArrayList<>();
-                            kvs.add(kv);
-                            integerListMap.put(j, kvs);
-                        } else {
-                            List<KV> kvs = integerListMap.get(j);
-                            kvs.add(kv);
-                        }
-                    }
+                } catch (Exception e) {
+                    kvs.add(kv);
+                    kvSet.remove(kv);
                 }
-
+                integerListMap.put(j, kvs);
             }
         }
         return integerListMap;
