@@ -192,21 +192,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         VCFIleWriter.writeAll(regionMeta.getData(), fileName);
     }
 
-//    public static List<KVRange> updatePageTrailer(List<KVRange> pageTrailer,Map<Integer,List<KV>> kvs){
-//        for (Map.Entry<Integer,List<KV>> entry : kvs.entrySet()) {
-//            KVRange kvRange = pageTrailer.get(entry.getKey() - 1);
-//            for (KV kv:entry.getValue()){
-//                if (kv.getRowKey().compareTo(Bytes.toString(kvRange.getStartKey()))<0){
-//                    kvRange.setMinKey(kv);
-//                    pageTrailer.set(entry.getKey(),kvRange);
-//                }else if (kv.getRowKey().compareTo(Bytes.toString(kvRange.getStartKey()))>0){
-//                    kvRange.setMaxKey(kv);
-//                    pageTrailer.set(entry.getKey(),kvRange);
-//                }
-//            }
-//        }
-//        return pageTrailer;
-//    }
 
     public static List<KVRange> updatePageTrailer(List<KV> newKVs, List<KVRange> pageTrailer, int pageIndex) {
         String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzz";
@@ -233,8 +218,9 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         pageTrailer.set(pageIndex,new KVRange(pageLength, minKey, maxKey));
         return pageTrailer;
     }
+
     public static List<KVRange> updatePageTrailer2(List<KV> newKVs, List<KVRange> pageTrailer, int pageIndex) {
-        String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzz";
+        String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzzz";
         String maxKey = "\0";
         int pageLength = getKVsLength(newKVs);
         for (KV kv : newKVs) {
@@ -263,23 +249,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         VCFIleWriter.writeAll(columnFamilyMeta.getData(), 0, fileStoreName);
     }
 
-    //先假设没有split的情况
-    public void addKVs(String dbName, String tabName, String cfName, KeyValueSkipListSet kvs) {
-        //取出regionMeta
-        RegionMeta regionMeta = getRegionMeta(dbName + "." + tabName);
-        FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta, cfName);
-        //fileName of fileStore
-        String fileName = fileStoreMeta.getEncodedName();
-        List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
-
-        //根据pageTrailer拆分传入的kvs
-        Map<Integer, List<KV>> integerListMap = splitKVsByPage(pageTrailer, kvs);
-
-        //写入kvs
-        for (Map.Entry<Integer, List<KV>> entry : integerListMap.entrySet()) {
-            VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(entry.getKey()).getPageLength(), kvsToByteArray(entry.getValue()), entry.getKey(), fileName);
-        }
-    }
 
     public static RegionMeta getRegionMeta(String tableName) {
         //取出的应该缓存
