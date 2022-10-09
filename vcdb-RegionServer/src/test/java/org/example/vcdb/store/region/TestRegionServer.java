@@ -202,9 +202,7 @@ public class TestRegionServer {
         for (int i = 0; i < 40; i++) {
             kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length, ("family"+i).getBytes(), 0, ("family"+i).getBytes().length, values));
         }
-//        for (int i = 40; i < 80; i++) {
-//            kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length, ("family"+i).getBytes(), 0, ("family"+i).getBytes().length, values));
-//        }
+
         RegionServer.readConfig("regionServerMeta");
         RegionMeta regionMeta = RegionServer.getRegionMeta(dbName+"."+tabName);
         FileStoreMeta fileStoreMeta = RegionServer.getFileStoreMeta(regionMeta, cfName);
