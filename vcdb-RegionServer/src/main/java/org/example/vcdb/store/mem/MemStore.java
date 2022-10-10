@@ -10,31 +10,34 @@ public class MemStore {
     public AtomicLong size;
     //from juc
     public KeyValueSkipListSet kvSet;
-    // Snapshot of memStore.  Made for flusher.
-    volatile KeyValueSkipListSet snapshot;
+
+//    // Snapshot of memStore.  Made for flusher.
+//    volatile KeyValueSkipListSet snapshot;
     public MemStore(){
         size=new AtomicLong(0);
         kvSet =new KeyValueSkipListSet(new KV.KVComparator());
     }
 
-    public long add(final KV kv) {
-        KV toAdd = maybeCloneWithAllocator(kv);
-        return internalAdd(toAdd);
+    public void add(final KV kv) {
+        this.size.getAndIncrement();
+        this.kvSet.add(kv);
     }
 
-    private KV maybeCloneWithAllocator(KV kv) {
-        return null;
+    public void remove(final KV kv){
+        this.size.getAndDecrement();
+        this.kvSet.remove(kv);
     }
 
-    long timeOfOldestEdit() {
+
+    public void reSetTheMemStore(){
+        timeOfOldestEdit = Long.MAX_VALUE;
+    }
+
+    public long getTimeOfOldestEdit() {
         return timeOfOldestEdit;
     }
 
-    private boolean addToKVSet(KV e) {
-        boolean b = this.kvSet.add(e);
-        setOldestEditTimeToNow();
-        return b;
-    }
+
 
     private boolean removeFromKVSet(KV e) {
         boolean b = this.kvSet.remove(e);
@@ -42,37 +45,27 @@ public class MemStore {
         return b;
     }
 
-    void setOldestEditTimeToNow() {
+    public void setOldestEditTimeToNow() {
         if (timeOfOldestEdit == Long.MAX_VALUE) {
             timeOfOldestEdit = System.currentTimeMillis();
         }
     }
 
-    /**
-     * Internal version of add() that doesn't clone KVs with the
-     * allocator, and doesn't take the lock.
-     * <p>
-     * Callers should ensure they already have the read lock taken
-     */
-    private long internalAdd(final KV toAdd) {
-        long s = heapSizeChange(toAdd, addToKVSet(toAdd));
-        this.size.addAndGet(s);
-        return s;
-    }
 
-    /*
-     * Calculate how the MemStore size has changed.  Includes overhead of the
-     * backing Map.
-     * @param kv
-     * @param notPresent True if the kv was NOT present in the set.
-     * @return Size
-     */
-    private long heapSizeChange(final KV kv, final boolean notPresent) {
-        return notPresent ? align(kv) : 0;
-    }
 
-    //将kv对齐,8的整数
-    private long align(KV kv) {
-        return 8;
-    }
+//    /*
+//     * Calculate how the MemStore size has changed.  Includes overhead of the
+//     * backing Map.
+//     * @param kv
+//     * @param notPresent True if the kv was NOT present in the set.
+//     * @return Size
+//     */
+//    private long heapSizeChange(final KV kv, final boolean notPresent) {
+//        return notPresent ? align(kv) : 0;
+//    }
+
+//    //将kv对齐,8的整数
+//    private long align(KV kv) {
+//        return 8;
+//    }
 }
