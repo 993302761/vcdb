@@ -20,8 +20,6 @@ public class RegionManager {
             //处理
 
         }, 1, 3, TimeUnit.SECONDS); // 1s 后开始执行，每 3s 执行一次
-
-
     }
 
 }

@@ -27,11 +27,12 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
     //cache for fileStores
     //负责接收sql请求的KV
     Map<String,MemStore> inboundMemStore;
+
     //负责接收从文件加载过来的的KV
     Map<String,MemStore> outboundMemStore;
 
-
     static RegionServerMeta regionServerMeta;
+
     //cache for region
     List<VCRegion> loadOnRegion;
 
@@ -39,11 +40,33 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         regionServerMeta = new RegionServerMeta(VCFileReader.readAll(fileName));
     }
 
-    public RegionServer() {
-    }
-
     public RegionServer(String fileName) {
         regionServerMeta = new RegionServerMeta(VCFileReader.readAll(fileName));
+    }
+
+    public RegionServer() {
+
+    }
+
+
+    public void addKVToMemStore(String fullCfName,KV kv){
+        if (inboundMemStore.get(fullCfName)==null){
+            inboundMemStore.put(fullCfName,new MemStore());
+        }
+        MemStore toMemStore = inboundMemStore.get(fullCfName);
+        toMemStore.add(kv);
+        inboundMemStore.put(fullCfName,toMemStore);
+    }
+
+    public void removeKVFromMemStore(String fullCfName,KV kv){
+        if (inboundMemStore.get(fullCfName)==null){
+            inboundMemStore.put(fullCfName,new MemStore());
+        }
+        MemStore toMemStore = inboundMemStore.get(fullCfName);
+        if (!toMemStore.kvSet.contains(kv)){
+            toMemStore.remove(kv);
+        }
+        inboundMemStore.put(fullCfName,toMemStore);
     }
 
     public static FileStoreMeta getFileStoreMeta(RegionMeta regionMeta, String cfName) {
@@ -56,16 +79,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         return fileStoreMeta.getPageTrailer();
     }
 
-    /*0  BigKVs
-     * 1  MiddleKVs
-     * 2  TinyKVs
-     * 3
-     * 4   */
-    /*
-     * 什么时候啊需要分裂
-     * 1.kvs.length+page.length>4096*/
-    /*怎么分裂
-     * 1. 把page里的Kvs和新的kvs加载到内存，再分裂*/
     public static void insertPageWithSplit(String tabName, String cfName, int pageIndex, List<KV> kvs) {
         RegionMeta regionMeta = getRegionMeta(tabName);
         FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta, cfName);
@@ -134,7 +147,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         VCFIleWriter.setFileStorePage(bytes, pageTrailerIndex+1, fileStoreName);
     }
 
-
     private static void insertNewPage(List<KV> newKVs, List<KVRange> pageTrailer,
                                       String fileStoreName, FileStoreMeta fileStoreMeta,
                                       String fileStoreMetaName) {
@@ -197,7 +209,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         VCFIleWriter.writeAll(regionMeta.getData(), fileName);
     }
 
-
     public static List<KVRange> updatePageTrailer(List<KV> newKVs, List<KVRange> pageTrailer, int pageIndex) {
         String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzz";
         String maxKey = "\0";
@@ -254,7 +265,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         VCFIleWriter.writeAll(columnFamilyMeta.getData(), 0, fileStoreName);
     }
 
-
     public static RegionMeta getRegionMeta(String tableName) {
         //取出的应该缓存
         Map<String, String> regionMap = regionServerMeta.getRegionMap();
@@ -279,5 +289,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
     public int MergeKV(String dbName, String tableName, String cfName, String rowKey, int versionFrom, int versionTo) {
         return 1;
     }
+
 
 }
