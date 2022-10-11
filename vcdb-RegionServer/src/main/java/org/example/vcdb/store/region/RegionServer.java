@@ -26,10 +26,10 @@ import static org.example.vcdb.store.region.fileStore.FileStore.*;
 public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
     //cache for fileStores
     //负责接收sql请求的KV
-    Map<String,MemStore> inboundMemStore;
+    static Map<String,MemStore> inboundMemStore;
 
     //负责接收从文件加载过来的的KV
-    Map<String,MemStore> outboundMemStore;
+    static Map<String,MemStore> outboundMemStore;
 
     static RegionServerMeta regionServerMeta;
 

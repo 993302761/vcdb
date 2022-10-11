@@ -1,5 +1,9 @@
 package org.example.vcdb.store.region;
 
+import org.example.vcdb.store.mem.KeyValueSkipListSet;
+import org.example.vcdb.store.mem.MemStore;
+
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -22,7 +26,18 @@ public class DaemonRegion {
                 Executors.newScheduledThreadPool(10);
         // 执行任务,里面写执行代码
         scheduledExecutorService.scheduleAtFixedRate(() -> {
+            if (RegionServer.inboundMemStore.size()==5){
+                /*db.table:cf*/
+                Map<String, MemStore> inboundMemStore=RegionServer.inboundMemStore;
+                for (Map.Entry<String,MemStore> entry : inboundMemStore.entrySet()) {
+                    String[] keys = entry.getKey().split(":");
+                    KeyValueSkipListSet kvSet = entry.getValue().kvSet;
 
+//                    RegionServer.insertPageWithSplit(keys[0],keys[1],);
+
+                }
+
+            }
         }, 1, 1, TimeUnit.SECONDS); // 1s 后开始执行，每 3s 执行一次
     }
 }
