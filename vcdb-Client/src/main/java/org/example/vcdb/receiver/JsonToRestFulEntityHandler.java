@@ -1,42 +1,51 @@
 package org.example.vcdb.receiver;
 
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.*;
+import io.netty.handler.codec.http.*;
 import org.example.vcdb.Analyzer.EX;
 import org.example.vcdb.entity.Post.ActionEntity;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.util.CharsetUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 
-public class JsonToRestFulEntityHandler extends ChannelInboundHandlerAdapter {
-//    @Override
-//    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-//        String ip=ctx.channel().remoteAddress().toString();
-//        String[] a= ip.split(":");
-//        System.out.println(a[0]+"-->"+"已连接");
-//    }
-//    @Override
-//    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-//        String ip=ctx.channel().remoteAddress().toString();
-//        String[] a= ip.split(":");
-//        System.out.println(a[0]+"-->"+"已断开");
-//    }
+public class JsonToRestFulEntityHandler extends SimpleChannelInboundHandler {
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        String ip=ctx.channel().remoteAddress().toString();
+        String[] a= ip.split(":");
+        System.out.println(a[0]+"-->"+"已连接");
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        String ip=ctx.channel().remoteAddress().toString();
+        String[] a= ip.split(":");
+        System.out.println(a[0]+"-->"+"已断开");
+    }
+
+    @Override
+    public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         ActionEntity actionEntity= toRestfulEntity(msg);
         System.out.println("server接收到\n"+actionEntity);
         EX.DFA2(actionEntity);
-        ctx.fireChannelActive();
+        ByteBuf byteBuf = Unpooled.wrappedBuffer("msg1111".getBytes());
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, byteBuf);
+        ChannelFuture future = ctx.channel().write(response);
+        future.addListener(ChannelFutureListener.CLOSE);
     }
+
     public ActionEntity toRestfulEntity(Object msg) throws JSONException {
         FullHttpRequest fullHttpRequest =(FullHttpRequest) msg;
         ActionEntity actionEntity = new ActionEntity(fullHttpRequest.getMethod().name(),fullHttpRequest.getUri());
@@ -113,6 +122,16 @@ public class JsonToRestFulEntityHandler extends ChannelInboundHandlerAdapter {
             }
             actionEntity.addCompoundAttribute(key,hashMapList);
         }
+    }
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        cause.printStackTrace();
+        ctx.close();
+    }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        ctx.flush();
     }
 }
 

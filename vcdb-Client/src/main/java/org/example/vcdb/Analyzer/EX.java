@@ -135,12 +135,6 @@ public class EX {
                     } else {
                         System.err.println("报错重复设置unique属性");
                     }
-                } else if ("Version".equalsIgnoreCase(cell.getKey())) {
-                    if (columnFamilyCell.getVersion() == Integer.MAX_VALUE) {
-                        columnFamilyCell.setVersion(Integer.parseInt(cell.getValue()));
-                    } else {
-                        System.err.println("报错重复设置c_name属性");
-                    }
                 }
 //                else if ("method".equalsIgnoreCase(cell.getKey())) {
 //                    if (columnFamilyCell.getMethod() == null) {
@@ -278,7 +272,7 @@ public class EX {
                 } else if ("_mget".equalsIgnoreCase(postUrl[3])) {
                     requestEntity = getMultiSearch(actionEntity);
                     System.out.println("multiSearch----------------");
-                    vcdbAdmin.multiSearch((MultiSearch) requestEntity);
+//                    vcdbAdmin.multiSearch((MultiSearch) requestEntity);
                 } else {
                     System.err.println("the URL Segment is error" + "给出提示（把POST开头的所有的命令返还给他");
                 }
