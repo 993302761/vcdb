@@ -1,6 +1,7 @@
 package org.example.vcdb.store.region;
 
 import com.google.protobuf.Empty;
+import com.google.protobuf.Value;
 import io.grpc.stub.StreamObserver;
 import org.example.vcdb.store.file.VCFIleWriter;
 import org.example.vcdb.store.file.VCFileReader;
@@ -140,7 +141,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
     public static boolean deleteDB(String dbName){
         try {
-            commonSet(dbName,"DB","DB",(byte) 10);
+            commonSet(dbName,"DB","DB",(byte) 8);
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -150,7 +151,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
     public static boolean deleteTable(String tabName){
         try {
-            commonSet(tabName,"Table","Table",(byte) 12);
+            commonSet(tabName,"Table","Table",(byte) 10);
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -158,15 +159,66 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         }
     }
 
-    public static boolean openTransaction(String tabName){
+    public static boolean openTransaction(String explainValue){
         try {
-            commonSet(tabName,"Table","Table",(byte) 12);
+            commonSet(explainValue,"Transaction","Transaction",(byte) 12);
             return true;
         }catch (Exception e){
             e.printStackTrace();
             return false;
         }
     }
+
+    public static boolean closeTransaction(String explainValue){
+        try {
+            commonSet(explainValue,"Transaction","Transaction",(byte) 14);
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public int putCells(String dbName,String tabName,String rowKey,byte[] requestEntity){
+        int pos=0;
+        int count=Bytes.toInt(requestEntity,pos,4);
+        pos+=4;
+        for (int i = 0; i < count; i++) {
+            int cfNameLength=Bytes.toInt(requestEntity,pos,4);
+            pos+=4;
+            String cfName=Bytes.toString(requestEntity,pos,cfNameLength);
+            pos+=cfNameLength;
+
+            int cnameLength=Bytes.toInt(requestEntity,pos,4);
+            pos+=4;
+            String cname=Bytes.toString(requestEntity,pos,cfNameLength);
+            pos+=cnameLength;
+
+            int valueLength=Bytes.toInt(requestEntity,pos,4);
+            pos+=4;
+            String value=Bytes.toString(requestEntity,pos,cfNameLength);
+            pos+=valueLength;
+
+            /*添加KV到memStore*/
+            MemStore memStore = inboundMemStore.get(dbName+"."+tabName+ ":" +cfName);
+            KV kv = memStore.kvSet.get(rowKey);
+            if (kv==null){
+                kv=new KV(rowKey.getBytes(),0,rowKey.getBytes().length,null);
+            }
+            List<KV.ValueNode> values = kv.getValues();
+            KV.ValueNode valueNode=new KV.ValueNode(new Date().getTime(),byteToType((byte) 10),
+                    cname.getBytes(),cnameLength,0,
+                    value.getBytes(),valueLength,0);
+            values.add(valueNode);
+            kv=new KV(rowKey.getBytes(),0,rowKey.getBytes().length,values);
+            memStore.kvSet.add(kv);
+        }
+        return count;
+    }
+
+
+
+
 
 
     private static void commonSet(String rowKey,String fullTableName,String cfName,byte actionType){

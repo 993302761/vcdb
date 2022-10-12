@@ -104,13 +104,16 @@ public class KV {
                 valueCount++;
             }
         }
+
         valuesLength = valuesLength + 4;
         byte[] bytes = new byte[(int) (getKeyValueDataStructureSize(rLength, valuesLength))];
+
         // Write key, value and key row length.
         int pos = 0;
         pos = Bytes.putInt(bytes, pos, rLength);
         pos = Bytes.putBytes(bytes, pos, row, rOffset, rLength);
         pos = Bytes.putInt(bytes, pos, valuesLength);
+
         if (values!=null){
             // Add the tags after the value part
             if (valuesLength > 0) {

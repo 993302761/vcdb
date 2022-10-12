@@ -1,4 +1,7 @@
 package org.example.vcdb.entity.Cell;
+
+import org.example.vcdb.util.Bytes;
+
 /**
  * @author : wyy
  * @Date : 2022.7.11
@@ -36,4 +39,20 @@ public class Value {
     public void setValue(String value) {
         this.value = value;
     }
+
+    public byte[] toByteArray(){
+        byte[] bytes=new byte[4+cf_name.getBytes().length+4+c_name.getBytes().length+4+value.getBytes().length];
+        int pos=0;
+        pos= Bytes.putInt(bytes,pos,cf_name.getBytes().length);
+        pos=Bytes.putBytes(bytes,pos,cf_name.getBytes(),0,cf_name.getBytes().length);
+
+        pos= Bytes.putInt(bytes,pos,c_name.getBytes().length);
+        pos=Bytes.putBytes(bytes,pos,c_name.getBytes(),0,c_name.getBytes().length);
+
+        pos= Bytes.putInt(bytes,pos,value.getBytes().length);
+        pos=Bytes.putBytes(bytes,pos,value.getBytes(),0,value.getBytes().length);
+
+        return bytes;
+    }
+
 }
