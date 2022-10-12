@@ -28,6 +28,9 @@ public class MemStore {
         this.kvSet.remove(kv);
     }
 
+    public KeyValueSkipListSet getKVSet(){
+        return kvSet;
+    }
 
     public void reSetTheMemStore(){
         timeOfOldestEdit = Long.MAX_VALUE;

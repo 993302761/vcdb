@@ -37,6 +37,11 @@ public class KeyValueSkipListSet implements NavigableSet<KV> {
     public SortedSet<KV> headSet(final KV toElement) {
         return headSet(toElement, false);
     }
+    public void removeKVs(KeyValueSkipListSet kvs){
+        for (KV kv:kvs){
+            remove(kv);
+        }
+    }
     public void addKVs(KeyValueSkipListSet kvs){
         for (KV kv:kvs){
             add(kv);

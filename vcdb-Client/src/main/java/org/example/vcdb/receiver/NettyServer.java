@@ -33,11 +33,32 @@ public class NettyServer {
             e.printStackTrace();
         }
     }
-    /*curl -H "Content-Type: application/json" -X POST -d\
+    /*
+    curl -H "Content-Type: application/json" -X POST -d\
     '{"limit":9,"j_tables":[{"tab_name":"t_name","method":"inner"}],"cf_names":["rowKey","id"],"terms":[{"cf_name":"列族名称","c_name":"StudentAge","max": "2","equivalence":"22","min":"1","like": "模糊(%表示多个字符，_表示一个字符)"}],"orders":[{"cf_name":"xxx","sort":"asc/desc"}]}'\
-    "localhost:8080/_mapping"*/
+    "localhost:8080/dbname/tab_name/_mget"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    */
     public static void main(String[] args) throws Exception {
         NettyServer nettyServer =new NettyServer();
         nettyServer.run();
     }
+
 }

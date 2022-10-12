@@ -274,11 +274,11 @@ public class EX {
                     System.out.println("multiSearch----------------");
 //                    vcdbAdmin.multiSearch((MultiSearch) requestEntity);
                 } else {
-                    System.err.println("the URL Segment is error" + "给出提示（把POST开头的所有的命令返还给他");
+                    System.err.println("the URL Segment is error" + "给出提示（把POST开头的所有的命令返还给他)");
                 }
                 break;
             default:
-                System.err.println("the URL Segment is error" + "给出提示（把POST开头的所有的命令返还给他");
+                System.err.println("the URL Segment is error" + "给出提示（把POST开头的所有的命令返还给他)");
                 break;
         }
     }

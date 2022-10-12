@@ -16,7 +16,9 @@ import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 import org.example.vcdb.store.region.fileStore.KVRange;
 import org.example.vcdb.util.Bytes;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,7 +51,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
     }
 
 
-    public void addKVToMemStore(String fullCfName,KV kv){
+    public static void addKVToMemStore(String fullCfName,KV kv){
         if (inboundMemStore.get(fullCfName)==null){
             inboundMemStore.put(fullCfName,new MemStore());
         }
@@ -58,15 +60,22 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         inboundMemStore.put(fullCfName,toMemStore);
     }
 
-    public void removeKVFromMemStore(String fullCfName,KV kv){
-        if (inboundMemStore.get(fullCfName)==null){
-            inboundMemStore.put(fullCfName,new MemStore());
+    public static void addKVsToDisk(String fullTabName,String cfName,KeyValueSkipListSet kvs ){
+        RegionServer.readConfig("regionServerMeta");
+        RegionMeta regionMeta = RegionServer.getRegionMeta(fullTabName);
+        FileStoreMeta fileStoreMeta = RegionServer.getFileStoreMeta(regionMeta, cfName);
+        Map<Integer, List<KV>> integerListMap = RegionServer.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
+        for (Map.Entry<Integer,List<KV>> entry : integerListMap.entrySet()) {
+            if (!entry.getValue().isEmpty()){
+                RegionServer.insertPageWithSplit(fullTabName,cfName,entry.getKey(),entry.getValue());
+            }
         }
-        MemStore toMemStore = inboundMemStore.get(fullCfName);
-        if (!toMemStore.kvSet.contains(kv)){
-            toMemStore.remove(kv);
+    }
+
+    public static void removeKVsFromMemStore(String fullCfName){
+        if (!inboundMemStore.containsKey(fullCfName)){
+            inboundMemStore.remove(fullCfName);
         }
-        inboundMemStore.put(fullCfName,toMemStore);
     }
 
     public static FileStoreMeta getFileStoreMeta(RegionMeta regionMeta, String cfName) {
@@ -78,6 +87,9 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta, cfName);
         return fileStoreMeta.getPageTrailer();
     }
+
+
+
 
     public static void insertPageWithSplit(String tabName, String cfName, int pageIndex, List<KV> kvs) {
         RegionMeta regionMeta = getRegionMeta(tabName);
