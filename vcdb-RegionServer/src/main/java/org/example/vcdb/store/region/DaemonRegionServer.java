@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DaemonRegionServer {
     public static void main(String[] args) {
+        RegionServer regionServer=new RegionServer("regionServerMeta");
         AtomicInteger count=new AtomicInteger(5);
         //一秒检查一下size,count-1
         //当检查到满的时候调用落盘，或者检查到count==0时候落盘，落盘之后都会把count还原成5
@@ -27,18 +28,21 @@ public class DaemonRegionServer {
                 Executors.newScheduledThreadPool(10);
         // 执行任务,里面写执行代码
         scheduledExecutorService.scheduleAtFixedRate(() -> {
+            System.out.println("size dont 555");
+            /*db.table:cf*/
             if (RegionServer.inboundMemStore.size()==5){
-                /*db.table:cf*/
+                System.out.println("size=====5执行落盘");
                 addMemStoreToDisk(count);
             } else {
                 if (count.get()==0){
+                    System.out.println("count======0执行落盘");
                     /*db.table:cf*/
                     addMemStoreToDisk(count);
                 } else {
                     count.decrementAndGet();
                 }
             }
-        }, 1, 1, TimeUnit.SECONDS); // 1s 后开始执行，每 3s 执行一次
+        }, 1, 1, TimeUnit.SECONDS);// 1s 后开始执行，每 1s 执行一次
     }
 
     private static void addMemStoreToDisk(AtomicInteger count) {

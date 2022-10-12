@@ -44,6 +44,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
     public RegionServer(String fileName) {
         regionServerMeta = new RegionServerMeta(VCFileReader.readAll(fileName));
+        inboundMemStore=new ConcurrentHashMap<>();
     }
 
     public RegionServer() {

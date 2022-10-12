@@ -4,6 +4,7 @@ import org.example.vcdb.config.ClientConfig;
 import org.example.vcdb.entity.Delete.DeleteCells;
 import org.example.vcdb.entity.Delete.DeleteTable;
 import org.example.vcdb.entity.Post.*;
+import org.example.vcdb.entity.Put.CreateDB;
 import org.example.vcdb.entity.Put.CreateTable;
 import org.example.vcdb.store.mem.KV;
 import org.example.vcdb.store.wal.VCLog;
@@ -17,77 +18,84 @@ import static org.example.vcdb.store.mem.KV.byteToType;
 public class VCDBAdmin {
     ClientConfig clientConfig;
     WalBuffer walBuffer;
-    public void createDB(String dBName) {
-        KV.ValueNode valueNode=new KV.ValueNode((new Date()).getTime(),byteToType((byte) 0),"".getBytes(),0,"".getBytes().length,"".getBytes(),0,"".getBytes().length);
-        WalEdit walEdit = VCLog.entry.get(dBName.getBytes());
-        if (walEdit==null){
-            VCLog.entry.put(dBName.getBytes(),new WalEdit());
-        }
-        //日志集合（内存）
-        //存在本地并且grpc调用从机进行日志备份
-        boolean b = recordLog(dBName.getBytes(), valueNode);
-    }
-    public boolean recordLog(byte[] key, KV.ValueNode valueNode){
-        WalEdit  newWalEdit = VCLog.entry.get(key);
-        newWalEdit.actions.add(valueNode);
-        return true;
-    }
-    public void createTable(CreateTable createTable) {
+
+    //return int(返回改动KV的数量)
+    public void createDB(String dBName, CreateDB createDB) {
 
     }
 
-    public void deleteDB(DeleteCells deleteCells) {
+
+    //return int(返回改动KV的数量)
+    public void createTable(String dBName,String tabName,CreateTable createTable) {
 
     }
 
-    public void deleteTable(DeleteTable deleteTable) {
+    //return int(返回改动KV的数量)
+    public void deleteDB(String dBName,DeleteCells deleteCells) {
 
     }
 
+    //return int(返回改动KV的数量)
+    public void deleteTable(String dBName,String tabName,DeleteTable deleteTable) {
+
+    }
+
+    //return int(是否成功)
     public void openTransaction(OpenTransaction openTransaction) {
 
     }
 
+    //return int(是否成功)
     public void closeTransaction(CloseTransaction closeTransaction) {
 
     }
 
-    public void putCells(PutCells putCells) {
+    //return int(返回改动KV的数量)
+    public void putCells(String dBName,String tabName,PutCells putCells) {
 
     }
 
-    public void alterTable(AlterTable alterTable) {
+    //return int(是否成功)
+    public void alterTable(String dBName,String tabName,AlterTable alterTable) {
 
     }
 
-    public void mergeVersion(MergeVersion mergeVersion) {
+    //return int(查询的返回KV的数量)
+    public void mergeVersion(String dBName,String tabName,MergeVersion mergeVersion) {
 
     }
 
-    public void useVersion(UseVersion useVersion) {
+    //return int(返回改动KV的数量)
+    public void useVersion(String dBName,String tabName,UseVersion useVersion) {
 
     }
 
-    public void showVersion(ShowVersion showVersion) {
+    //return int(查询的返回KV的数量)
+    public void showVersion(String dBName,String tabName,ShowVersion showVersion) {
 
     }
 
-    public void singleSearch(SingleSearch singleSearch) {
+    //return int(查询的返回KV的数量)
+    public void singleSearch(String dBName,String tabName,SingleSearch singleSearch) {
 
     }
 
-    public void deleteCells(DeleteCells deleteCells) {
+    //return int(返回改动KV的数量)
+    public void deleteCells(String dBName,String tabName,DeleteCells deleteCells) {
 
     }
 
-    public void updateCells(UpdateCells updateCells) {
+    //return int(返回改动KV的数量)
+    public void updateCells(String dBName,String tabName,UpdateCells updateCells) {
 
     }
 
-    public void multiSearch(MultiSearch multiSearch) {
+    //return int(查询的返回KV的数量)
+    public void multiSearch(String dBName,String tabName,MultiSearch multiSearch) {
 
     }
 
-    public void deleteVersion(DeleteVersion requestEntity) {
+    //return int(返回改动KV的数量)
+    public void deleteVersion(String dBName,String tabName,DeleteVersion requestEntity) {
     }
 }
