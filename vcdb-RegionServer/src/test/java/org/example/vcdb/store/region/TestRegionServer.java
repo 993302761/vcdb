@@ -83,7 +83,7 @@ public class TestRegionServer {
 
         /*创建fileStoreMeta*/
         FileStoreMeta fileStoreMeta = new FileStoreMeta((new Date()).getTime(), false,
-                fileStoreName, "r1".getBytes(), "r2".getBytes(), tabName,dbName);
+                fileStoreName, "r1".getBytes(), "r2".getBytes());
         VCFIleWriter.writeAll(fileStoreMeta.getData(), fileStoreMetaName);
 
         /*创建fileStore*/

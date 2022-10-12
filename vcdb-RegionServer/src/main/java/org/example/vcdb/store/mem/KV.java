@@ -111,12 +111,13 @@ public class KV {
         pos = Bytes.putInt(bytes, pos, rLength);
         pos = Bytes.putBytes(bytes, pos, row, rOffset, rLength);
         pos = Bytes.putInt(bytes, pos, valuesLength);
-        // Add the tags after the value part
-        if (valuesLength > 0) {
-            pos = Bytes.putInt(bytes, pos, valueCount);
-            assert values != null;
-            for (ValueNode valueNode : values) {
-                pos = Bytes.putBytes(bytes, pos, valueNode.getBytes(), 0, valueNode.getLength());
+        if (values!=null){
+            // Add the tags after the value part
+            if (valuesLength > 0) {
+                pos = Bytes.putInt(bytes, pos, valueCount);
+                for (ValueNode valueNode : values) {
+                    pos = Bytes.putBytes(bytes, pos, valueNode.getBytes(), 0, valueNode.getLength());
+                }
             }
         }
         return bytes;

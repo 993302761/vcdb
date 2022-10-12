@@ -19,33 +19,33 @@ public class VCDBAdmin {
     ClientConfig clientConfig;
     WalBuffer walBuffer;
 
-    //return int(返回改动KV的数量)
+    //return bool(是否成功)
     public void createDB(String dBName, CreateDB createDB) {
 
     }
 
 
-    //return int(返回改动KV的数量)
+    //return bool(是否成功)
     public void createTable(String dBName,String tabName,CreateTable createTable) {
 
     }
 
-    //return int(返回改动KV的数量)
+    //return bool(是否成功)
     public void deleteDB(String dBName,DeleteCells deleteCells) {
 
     }
 
-    //return int(返回改动KV的数量)
+    //return bool(是否成功)
     public void deleteTable(String dBName,String tabName,DeleteTable deleteTable) {
 
     }
 
-    //return int(是否成功)
+    //return bool(是否成功)
     public void openTransaction(OpenTransaction openTransaction) {
 
     }
 
-    //return int(是否成功)
+    //return bool(是否成功)
     public void closeTransaction(CloseTransaction closeTransaction) {
 
     }
@@ -55,7 +55,7 @@ public class VCDBAdmin {
 
     }
 
-    //return int(是否成功)
+    //return bool(是否成功)
     public void alterTable(String dBName,String tabName,AlterTable alterTable) {
 
     }

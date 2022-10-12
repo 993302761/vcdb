@@ -37,8 +37,7 @@ public class FileStoreMeta {
     }
 
     public FileStoreMeta(long timeStamp, boolean split, String encodedName,
-                         byte[] endKey, byte[] startKey, String tableName,
-                         String nameSpace) {
+                         byte[] endKey, byte[] startKey) {
         byte spl = 0;
         if (split) {
             spl = 1;
@@ -58,11 +57,6 @@ public class FileStoreMeta {
         pos = Bytes.putInt(bytes, pos, endKey.length);
         pos = Bytes.putBytes(bytes, pos, endKey, 0, endKey.length);
 
-        pos = Bytes.putInt(bytes, pos, tableName.getBytes().length);
-        pos = Bytes.putBytes(bytes, pos, tableName.getBytes(), 0, tableName.getBytes().length);
-
-        pos = Bytes.putInt(bytes, pos, nameSpace.getBytes().length);
-        pos = Bytes.putBytes(bytes, pos, nameSpace.getBytes(), 0, nameSpace.getBytes().length);
 
         pos = Bytes.putInt(bytes, pos, 1);
         KVRange kvRange = new KVRange(0, "", "zzzzzzzzzzzzzzzzz");
@@ -164,24 +158,8 @@ public class FileStoreMeta {
         return Bytes.subByte(this.data, 21 + getEncodeNameLength() + getStartKeyLength(), getEndKeyLength());
     }
 
-    public int getTableNameLength() {
-        return Bytes.toInt(this.data, 21 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength(), 4);
-    }
-
-    public String getTableName() {
-        return Bytes.toString(this.data, 25 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength(), getTableNameLength());
-    }
-
-    public int getNameSpaceLength() {
-        return Bytes.toInt(this.data, 25 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength(), 4);
-    }
-
-    public String getNameSpace() {
-        return Bytes.toString(this.data, 29 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength(), getNameSpaceLength());
-    }
-
     public List<KVRange> getPageTrailer() {
-        int pos = 29 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength() + getNameSpaceLength();
+        int pos = 21 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength();
         List<KVRange> pageTrailer = new ArrayList<>();
         int kvRangeCount = Bytes.toInt(this.data, pos, 4);
         pos += 4;
@@ -203,15 +181,11 @@ public class FileStoreMeta {
         System.out.println(Arrays.toString(getStartKey()));
         System.out.println(getEndKeyLength());
         System.out.println(Arrays.toString(getEndKey()));
-        System.out.println(getTableNameLength());
-        System.out.println(getTableName());
-        System.out.println(getNameSpaceLength());
-        System.out.println(getNameSpace());
         System.out.println(getPageTrailer());
     }
 
     public void setPageTrailer(List<KVRange> pageTrailer) {
-        int pos = 29 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength() + getTableNameLength() + getNameSpaceLength();
+        int pos = 21 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength();
         pos = Bytes.putInt(this.data, pos, pageTrailer.size());
         for (KVRange kvRange : pageTrailer) {
             pos = Bytes.putInt(this.data, pos, kvRange.getLength());
