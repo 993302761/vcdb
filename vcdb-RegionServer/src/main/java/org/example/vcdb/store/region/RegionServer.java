@@ -51,6 +51,51 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
     }
 
+    /*table:cfName-----fileStoreMeta------fileStore*/
+    /*createDB:createDB*/
+    /*Transaction:Transaction*/
+    /*Table:Table*/
+    //用dbName当做rowKey
+    public static void createDBService(String dbName){
+        MemStore memStore = inboundMemStore.get("createDB:createDB");
+
+        KV kv = memStore.kvSet.get(dbName);
+        if (kv==null){
+//            kv=new KV(dbName.getBytes(),0,dbName.getBytes().length);
+        }
+//        kv.getValues().add();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public static void addKVToMemStore(String fullCfName,KV kv){
         if (inboundMemStore.get(fullCfName)==null){

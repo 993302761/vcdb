@@ -118,7 +118,7 @@ public class TestRegionServer {
             values.add(new KV.ValueNode(time, type, qualifier, 0, qualifier.length, value, 0, value.length));
         }
 
-        KV kv = new KV(row, 0, row.length, family, 0, family.length, values);
+        KV kv = new KV(row, 0, row.length,  values);
         KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
         kvs.add(kv);
         try {
@@ -157,11 +157,11 @@ public class TestRegionServer {
         }
 
         for (int i = 2; i < 7; i++) {
-            kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length, ("family"+i).getBytes(), 0, ("family"+i).getBytes().length, values));
+            kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length,  values));
         }
 
-        kvs.add(new KV(("row2").getBytes(), 0, ("row2").getBytes().length, ("family2").getBytes(), 0, ("family2").getBytes().length, values));
-        kvs.add(new KV(("row1").getBytes(), 0, ("row1").getBytes().length, ("family1").getBytes(), 0, ("family1").getBytes().length, values));
+        kvs.add(new KV(("row2").getBytes(), 0, ("row2").getBytes().length, values));
+        kvs.add(new KV(("row1").getBytes(), 0, ("row1").getBytes().length, values));
 
 //        for (KV kv:kvs){
 //            System.out.println(kv.getRowKey());
@@ -169,7 +169,7 @@ public class TestRegionServer {
 
         KeyValueSkipListSet kvs1 = new KeyValueSkipListSet(new KV.KVComparator());
         for (int i = 7; i < 12; i++) {
-            kvs1.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length, ("family"+i).getBytes(), 0, ("family"+i).getBytes().length, values));
+            kvs1.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length,  values));
         }
         kvs.addKVs(kvs1);
 
@@ -200,7 +200,7 @@ public class TestRegionServer {
         }
 
         for (int i = 0; i < 40; i++) {
-            kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length, ("family"+i).getBytes(), 0, ("family"+i).getBytes().length, values));
+            kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length,  values));
         }
 
         RegionServer.readConfig("regionServerMeta");
@@ -230,8 +230,7 @@ public class TestRegionServer {
         }
 
         for (int i = 80 ; i < 120; i++) {
-            kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length,
-                    ("family"+i).getBytes(), 0, ("family"+i).getBytes().length, values));
+            kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length, values));
         }
         RegionServer.readConfig("regionServerMeta");
         RegionMeta regionMeta = RegionServer.getRegionMeta(dbName+"."+tabName);

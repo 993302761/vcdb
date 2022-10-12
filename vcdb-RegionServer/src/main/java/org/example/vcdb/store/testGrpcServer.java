@@ -20,5 +20,7 @@ public class testGrpcServer {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+        "asdf".getBytes();
     }
+
 }

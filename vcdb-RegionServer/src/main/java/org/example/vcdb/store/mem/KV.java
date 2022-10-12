@@ -48,25 +48,11 @@ public class KV {
 //        List<ValueNode> valueNodes = byteToValues(this.data, 28 + rLength + fLength, valueLength);
 //    }
 
-    public int getFLength() {
-        return Bytes.toInt(this.data, 4 + getRLength());
-    }
-
-    public int getFLength(int rLength) {
-        return Bytes.toInt(this.data, 4 + rLength);
-    }
-
-    public String getFamily() {
-        int rLength = getRLength();
-        int fLength = getFLength(rLength);
-        return Bytes.toString(this.data, 8 + rLength, fLength);
-    }
 
     public List<ValueNode> getValues() {
         List<ValueNode> valueNodes = new ArrayList<>();
         int rLength = getRLength();
-        int fLength = getFLength(rLength);
-        int pos = rLength + fLength + 8;
+        int pos = rLength  + 4;
         int valuesLength = Bytes.toInt(this.data, pos, 4);
         pos = pos + 4;
         int valueCount = Bytes.toInt(this.data, pos, 4);
@@ -93,12 +79,9 @@ public class KV {
     }
 
     public KV(final byte[] row, final int rOffset, final int rLength,
-              final byte[] family, final int fOffset, final int fLength,
               final List<ValueNode> values) {
-        this.data = createByteArray(row, rOffset, rLength,
-                family, fOffset, fLength, values);
+        this.data = createByteArray(row, rOffset, rLength, values);
         this.length = this.data.length;
-//        System.out.println(this.length+"-=-=-=-=-==-=-=-=-=-=-=-=");
     }
 
     public KV(byte[] data) {
@@ -109,9 +92,8 @@ public class KV {
     //row is rowKey
     //很多不必要的属性length可为0
     private byte[] createByteArray(byte[] row, int rOffset, int rLength,
-                                   byte[] family, int fOffset, int fLength,
                                    final List<ValueNode> values) {
-        checkParameters(row, rLength, family, fLength);
+        checkParameters(row, rLength);
         // Calculate length of tags area
         int valuesLength = 0;
         int valueCount = 0;
@@ -123,15 +105,11 @@ public class KV {
             }
         }
         valuesLength = valuesLength + 4;
-        byte[] bytes = new byte[(int) (getKeyValueDataStructureSize(rLength, fLength, valuesLength))];
+        byte[] bytes = new byte[(int) (getKeyValueDataStructureSize(rLength, valuesLength))];
         // Write key, value and key row length.
         int pos = 0;
         pos = Bytes.putInt(bytes, pos, rLength);
         pos = Bytes.putBytes(bytes, pos, row, rOffset, rLength);
-        pos = Bytes.putInt(bytes, pos, fLength);
-        if (fLength != 0) {
-            pos = Bytes.putBytes(bytes, pos, family, fOffset, fLength);
-        }
         pos = Bytes.putInt(bytes, pos, valuesLength);
         // Add the tags after the value part
         if (valuesLength > 0) {
@@ -144,17 +122,16 @@ public class KV {
         return bytes;
     }
 
-    private long getKeyDataStructureSize(int rLength, int fLength) {
+    private long getKeyDataStructureSize(int rLength) {
         //ROWKey_LENGTH_SIZE + FAMILY_LENGTH_SIZE
-        return 4 + 4 + rLength + fLength;
+        return 4 +  rLength ;
     }
 
-    private long getKeyValueDataStructureSize(int rLength, int fLength, int valuesLength) {
-        return getKeyDataStructureSize(rLength, fLength) + 4 + valuesLength;
+    private long getKeyValueDataStructureSize(int rLength, int valuesLength) {
+        return getKeyDataStructureSize(rLength) + 4 + valuesLength;
     }
 
     public void dis() {
-        System.out.println(getFamily());
         System.out.println(getRowKey());
         for (ValueNode valueNode:getValues()){
             valueNode.dis();
@@ -228,8 +205,7 @@ public class KV {
         }
     }
 
-    private static void checkParameters(final byte[] row, final int rlength,
-                                        final byte[] family, int flength)
+    private static void checkParameters(final byte[] row, final int rlength)
             throws IllegalArgumentException {
 
         if (rlength > Short.MAX_VALUE) {
@@ -238,12 +214,6 @@ public class KV {
 
         if (row == null) {
             throw new IllegalArgumentException("Row is null");
-        }
-
-        // Family length
-        flength = family == null ? 0 : flength;
-        if (flength > Byte.MAX_VALUE) {
-            throw new IllegalArgumentException("Family > " + Byte.MAX_VALUE);
         }
     }
 
