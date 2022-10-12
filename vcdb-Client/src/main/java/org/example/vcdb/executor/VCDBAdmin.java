@@ -70,12 +70,12 @@ public class VCDBAdmin {
 
     }
 
-    //return int(查询的返回KV的数量)
+    //return byte[](查询的返回KV)
     public void showVersion(String dBName,String tabName,ShowVersion showVersion) {
 
     }
 
-    //return int(查询的返回KV的数量)
+    //return byte[](查询的返回KV)
     public void singleSearch(String dBName,String tabName,SingleSearch singleSearch) {
 
     }
@@ -90,7 +90,7 @@ public class VCDBAdmin {
 
     }
 
-    //return int(查询的返回KV的数量)
+    //return byte[](查询的返回KV)
     public void multiSearch(String dBName,String tabName,MultiSearch multiSearch) {
 
     }
