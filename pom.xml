@@ -27,6 +27,31 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- grpc底层通信组件-->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty-shaded</artifactId>
+            <version>1.42.0</version>
+        </dependency>
+        <!-- grpc对protobuf的支持工具包-->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+            <version>1.42.0</version>
+        </dependency>
+        <!-- grpc通过这个依赖进行存根-->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <version>1.42.0</version>
+        </dependency>
+        <!-- grpc关于注解方面的api-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.tomcat</groupId>-->
+<!--            <artifactId>annotations-api</artifactId>-->
+<!--            <version>6.0.53</version>-->
+<!--        </dependency>-->
     </dependencies>
 
 </project>

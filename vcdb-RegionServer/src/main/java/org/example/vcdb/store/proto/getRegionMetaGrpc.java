@@ -18,28 +18,28 @@ public final class getRegionMetaGrpc {
 
   // Static method descriptors that strictly reflect the proto.
   private static volatile io.grpc.MethodDescriptor<com.google.protobuf.Empty,
-      Meta.regionMeta> getGetRegionMetaMethod;
+      org.example.vcdb.store.proto.Meta.regionMeta> getGetRegionMetaMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "getRegionMeta",
       requestType = com.google.protobuf.Empty.class,
-      responseType = Meta.regionMeta.class,
+      responseType = org.example.vcdb.store.proto.Meta.regionMeta.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<com.google.protobuf.Empty,
-      Meta.regionMeta> getGetRegionMetaMethod() {
-    io.grpc.MethodDescriptor<com.google.protobuf.Empty, Meta.regionMeta> getGetRegionMetaMethod;
+      org.example.vcdb.store.proto.Meta.regionMeta> getGetRegionMetaMethod() {
+    io.grpc.MethodDescriptor<com.google.protobuf.Empty, org.example.vcdb.store.proto.Meta.regionMeta> getGetRegionMetaMethod;
     if ((getGetRegionMetaMethod = getRegionMetaGrpc.getGetRegionMetaMethod) == null) {
       synchronized (getRegionMetaGrpc.class) {
         if ((getGetRegionMetaMethod = getRegionMetaGrpc.getGetRegionMetaMethod) == null) {
           getRegionMetaGrpc.getGetRegionMetaMethod = getGetRegionMetaMethod =
-              io.grpc.MethodDescriptor.<com.google.protobuf.Empty, Meta.regionMeta>newBuilder()
+              io.grpc.MethodDescriptor.<com.google.protobuf.Empty, org.example.vcdb.store.proto.Meta.regionMeta>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "getRegionMeta"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   com.google.protobuf.Empty.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  Meta.regionMeta.getDefaultInstance()))
+                  org.example.vcdb.store.proto.Meta.regionMeta.getDefaultInstance()))
               .setSchemaDescriptor(new getRegionMetaMethodDescriptorSupplier("getRegionMeta"))
               .build();
         }
@@ -54,7 +54,7 @@ public final class getRegionMetaGrpc {
   public static getRegionMetaStub newStub(io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<getRegionMetaStub> factory =
       new io.grpc.stub.AbstractStub.StubFactory<getRegionMetaStub>() {
-        @Override
+        @java.lang.Override
         public getRegionMetaStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
           return new getRegionMetaStub(channel, callOptions);
         }
@@ -69,7 +69,7 @@ public final class getRegionMetaGrpc {
       io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<getRegionMetaBlockingStub> factory =
       new io.grpc.stub.AbstractStub.StubFactory<getRegionMetaBlockingStub>() {
-        @Override
+        @java.lang.Override
         public getRegionMetaBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
           return new getRegionMetaBlockingStub(channel, callOptions);
         }
@@ -84,7 +84,7 @@ public final class getRegionMetaGrpc {
       io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<getRegionMetaFutureStub> factory =
       new io.grpc.stub.AbstractStub.StubFactory<getRegionMetaFutureStub>() {
-        @Override
+        @java.lang.Override
         public getRegionMetaFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
           return new getRegionMetaFutureStub(channel, callOptions);
         }
@@ -105,18 +105,18 @@ public final class getRegionMetaGrpc {
      * </pre>
      */
     public void getRegionMeta(com.google.protobuf.Empty request,
-        io.grpc.stub.StreamObserver<Meta.regionMeta> responseObserver) {
+        io.grpc.stub.StreamObserver<org.example.vcdb.store.proto.Meta.regionMeta> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetRegionMetaMethod(), responseObserver);
     }
 
-    @Override public final io.grpc.ServerServiceDefinition bindService() {
+    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getGetRegionMetaMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 com.google.protobuf.Empty,
-                Meta.regionMeta>(
+                org.example.vcdb.store.proto.Meta.regionMeta>(
                   this, METHODID_GET_REGION_META)))
           .build();
     }
@@ -133,7 +133,7 @@ public final class getRegionMetaGrpc {
       super(channel, callOptions);
     }
 
-    @Override
+    @java.lang.Override
     protected getRegionMetaStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new getRegionMetaStub(channel, callOptions);
@@ -145,7 +145,7 @@ public final class getRegionMetaGrpc {
      * </pre>
      */
     public void getRegionMeta(com.google.protobuf.Empty request,
-        io.grpc.stub.StreamObserver<Meta.regionMeta> responseObserver) {
+        io.grpc.stub.StreamObserver<org.example.vcdb.store.proto.Meta.regionMeta> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetRegionMetaMethod(), getCallOptions()), request, responseObserver);
     }
@@ -162,7 +162,7 @@ public final class getRegionMetaGrpc {
       super(channel, callOptions);
     }
 
-    @Override
+    @java.lang.Override
     protected getRegionMetaBlockingStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new getRegionMetaBlockingStub(channel, callOptions);
@@ -173,7 +173,7 @@ public final class getRegionMetaGrpc {
      * getRegionMeta 方法名，google.protobuf.Empt 传入参数为空， regionMeta  返回响应类
      * </pre>
      */
-    public Meta.regionMeta getRegionMeta(com.google.protobuf.Empty request) {
+    public org.example.vcdb.store.proto.Meta.regionMeta getRegionMeta(com.google.protobuf.Empty request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getGetRegionMetaMethod(), getCallOptions(), request);
     }
@@ -190,7 +190,7 @@ public final class getRegionMetaGrpc {
       super(channel, callOptions);
     }
 
-    @Override
+    @java.lang.Override
     protected getRegionMetaFutureStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new getRegionMetaFutureStub(channel, callOptions);
@@ -201,7 +201,7 @@ public final class getRegionMetaGrpc {
      * getRegionMeta 方法名，google.protobuf.Empt 传入参数为空， regionMeta  返回响应类
      * </pre>
      */
-    public com.google.common.util.concurrent.ListenableFuture<Meta.regionMeta> getRegionMeta(
+    public com.google.common.util.concurrent.ListenableFuture<org.example.vcdb.store.proto.Meta.regionMeta> getRegionMeta(
         com.google.protobuf.Empty request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetRegionMetaMethod(), getCallOptions()), request);
@@ -223,21 +223,21 @@ public final class getRegionMetaGrpc {
       this.methodId = methodId;
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
+    @java.lang.Override
+    @java.lang.SuppressWarnings("unchecked")
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_GET_REGION_META:
           serviceImpl.getRegionMeta((com.google.protobuf.Empty) request,
-              (io.grpc.stub.StreamObserver<Meta.regionMeta>) responseObserver);
+              (io.grpc.stub.StreamObserver<org.example.vcdb.store.proto.Meta.regionMeta>) responseObserver);
           break;
         default:
           throw new AssertionError();
       }
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
+    @java.lang.Override
+    @java.lang.SuppressWarnings("unchecked")
     public io.grpc.stub.StreamObserver<Req> invoke(
         io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
@@ -251,12 +251,12 @@ public final class getRegionMetaGrpc {
       implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
     getRegionMetaBaseDescriptorSupplier() {}
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return Meta.getDescriptor();
+      return org.example.vcdb.store.proto.Meta.getDescriptor();
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.ServiceDescriptor getServiceDescriptor() {
       return getFileDescriptor().findServiceByName("getRegionMeta");
     }
@@ -276,7 +276,7 @@ public final class getRegionMetaGrpc {
       this.methodName = methodName;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.MethodDescriptor getMethodDescriptor() {
       return getServiceDescriptor().findMethodByName(methodName);
     }
