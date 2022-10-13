@@ -7,7 +7,7 @@ package org.example.vcdb.entity.Post;
 public class UseVersion extends RequestEntity {
     private String rowKey;
 
-    private int version;
+    private int version=Integer.MAX_VALUE;
 
     public void setRowKey(String rowKey) {
         this.rowKey = rowKey;

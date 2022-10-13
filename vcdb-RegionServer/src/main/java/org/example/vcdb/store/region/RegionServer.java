@@ -217,6 +217,66 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
     }
 
 
+    /*修改列族名字---table：cf--->fileStoreMeta*/
+    public static boolean alterTable(String dBName,String tabName,byte[] requestEntity){
+        try {
+            int pos=0;
+            int count=Bytes.toInt(requestEntity,pos,4);
+            pos+=4;
+            for (int i = 0; i < count; i++) {
+                int cfNameLength=Bytes.toInt(requestEntity,pos,4);
+                pos+=4;
+                String cfName=Bytes.toString(requestEntity,pos,cfNameLength);
+                pos+=cfNameLength;
+
+                int old_cfNameLength=Bytes.toInt(requestEntity,pos,4);
+                pos+=4;
+                String old_cfName=Bytes.toString(requestEntity,pos,cfNameLength);
+                pos+=old_cfNameLength;
+
+                int methodLength=Bytes.toInt(requestEntity,pos,4);
+                pos+=4;
+                String method=Bytes.toString(requestEntity,pos,cfNameLength);
+                pos+=methodLength;
+                RegionMeta regionMeta = RegionServer.getRegionMeta(dBName+"."+tabName);
+                Map<String, String> fileStoreMap = regionMeta.getFileStoreMap();
+                if ("put".equalsIgnoreCase(method)) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+                    String fileName=sdf.format(new Date());
+                    String fileStoreName="fileStore/"+fileName;
+                    String fileStoreMetaName="fileStoreMeta/"+fileName;
+                    /*创建fileStoreMeta*/
+                    FileStoreMeta fileStoreMeta = new FileStoreMeta((new Date()).getTime(), false,
+                            fileStoreName, "".getBytes(), "".getBytes());
+                    VCFIleWriter.writeAll(fileStoreMeta.getData(), fileStoreMetaName);
+
+                    /*创建fileStore*/
+                    ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(false,false,Long.MIN_VALUE,Long.MAX_VALUE,byteToCFType((byte) 56));
+                    FileStore fileStore=new FileStore(cfMeta);
+                    VCFIleWriter.writeAll(fileStore.getData(), fileStoreName);
+                    fileStoreMap.put(cfName,fileStoreMetaName);
+                } else if ("delete".equalsIgnoreCase(method)) {
+                    String fileStoreMetaName = fileStoreMap.get(old_cfName);
+                    fileStoreMap.remove(old_cfName);
+                    VCFIleWriter.deleteAll(fileStoreMetaName);
+                } else if ("update".equalsIgnoreCase(method)) {
+                    String fileStoreMetaName = fileStoreMap.get(old_cfName);
+                    fileStoreMap.remove(old_cfName);
+                    fileStoreMap.put(cfName,fileStoreMetaName);
+                }
+                regionMeta.setFileStoreMap(fileStoreMap);
+                VCFIleWriter.writeAll(regionMeta.getData(), regionMeta.getName());
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+//    public int mergeVersion(String dBName,String tabName,String rowKey,byte[] requestEntity){
+//
+//    }
 
 
 
@@ -235,18 +295,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
             kv=new KV(rowKey.getBytes(),0,rowKey.getBytes().length,values);
             memStore.kvSet.add(kv);
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -22,6 +22,7 @@ public class VCDBAdmin {
     //return bool(是否成功)
     public void createDB(String dBName, CreateDB createDB) {
 
+
     }
 
 
@@ -97,5 +98,6 @@ public class VCDBAdmin {
 
     //return int(返回改动KV的数量)
     public void deleteVersion(String dBName,String tabName,DeleteVersion requestEntity) {
+
     }
 }

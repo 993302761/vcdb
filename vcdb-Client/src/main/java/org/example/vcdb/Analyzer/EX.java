@@ -728,7 +728,7 @@ public class EX {
     }
 
     private static List<AlterCell> selectAlter(List<HashMap<String, String>> value) {
-        List<AlterCell> alterCells = new ArrayList<AlterCell>();
+        List<AlterCell> alterCells = new ArrayList<>();
         for (HashMap<String, String> kv : value) {
             AlterCell alterCell = new AlterCell();
             for (Map.Entry<String, String> cell : kv.entrySet()) {
