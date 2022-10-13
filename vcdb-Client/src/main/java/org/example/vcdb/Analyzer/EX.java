@@ -106,8 +106,8 @@ public class EX {
                         System.err.println("报错重复设置cf_name属性");
                     }
                 } else if ("type".equalsIgnoreCase(cell.getKey())) {
-                    if (columnFamilyCell.getType() == null) {
-                        columnFamilyCell.setType(cell.getValue());
+                    if (columnFamilyCell.getType() == 100) {
+                        columnFamilyCell.setType(Byte.parseByte(cell.getValue()));
                     } else {
                         System.err.println("报错重复设置type属性");
                     }

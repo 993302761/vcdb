@@ -89,7 +89,7 @@ public class TestWriterAndReader {
             byte[] value = ("value" + i).getBytes(StandardCharsets.UTF_8);
             values.add(new KV.ValueNode(time, type, qualifier, 0, qualifier.length, value, 0, value.length));
         }
-        KV kv = new KV(row, 0, row.length, family, 0, family.length, values);
+        KV kv = new KV(row, 0, row.length, values);
         KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
         kvs.add(kv);
         FileStore fileStore=new FileStore(cfMeta,kvs);
@@ -112,7 +112,7 @@ public class TestWriterAndReader {
             byte[] value = ("value" + i).getBytes(StandardCharsets.UTF_8);
             values.add(new KV.ValueNode(time, type, qualifier, 0, qualifier.length, value, 0, value.length));
         }
-        KV kv = new KV(row, 0, row.length, family, 0, family.length, values);
+        KV kv = new KV(row, 0, row.length,  values);
         KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
         kvs.add(kv);
         FileStore fileStore=new FileStore(cfMeta,kvs);
@@ -136,7 +136,7 @@ public class TestWriterAndReader {
             byte[] value = ("value" + i).getBytes(StandardCharsets.UTF_8);
             values.add(new KV.ValueNode(time, type, qualifier, 0, qualifier.length, value, 0, value.length));
         }
-        KV kv = new KV(row, 0, row.length, family, 0, family.length, values);
+        KV kv = new KV(row, 0, row.length, values);
         KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
         kvs.add(kv);
         VCFIleWriter.updateKvsCountFOrFileStorePage(kvs.size(),1,"fileStore/fileStore1");

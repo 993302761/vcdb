@@ -1,24 +1,28 @@
 package org.example.vcdb.entity.Cell;
 
 
+import org.example.vcdb.util.Bytes;
+
 /**
  * @author : wyy
  * @Date : 2022.7.11
  */
+
+
 public class ColumnFamilyCell{
     private String cf_name;
-    private String type;
+    private byte type=100;
     private long min=Long.MIN_VALUE;
     private long max=Long.MAX_VALUE;
     private Boolean unique;
     private Boolean isNull;
-//    private String method;
+
 
     public String getCf_name() {
         return cf_name;
     }
 
-    public String getType() {
+    public byte getType() {
         return type;
     }
 
@@ -39,15 +43,13 @@ public class ColumnFamilyCell{
     }
 
 
-//    public String getMethod() {
-//        return method;
-//    }
+
 
     public void setCf_name(String cf_name) {
         this.cf_name = cf_name;
     }
 
-    public void setType(String type) {
+    public void setType(byte type) {
         this.type = type;
     }
 
@@ -67,7 +69,25 @@ public class ColumnFamilyCell{
         isNull = aNull;
     }
 
-//    public void setMethod(String method) {
-//        this.method = method;
-//    }
+    public byte[] toByteArray(){
+        byte[] bytes=new byte[4+cf_name.getBytes().length+1+8+8+1+1];
+        byte uni=0;
+        byte isNil=0;
+        if (unique){
+            uni=1;
+        }
+        if (isNull){
+            isNil=1;
+        }
+        int pos=0;
+        pos= Bytes.putInt(bytes,pos,cf_name.getBytes().length);
+        pos=Bytes.putBytes(bytes,pos,cf_name.getBytes(),0,cf_name.getBytes().length);
+        pos=Bytes.putByte(bytes,pos,type);
+        pos=Bytes.putLong(bytes,pos,min);
+        pos=Bytes.putLong(bytes,pos,max);
+        pos=Bytes.putByte(bytes,pos,uni);
+        pos=Bytes.putByte(bytes,pos,isNil);
+        return bytes;
+    }
+
 }
