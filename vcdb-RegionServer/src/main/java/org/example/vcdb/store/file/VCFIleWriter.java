@@ -3,6 +3,7 @@ package org.example.vcdb.store.file;
 
 import org.example.vcdb.util.Bytes;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -17,7 +18,17 @@ import java.nio.channels.FileChannel;
  */
 
 public class VCFIleWriter {
+    public static void deleteAll(String fileName){
+        File file = new File("/x2/vcdb/"+fileName);
+        if(file.delete()){
+            System.out.println(file.getName() + " 文件已被删除！");
+        }else{
+            System.out.println("文件删除失败！");
+        }
+    }
+
     public static void writeAll(byte[] content, String fileName){
+
         RandomAccessFile accessFile = null;
         try {
             //getFromMap

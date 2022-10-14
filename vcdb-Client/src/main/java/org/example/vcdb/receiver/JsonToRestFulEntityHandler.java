@@ -21,26 +21,26 @@ import java.util.List;
 
 
 public class JsonToRestFulEntityHandler extends SimpleChannelInboundHandler {
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        String ip=ctx.channel().remoteAddress().toString();
-        String[] a= ip.split(":");
-        System.out.println(a[0]+"-->"+"已连接");
-    }
-
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        String ip=ctx.channel().remoteAddress().toString();
-        String[] a= ip.split(":");
-        System.out.println(a[0]+"-->"+"已断开");
-    }
+//    @Override
+//    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+//        String ip=ctx.channel().remoteAddress().toString();
+//        String[] a= ip.split(":");
+//        System.out.println(a[0]+"-->"+"已连接");
+//    }
+//
+//    @Override
+//    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+//        String ip=ctx.channel().remoteAddress().toString();
+//        String[] a= ip.split(":");
+//        System.out.println(a[0]+"-->"+"已断开");
+//    }
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         ActionEntity actionEntity= toRestfulEntity(msg);
         System.out.println("server接收到\n"+actionEntity);
-        EX.DFA2(actionEntity);
-        ByteBuf byteBuf = Unpooled.wrappedBuffer("msg1111".getBytes());
+        String s = EX.DFA2(actionEntity);
+        ByteBuf byteBuf = Unpooled.wrappedBuffer(s.getBytes());
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, byteBuf);
         ChannelFuture future = ctx.channel().write(response);
         future.addListener(ChannelFutureListener.CLOSE);

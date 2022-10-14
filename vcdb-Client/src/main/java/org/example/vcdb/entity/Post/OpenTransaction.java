@@ -9,4 +9,8 @@ public class OpenTransaction extends RequestEntity{
     public void setExplainValue(String explainValue) {
         this.explainValue = explainValue;
     }
+
+    public String getExplainValue() {
+        return explainValue;
+    }
 }

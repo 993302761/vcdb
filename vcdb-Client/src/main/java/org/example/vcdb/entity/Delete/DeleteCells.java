@@ -24,4 +24,8 @@ public class DeleteCells extends RequestEntity {
     public void setTerms(List<TermCell> terms) {
         this.terms = terms;
     }
+
+    public int getCount(){
+        return terms.size();
+    }
 }

@@ -25,4 +25,8 @@ public class UpdateCells extends RequestEntity {
         this.values = values;
     }
 
+    public int getCount(){
+        return values.size();
+    }
+
 }
