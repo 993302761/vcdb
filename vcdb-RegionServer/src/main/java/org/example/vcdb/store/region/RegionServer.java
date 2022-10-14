@@ -352,24 +352,34 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         //查memStore
 
 
-        //读文件，找到页号，加载到内存
+        //读文件，找到多个页号，加载到内存
 
 
-        // 加载到memStore
+        //加载到memStore
 
 
-        //返回kvs 的toByteArray
+        //返回 kvs 的 toByteArray
+
+
         return null;
     }
 
 
     public int deleteCells(){
+
+        //添加多个kv到memStore
+        //类似于putKVs
+
+
         return 11;
     }
 
 
 
     public int updateCells(){
+        //添加多个kv到memStore
+        //类似于putKVs
+
         return 11;
     }
 

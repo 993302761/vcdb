@@ -90,6 +90,8 @@ public class TestRegionServer {
         ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(true, false, 1, 100, ColumnFamilyMeta.byteToCFType((byte) 44));
         FileStore fileStore=new FileStore(cfMeta);
         VCFIleWriter.writeAll(fileStore.getData(), fileStoreName);
+
+
     }
 
     @Test

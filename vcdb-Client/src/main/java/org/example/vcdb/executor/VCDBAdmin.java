@@ -35,7 +35,7 @@ public class VCDBAdmin {
 
 
     //return int(返回改动KV的数量)
-    public void createDB(String dBName, CreateDB createDB) {
+    public String createDB(String dBName, CreateDB createDB) {
         //建立一个传输文本的通道
         ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
         try {
@@ -51,7 +51,7 @@ public class VCDBAdmin {
         }finally {
             build.shutdown();
         }
-
+        return "xxxx";
     }
 
 
