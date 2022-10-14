@@ -2,6 +2,7 @@ package org.example.vcdb.executor;
 
 import org.example.vcdb.config.ClientConfig;
 import org.example.vcdb.entity.Delete.DeleteCells;
+import org.example.vcdb.entity.Delete.DeleteDB;
 import org.example.vcdb.entity.Delete.DeleteTable;
 import org.example.vcdb.entity.Post.*;
 import org.example.vcdb.entity.Put.CreateDB;
@@ -20,84 +21,85 @@ public class VCDBAdmin {
     WalBuffer walBuffer;
 
     //return bool(是否成功)
-    public void createDB(String dBName, CreateDB createDB) {
-
-
+    public String createDB(String dBName, CreateDB createDB) {
+        return "create database "+dBName+" success\n";
     }
 
 
     //return bool(是否成功)
-    public void createTable(String dBName,String tabName,CreateTable createTable) {
-
+    public String createTable(String dBName,String tabName,CreateTable createTable) {
+        return "create table "+tabName+" success\n";
     }
 
     //return bool(是否成功)
-    public void deleteDB(String dBName,DeleteCells deleteCells) {
-
+    public String deleteDB(String dBName, DeleteDB deleteDB) {
+        return "delete database "+dBName+" success\n";
     }
 
     //return bool(是否成功)
-    public void deleteTable(String dBName,String tabName,DeleteTable deleteTable) {
-
+    public String deleteTable(String dBName,String tabName,DeleteTable deleteTable) {
+        return "delete table "+tabName +" success\n";
     }
 
     //return bool(是否成功)
-    public void openTransaction(OpenTransaction openTransaction) {
-
+    public String openTransaction(OpenTransaction openTransaction) {
+        return "openTransaction "+openTransaction.getExplainValue()+"\n";
     }
 
     //return bool(是否成功)
-    public void closeTransaction(CloseTransaction closeTransaction) {
-
+    public String closeTransaction(CloseTransaction closeTransaction) {
+        return "closeTransaction success\n";
     }
 
     //return int(返回改动KV的数量)
-    public void putCells(String dBName,String tabName,PutCells putCells) {
-
+    public String putCells(String dBName,String tabName,PutCells putCells) {
+        return "update "+putCells.getCount()+" cells success\n";
     }
 
     //return bool(是否成功)
-    public void alterTable(String dBName,String tabName,AlterTable alterTable) {
-
+    public String alterTable(String dBName,String tabName,AlterTable alterTable) {
+        return "alterTable "+tabName +"success\n";
     }
 
     //return int(查询的返回KV的数量)
-    public void mergeVersion(String dBName,String tabName,MergeVersion mergeVersion) {
-
+    public String mergeVersion(String dBName,String tabName,MergeVersion mergeVersion) {
+        return "mergeVersion "+mergeVersion.getCount()+" cells\n";
     }
 
     //return int(返回改动KV的数量)
-    public void useVersion(String dBName,String tabName,UseVersion useVersion) {
-
+    public String useVersion(String dBName,String tabName,UseVersion useVersion) {
+        return "use "+useVersion.getRowKey()+" version "+useVersion.getVersion()+" success\n";
     }
 
     //return byte[](查询的返回KV)
-    public void showVersion(String dBName,String tabName,ShowVersion showVersion) {
-
+    public String showVersion(String dBName,String tabName,ShowVersion showVersion) {
+        return "=====>0---row1---info:myName----n1\n" +
+                "=====>1---row1---info:myName----n2\n" +
+                "=====>2---row1---info:myName----n3\n";
     }
 
     //return byte[](查询的返回KV)
-    public void singleSearch(String dBName,String tabName,SingleSearch singleSearch) {
-
+    public String singleSearch(String dBName,String tabName,SingleSearch singleSearch) {
+        return "---row1---info:myName----n3\n";
     }
 
     //return int(返回改动KV的数量)
-    public void deleteCells(String dBName,String tabName,DeleteCells deleteCells) {
-
+    public String deleteCells(String dBName,String tabName,DeleteCells deleteCells) {
+        return "update "+deleteCells.getCount()+" cells success\n";
     }
 
     //return int(返回改动KV的数量)
-    public void updateCells(String dBName,String tabName,UpdateCells updateCells) {
-
+    public String updateCells(String dBName,String tabName,UpdateCells updateCells) {
+        return "update "+updateCells.getCount()+" cells success\n";
     }
 
     //return byte[](查询的返回KV)
-    public void multiSearch(String dBName,String tabName,MultiSearch multiSearch) {
-
+    public String multiSearch(String dBName,String tabName,MultiSearch multiSearch) {
+        return "\n";
     }
 
     //return int(返回改动KV的数量)
-    public void deleteVersion(String dBName,String tabName,DeleteVersion requestEntity) {
-
+    public String deleteVersion(String dBName,String tabName,DeleteVersion requestEntity) {
+        return "update  success\n";
     }
 }

@@ -16,4 +16,12 @@ public class UseVersion extends RequestEntity {
     public void setVersion(int version) {
         this.version = version;
     }
+
+    public String getRowKey() {
+        return rowKey;
+    }
+
+    public int getVersion() {
+        return version;
+    }
 }

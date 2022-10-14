@@ -40,6 +40,9 @@ public class PutCells extends RequestEntity {
         }
         return bytes;
     }
+    public int getCount(){
+        return values.size();
+    }
 }
 
 

@@ -274,9 +274,104 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         }
     }
 
-//    public int mergeVersion(String dBName,String tabName,String rowKey,byte[] requestEntity){
-//
-//    }
+    public int mergeVersion(String dBName,String tabName,byte[] requestEntity){
+        int pos=0;
+        int count=Bytes.toInt(requestEntity,pos,4);
+        pos+=4;
+        for (int i = 0; i < count; i++) {
+            int rowKeyLength=Bytes.toInt(requestEntity,pos,4);
+            pos+=4;
+            String rowKey=Bytes.toString(requestEntity,pos,rowKeyLength);
+            pos+=rowKeyLength;
+
+            int versionFrom=Bytes.toInt(requestEntity,pos,4);
+            pos+=4;
+
+            int versionTo=Bytes.toInt(requestEntity,pos,4);
+            pos+=4;
+
+            //找到合并的KV在哪一页
+
+            //加载到内存进行修改
+
+            //进行落盘
+        }
+        return  count;
+    }
+
+    public  boolean  useVersion(String dBName,String tabName,String rowKey){
+        //找到合并的KV在哪一页
+
+        //加载到内存进行修改时间戳
+
+        //添加KV到memStore
+        return true;
+    }
+
+
+    public byte[] showVersion(String dBName,String tabName,String rowKey){
+        //找到哪一个页
+
+        //加载KVs到内存
+
+        //把满足条件的一个KV返回成byteArray
+        return null;
+    }
+
+
+    public byte[] deleteVersion(String dBName,String tabName,String rowKey,int version){
+        //找到哪一个页
+
+        //加载KVs到内存
+
+        //找到满足条件的KV
+
+        //修改KV，add到kvs
+
+        //把kvs toByteArray落盘
+        return null;
+    }
+
+
+    public byte[] singleSearch(){
+        //查memStore
+
+
+        //读文件，找到页号，加载到内存
+
+
+        // 加载到memStore
+
+
+        //返回kvs 的toByteArray
+        return null;
+    }
+
+
+    public byte[] multiSearch(){
+        //查memStore
+
+
+        //读文件，找到页号，加载到内存
+
+
+        // 加载到memStore
+
+
+        //返回kvs 的toByteArray
+        return null;
+    }
+
+
+    public int deleteCells(){
+        return 11;
+    }
+
+
+
+    public int updateCells(){
+        return 11;
+    }
 
 
 
@@ -295,6 +390,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
             kv=new KV(rowKey.getBytes(),0,rowKey.getBytes().length,values);
             memStore.kvSet.add(kv);
     }
+
 
 
 

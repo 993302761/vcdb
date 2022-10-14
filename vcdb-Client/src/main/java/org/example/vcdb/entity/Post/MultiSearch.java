@@ -43,4 +43,6 @@ public class MultiSearch extends RequestEntity {
     public void setLimit(int limit) {
         this.limit = limit;
     }
+
+
 }

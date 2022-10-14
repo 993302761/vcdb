@@ -1,0 +1,65 @@
+创建数据库
+curl -X PUT "localhost:8080/myDataBase"
+
+创建表(SQL字段类型   char(1字节)  double(8字节) N*string(4字节) int(4字节) long(8字节) long long(16字节))
+curl -H "Content-Type: application/json" -X PUT -d\
+ '{"column_family":[{"cf_name": "info ","type": 56,"min": 1,"max": 34,"unique":"true"}]}'\
+ "localhost:8080/myDataBase/myTable"
+
+修改表结构(更新)
+ curl -H "Content-Type: application/json" -X POST -d\
+  '{"alter_cells":[{"cf_name":"info","old_cf_name":"myName","method":"update"}]}'\
+  "localhost:8080/myDataBase/myTable/_alter"
+
+删除数据库
+  curl -X DELETE "localhost:8080/myDataBase"
+
+删除表
+  curl -X DELETE "localhost:8080/myDataBase/myTable"
+
+开启事务
+  curl -H "Content-Type: application/json" -X POST -d\
+   '{"explainValue":  "I want update some Info"}'\
+   "localhost:8080/_open"
+
+基本添加流程
+curl -H "Content-Type: application/json" -X POST -d\
+ '{"rowKey":"row1","values":[{"cf_name":"info","c_name":"myName","value":"n1"}]}'\
+ "localhost:8080/myDataBase/myTable/_insert"
+
+ curl -H "Content-Type: application/json" -X POST -d\
+  '{"rowKey":"row1","values":[{"cf_name":"info","c_name":"myName","value":"n2"}]}'\
+  "localhost:8080/myDataBase/myTable/_insert"
+
+  curl -H "Content-Type: application/json" -X POST -d\
+   '{"rowKey":"row1","values":[{"cf_name":"info","c_name":"myName","value":"n3"}]}'\
+   "localhost:8080/myDataBase/myTable/_insert"
+
+
+关闭事务
+  curl -X POST "localhost:8080/_close"
+
+查看全部版本
+curl -H "Content-Type: application/json" -X POST -d\
+ '{"rowKey":"row1"}}'\
+ "localhost:8080/myDataBase/myTable/_showVersion"
+
+  3.版本合并
+curl -H "Content-Type: application/json" -X POST -d\
+ '{"Version_terms":[{"rowKey":"row1","version-from":0,"version-to":2}]}'\
+ "localhost:8080/myDataBase/myTable/_merge"
+
+删除某一版本
+ curl -H "Content-Type: application/json" -X POST -d\
+  '{"rowKey":"row1","version":0}}'\
+  "localhost:8080/myDataBase/myTable/delete_version"
+
+提取某一版本到最新版本
+curl -H "Content-Type: application/json" -X POST -d\
+ '{"rowKey":"row1","version":0}}'\
+ "localhost:8080/myDataBase/myTable/_use"
+
+基本查询流程
+curl -H "Content-Type: application/json" -X POST -d\
+ '{"limit":9,"cf_names":["row1","info"],"terms":[{"cf_name":"info","min":1,"max": 99}],"orders":[{"cf_name":"info1","sort":"asc"}]}'\
+ "localhost:8080/myDataBase/myTable/_search"
