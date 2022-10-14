@@ -1,0 +1,55 @@
+//使用proto3语法
+syntax = "proto3";
+
+//不要拆分成多个类
+option java_multiple_files = false;
+//生成java类所在的包
+option java_package = "org.example.vcdb.store.proto";
+//生成外层类的类名
+option java_outer_classname = "Search";
+
+import "Version.proto";
+
+package Search;
+
+// 对外提供的接口
+service searchService {
+  // getRegionMeta 方法名，google.protobuf.Empt 传入参数为空， regionMeta  返回响应类
+  rpc multiSearch (multiSearchRequest) returns (Version.bytesReply) {}
+
+  rpc singleSearch (singleSearchRequest) returns (Version.bytesReply) {}
+
+}
+
+
+message multiSearchRequest{
+  string dBName=10;
+  string tabName=20;
+    MultiSearch multiSearch=30;
+}
+
+message MultiSearch{
+   int32 limit=10;
+   bytes j_tables=20;
+   bytes cf_names=30;
+   bytes terms=40;
+   bytes orders=50;
+}
+
+message singleSearchRequest{
+  string dBName=10;
+  string tabName=20;
+    SingleSearch singleSearch=30;
+}
+
+
+message SingleSearch{
+  int32 limit=10;
+  bytes cf_names=20;
+
+  bytes terms=30;
+
+  bytes orders=40;
+
+  bytes aggregate=50;
+}

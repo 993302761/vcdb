@@ -1,0 +1,79 @@
+//使用proto3语法
+syntax = "proto3";
+
+//不要拆分成多个类
+option java_multiple_files = false;
+//生成java类所在的包
+option java_package = "org.example.vcdb.proto";
+//生成外层类的类名
+option java_outer_classname = "Version";
+
+package Version;
+
+
+service versionService{
+
+  rpc deleteVersion (deleteRequest) returns (intReply) {}
+
+  rpc mergeVersion (mergeRequest) returns (intReply) {}
+
+  rpc useVersion (useRequest) returns (intReply) {}
+
+  rpc showVersion (showRequest) returns (bytesReply) {}
+
+}
+
+message deleteRequest{
+  string dBName=10;
+  string tabName=20;
+    DeleteVersion deleteVersion=30;
+}
+
+message DeleteVersion{
+   string rowKey=10;
+   int32 version=20;
+}
+
+message mergeRequest{
+  string dBName=10;
+  string tabName=20;
+    MergeVersion mergeVersion=30;
+}
+
+message MergeVersion{
+   string rowKey=10;
+   bytes versionTerm=20;
+}
+
+
+
+
+message useRequest{
+  string dBName=10;
+  string tabName=20;
+    UseVersion useVersion=30;
+}
+
+message UseVersion{
+  string rowKey=10;
+  int32 version=20;
+}
+
+
+message showRequest{
+  string dBName=10;
+  string tabName=20;
+  string rowKey=30;
+}
+
+
+
+message intReply{
+  int32 Reply=1;
+}
+
+message bytesReply{
+  bytes Reply=1;
+}
+
+

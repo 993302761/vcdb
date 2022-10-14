@@ -1,5 +1,7 @@
 package org.example.vcdb.executor;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import org.example.vcdb.config.ClientConfig;
 import org.example.vcdb.entity.Delete.DeleteCells;
 import org.example.vcdb.entity.Delete.DeleteDB;
@@ -7,6 +9,9 @@ import org.example.vcdb.entity.Delete.DeleteTable;
 import org.example.vcdb.entity.Post.*;
 import org.example.vcdb.entity.Put.CreateDB;
 import org.example.vcdb.entity.Put.CreateTable;
+import org.example.vcdb.proto.DB;
+import org.example.vcdb.proto.Version;
+import org.example.vcdb.proto.dbServiceGrpc;
 import org.example.vcdb.store.mem.KV;
 import org.example.vcdb.store.wal.VCLog;
 import org.example.vcdb.store.wal.WalBuffer;
@@ -20,9 +25,33 @@ public class VCDBAdmin {
     ClientConfig clientConfig;
     WalBuffer walBuffer;
 
-    //return bool(是否成功)
-    public String createDB(String dBName, CreateDB createDB) {
-        return "create database "+dBName+" success\n";
+
+    private final static String host="localhost";
+    //服务端口号
+    private final static int serverPort=9999;
+
+
+//-----------------------------------------------------------------------------------
+
+
+    //return int(返回改动KV的数量)
+    public void createDB(String dBName, CreateDB createDB) {
+        //建立一个传输文本的通道
+        ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
+        try {
+
+            //使用同步的方式进行消息传递
+            dbServiceGrpc.dbServiceBlockingStub blockingStub = dbServiceGrpc.newBlockingStub(build);
+            DB.createRequest request = DB.createRequest.newBuilder()
+                    .setDBName("123")
+                    .build();
+            Version.intReply db = blockingStub.createDB(request);
+            int reply = db.getReply();
+            System.out.println(reply);
+        }finally {
+            build.shutdown();
+        }
+
     }
 
 
