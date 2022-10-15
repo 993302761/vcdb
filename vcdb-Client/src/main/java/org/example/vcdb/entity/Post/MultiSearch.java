@@ -16,13 +16,17 @@ import java.util.List;
  */
 public class MultiSearch extends RequestEntity {
     private int limit;
+
+    String orderCfName;
+    //0 desc
+    //1 asc
+    boolean sort;
     private List<JTableCell> j_tables;
 
     private List<String> cf_names;
 
     private List<TermCell> terms;
 
-    private List<Order> orders;
     public void setJ_tables(List<JTableCell> j_tables) {
         this.j_tables = j_tables;
     }
@@ -35,10 +39,13 @@ public class MultiSearch extends RequestEntity {
         this.terms = terms;
     }
 
-    public void setOrders(List<Order> orders) {
-        this.orders = orders;
+    public void setOrderCfName(String orderCfName) {
+        this.orderCfName = orderCfName;
     }
 
+    public void setSort(boolean sort) {
+        this.sort = sort;
+    }
 
     public void setLimit(int limit) {
         this.limit = limit;

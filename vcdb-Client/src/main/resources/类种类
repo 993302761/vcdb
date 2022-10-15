@@ -86,6 +86,7 @@ POST http://ip:端口/dbname/tab_name/_merge
    [
         {
             "rowKey":"行建名"(必要)
+            "cfName":"列族名字"（必要）
             "version-from":"要合并版本"(必要)
             "version-to":"合并后版本"(必要)
         },
@@ -107,6 +108,7 @@ curl -H "Content-Type: application/json" -X POST -d\
 POST http://ip:端口/dbname/tab_name/_use
 {
     "rowKey":"行建名"(必要)
+    "cfName":"列族名字"（必要）
     "version":"版本"(必要)
 }
 
@@ -120,6 +122,7 @@ curl -H "Content-Type: application/json" -X POST -d\
 POST http://ip:端口/dbname/tab_name/delete_version
 {
     "rowKey":"行建名"(必要)
+    "cfName":"列族名字"（必要）
     "version":"版本"(必要)
 }
 
@@ -143,6 +146,8 @@ post http://ip:端口/dbname/tab_name/_search
 {
     "limit":9(不必要)
     "cf_names":["rowKey","id","name","age",*](必要)
+    'order_cf_name':'xxx',
+    'sort':'asc/desc',
     "terms(条件)":
         [
             {
@@ -155,19 +160,14 @@ post http://ip:端口/dbname/tab_name/_search
             },
             ......
         ]
-    "orders":
-    [
-        {
-            'cf_name':'xxx',
-            'sort':'asc/desc'
-        },
-        ......
-    ]
+
+    (可以不要)
 	"Aggregate(聚合)":
 	    [
             {
             "function":avg/min/max/sum,(必要)
-            c_name:"StudentAge",(必要)
+            cf_name:"StudentAge",(必要)
+
             as:“xxx”(必要)
             },
         .....
@@ -220,16 +220,18 @@ post http://ip:端口/dbname/tab_name /_delete
 11.基本跟新流程
 POST  http://ip:端口/dbname/tab_name /_update
 {
-    "rowKey":"sss"
+    //"rowKey":"sss",
+    //为了用列来限定行，找到符合条件的几行，
     "terms":
     [
         {
-            "cf_name":"列族名称",(必要)
-            "c_name":"StudentAge",(不必要)
-            "max": "最大值",(不必要)
-            "equivalence":"相等的值",(不必要)
-            "min":"最小值",(不必要)
-            "like": "模糊(%表示多个字符，_表示一个字符)"(不必要)
+            "cf_name" : "列族名称",(必要)
+            "c_name" : "StudentAge",(不必要)
+            "max" : "最大值",(不必要)
+            "equivalence"  :"相等的值",(不必要)
+            "min" : "最小值",(不必要)
+            "like" : "模糊(%表示多个字符，_表示一个字符)"(不必要)
+            "value" : "xxx"(必要)
         },
        .......
     ]
@@ -250,7 +252,9 @@ POST  http://ip:端口/dbname/tab_name /_update
 12.多表查询
 post http://ip:端口/dbname/tab_name /_mget
 {
-    "limit":9(不必要)
+    "limit":9(不必要)，
+    'order_cf_name':'xxx',(必要),
+    'sort':'asc/desc'(必要),
 	"j_tables"：
         [
             {
@@ -272,12 +276,5 @@ post http://ip:端口/dbname/tab_name /_mget
             },
                 ......
         ]
-        "orders":
-            [
-                {
-                    'cf_name':'xxx',(必要)
-                    'sort':'asc/desc'(必要)
-                },
-                ......
-            ]
+
 }

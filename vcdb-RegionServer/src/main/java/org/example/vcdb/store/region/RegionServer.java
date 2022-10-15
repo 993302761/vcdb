@@ -217,6 +217,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
     }
 
 
+    //有问题功能局限，应该可以修改，columnFamilyMeta
     /*修改列族名字---table：cf--->fileStoreMeta*/
     public static boolean alterTable(String dBName,String tabName,byte[] requestEntity){
         try {
@@ -284,66 +285,150 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
             String rowKey=Bytes.toString(requestEntity,pos,rowKeyLength);
             pos+=rowKeyLength;
 
+            int cfNameLength=Bytes.toInt(requestEntity,pos,4);
+            pos+=4;
+            String cfName=Bytes.toString(requestEntity,pos,cfNameLength);
+            pos+=cfNameLength;
+
             int versionFrom=Bytes.toInt(requestEntity,pos,4);
             pos+=4;
 
             int versionTo=Bytes.toInt(requestEntity,pos,4);
             pos+=4;
 
-            //找到合并的KV在哪一页
+            //找到合并的KVs在哪一页
+
+            String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
+            FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
+            int pageIndex = findPageIndex(dBName, tabName, rowKey ,cfName);
 
             //加载到内存进行修改
-
+            byte[] bytes = VCFileReader.openFileStorePage(pageIndex, fileStoreMeta.getEncodedName());
+            KeyValueSkipListSet kvs = byteArrayToKvs(bytes);
+            KV kv = kvs.get(rowKey);
+            List<KV.ValueNode> values = kv.getValues();
+            //看是否存在versionTo和versionFrom的valueNode
+//            values.get(versionFrom);
+//            values.get(versionTo);
+            int vCount=versionTo-versionFrom;
+            if (vCount-1>0){
+                for (int j = 0; j < vCount-1; j++) {
+                    values.remove(versionTo+1);
+                }
+            }
+            kv.setValues(values);
+            kvs.add(kv);
             //进行落盘
+            byte[] bytes1 = kvsToByteArray(kvs);
+            VCFIleWriter.writeAll(bytes1,pageIndex*1024,fileStoreMeta.getEncodedName());
         }
         return  count;
     }
 
-    public  boolean  useVersion(String dBName,String tabName,String rowKey){
-        //找到合并的KV在哪一页
+    private int findPageIndex(String dBName, String tabName, String rowKey, String cfName) {
+        List<KVRange> pageTrailer = getPageTrailer(dBName + "." + tabName, cfName);
+        for (int i = 0; i < pageTrailer.size(); i++) {
+            try {
+                pageTrailer.get(i + 1);
+                if ((rowKey.compareTo(Bytes.toString(pageTrailer.get(i).getEndKey())) <= 0
+                        && rowKey.compareTo(Bytes.toString(pageTrailer.get(i).getStartKey())) >= 0)) {
+                    return i;
+                }
+            } catch (Exception e) {
+                return i;
+            }
+        }
+        return 0;
+    }
 
-        //加载到内存进行修改时间戳
+    public  boolean  useVersion(String dBName,String tabName,String rowKey, String cfName){
+        //找到修改的KVs在哪一页
+        String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
+        FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
+        int pageIndex = findPageIndex(dBName, tabName, rowKey ,cfName);
 
-        //添加KV到memStore
+        //加载到内存进行修改
+        byte[] bytes = VCFileReader.openFileStorePage(pageIndex, fileStoreMeta.getEncodedName());
+        KeyValueSkipListSet kvs = byteArrayToKvs(bytes);
+        KV kv = kvs.get(rowKey);
+        List<KV.ValueNode> values = kv.getValues();
+
+        KV.ValueNode valueNode = values.get(values.size() - 1);
+        values.add(valueNode);
+        kv.setValues(values);
+
+        kvs.add(kv);
+        //进行落盘
+        byte[] bytes1 = kvsToByteArray(kvs);
+        VCFIleWriter.writeAll(bytes1,pageIndex*1024,fileStoreMeta.getEncodedName());
         return true;
     }
 
 
-    public byte[] showVersion(String dBName,String tabName,String rowKey){
-        //找到哪一个页
+    public byte[] showVersion(String dBName,String tabName,String rowKey,String cfName){
+        //找到修改的KVs在哪一页
+        String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
+        FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
+        int pageIndex = findPageIndex(dBName, tabName, rowKey ,cfName);
 
-        //加载KVs到内存
-
-        //把满足条件的一个KV返回成byteArray
-        return null;
+        //加载到内存,找到KV,返回
+        byte[] bytes = VCFileReader.openFileStorePage(pageIndex, fileStoreMeta.getEncodedName());
+        KeyValueSkipListSet kvs = byteArrayToKvs(bytes);
+        KV kv = kvs.get(rowKey);
+        return kv.getData();
     }
 
 
-    public byte[] deleteVersion(String dBName,String tabName,String rowKey,int version){
-        //找到哪一个页
+    public boolean deleteVersion(String dBName,String tabName,String rowKey,String cfName,int version){
+        //找到修改的KVs在哪一页
+        String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
+        FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
+        int pageIndex = findPageIndex(dBName, tabName, rowKey ,cfName);
 
-        //加载KVs到内存
+        //加载到内存进行修改
+        byte[] bytes = VCFileReader.openFileStorePage(pageIndex, fileStoreMeta.getEncodedName());
+        KeyValueSkipListSet kvs = byteArrayToKvs(bytes);
+        KV kv = kvs.get(rowKey);
+        List<KV.ValueNode> values = kv.getValues();
 
-        //找到满足条件的KV
-
-        //修改KV，add到kvs
-
-        //把kvs toByteArray落盘
-        return null;
+        values.remove(version);
+        kv.setValues(values);
+        kvs.add(kv);
+        //进行落盘
+        byte[] bytes1 = kvsToByteArray(kvs);
+        VCFIleWriter.writeAll(bytes1,pageIndex*1024,fileStoreMeta.getEncodedName());
+        return true;
     }
 
 
-    public byte[] singleSearch(){
-        //查memStore
+    public byte[] singleSearch(String dBName,String tabName,String limit,
+                               String orderCfName,boolean sort,
+                               byte[] cfNames,byte[] terms){
+        int pos=0;
+        int count=Bytes.toInt(cfNames,pos,4);
+        pos+=4;
+        // 查memStore
+        for (int i = 0; i < cfNames.length; i++) {
+            int cfNameLength=Bytes.toInt(cfNames,pos,4);
+            pos+=4;
+            String cfName=Bytes.toString(cfNames,pos,cfNameLength);
+            pos+=cfNameLength;
+            MemStore memStore = outboundMemStore.get(dBName + "." + tabName + ":" + cfName);
+            if (memStore==null){
+                //从磁盘里读出来
+
+            }
+            // 在读出来的memStore里面筛选
 
 
-        //读文件，找到页号，加载到内存
 
+        }
+        // 读文件，找到页号，加载到内存
 
         // 加载到memStore
 
-
         //返回kvs 的toByteArray
+
         return null;
     }
 
@@ -366,7 +451,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
 
     public int deleteCells(){
-
         //添加多个kv到memStore
         //类似于putKVs
 

@@ -15,6 +15,7 @@ import java.util.List;
 public class DeleteCells extends RequestEntity {
     private List<String> cf_names;
 
+    //为了筛选行
     private List<TermCell> terms;
 
     public void setCf_names(List<String> cf_names) {

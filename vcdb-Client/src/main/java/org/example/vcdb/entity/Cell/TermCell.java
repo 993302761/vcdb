@@ -1,5 +1,7 @@
 package org.example.vcdb.entity.Cell;
 
+import org.example.vcdb.util.Bytes;
+
 /**
  * @author : wyy
  * @Date : 2022.7.11
@@ -79,5 +81,21 @@ public class TermCell {
 
     public void setLike(String like) {
         this.like = like;
+    }
+
+    public byte[] toByteArray(){
+        byte[] bytes=new byte[4+cf_name.getBytes().length+4+c_name.getBytes().length+8+8+4+8+ 4+like.getBytes().length];
+        int pos=0;
+        pos= Bytes.putInt(bytes,pos,cf_name.getBytes().length);
+        pos=Bytes.putBytes(bytes,pos,cf_name.getBytes(),0,cf_name.getBytes().length);
+        pos= Bytes.putInt(bytes,pos,c_name.getBytes().length);
+        pos=Bytes.putBytes(bytes,pos,c_name.getBytes(),0,c_name.getBytes().length);
+        pos= Bytes.putLong(bytes,pos,size);
+        pos= Bytes.putDouble(bytes,pos,max);
+        pos= Bytes.putInt(bytes,pos,equivalence);
+        pos= Bytes.putDouble(bytes,pos,min);
+        pos= Bytes.putInt(bytes,pos,like.getBytes().length);
+        pos=Bytes.putBytes(bytes,pos,like.getBytes(),0,like.getBytes().length);
+        return bytes;
     }
 }

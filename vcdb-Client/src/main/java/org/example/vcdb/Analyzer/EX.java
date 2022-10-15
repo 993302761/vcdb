@@ -333,6 +333,10 @@ public class EX {
                 multiSearch.setCf_names(cf_names);
             } else if ("limit".equalsIgnoreCase(cell.getKey())) {
                 multiSearch.setLimit(Integer.parseInt((String) cell.getValue()));
+            }else if ("order_cf_name".equalsIgnoreCase(cell.getKey())) {
+                multiSearch.setOrderCfName((String) cell.getValue());
+            } else if ("sort".equalsIgnoreCase(cell.getKey())) {
+                multiSearch.setSort(Boolean.parseBoolean((String) cell.getValue()));
             } else {
                 System.err.println("出现未知属性，打印key");
             }
@@ -342,8 +346,6 @@ public class EX {
                 multiSearch.setJ_tables(selectJTables(entry.getValue()));
             } else if ("terms".equalsIgnoreCase(entry.getKey())) {
                 multiSearch.setTerms(selectTerms(entry.getValue()));
-            } else if ("orders".equalsIgnoreCase(entry.getKey())) {
-                multiSearch.setOrders(selectOrders(entry.getValue()));
             } else {
                 System.err.println("把key打印出来，说明它不属于关键字");
             }
@@ -561,6 +563,10 @@ public class EX {
                     System.err.println("报错提示cf_names为空");
                 }
                 singleSearch.setCf_names(cf_names);
+            } else if ("order_cf_name".equalsIgnoreCase(cfs.getKey())) {
+                singleSearch.setOrderCfName((String) cfs.getValue());
+            } else if ("sort".equalsIgnoreCase(cfs.getKey())) {
+                singleSearch.setSort(Boolean.parseBoolean((String) cfs.getValue()));
             } else if ("limit".equalsIgnoreCase(cfs.getKey())) {
                 singleSearch.setLimit(Integer.parseInt((String) cfs.getValue()));
             } else {
@@ -570,9 +576,7 @@ public class EX {
         for (HashMap.Entry<String, List<HashMap<String, String>>> entry : actionEntity.getCompoundAttribute().entrySet()) {
             if ("terms".equalsIgnoreCase(entry.getKey())) {
                 singleSearch.setTerms(selectTerms(entry.getValue()));
-            } else if ("orders".equalsIgnoreCase(entry.getKey())) {
-                singleSearch.setOrders(selectOrders(entry.getValue()));
-            } else if ("Aggregate".equalsIgnoreCase(entry.getKey())) {
+            }  else if ("Aggregate".equalsIgnoreCase(entry.getKey())) {
                 singleSearch.setAggregate(selectAggregate(entry.getValue()));
             } else {
                 System.err.println("把key打印出来，说明它不属于关键字");

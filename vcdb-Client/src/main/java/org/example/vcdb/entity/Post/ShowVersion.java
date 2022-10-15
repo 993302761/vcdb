@@ -8,6 +8,7 @@ package org.example.vcdb.entity.Post;
  */
 public class ShowVersion extends RequestEntity {
     private String rowKey;
+    public String cfName;
 
     public void setRowKey(String rowKey) {
         this.rowKey = rowKey;

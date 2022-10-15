@@ -77,6 +77,28 @@ public class KV {
         }
         return valueNodes;
     }
+    public void setValues(List<ValueNode> values) {
+        int valuesLength = 0;
+        if (values != null && !values.isEmpty()) {
+            for (ValueNode v : values) {
+                //valueLengthSize
+                valuesLength += v.getLength();
+            }
+        }
+        int rLength = getRLength();
+        int pos = rLength  + 4;
+        pos = Bytes.putInt(this.data, pos, valuesLength);
+
+        if (values!=null){
+            // Add the tags after the value part
+            if (valuesLength > 0) {
+                pos = Bytes.putInt(this.data, pos, values.size());
+                for (ValueNode valueNode : values) {
+                    pos = Bytes.putBytes(this.data, pos, valueNode.getBytes(), 0, valueNode.getLength());
+                }
+            }
+        }
+    }
 
     public KV(final byte[] row, final int rOffset, final int rLength,
               final List<ValueNode> values) {
@@ -141,6 +163,8 @@ public class KV {
             valueNode.dis();
         }
     }
+
+
 
     public static enum Type {
         CreateDB((byte) 0),

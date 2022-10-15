@@ -13,7 +13,10 @@ import java.util.List;
  * @Date : 2022.7.11
  */
 public class UpdateCells extends RequestEntity {
+
+    //为了用列来限定行，找到符合条件的几行
     private List<TermCell> terms;
+
 
     private List<Value> values;
 

@@ -4,6 +4,8 @@ package org.example.vcdb.entity.Post;
 import org.example.vcdb.entity.Cell.Aggregate;
 import org.example.vcdb.entity.Cell.Order;
 import org.example.vcdb.entity.Cell.TermCell;
+import org.example.vcdb.entity.Cell.VersionTerm;
+import org.example.vcdb.util.Bytes;
 
 import java.util.List;
 
@@ -13,14 +15,47 @@ import java.util.List;
  */
 public class SingleSearch extends RequestEntity {
     int limit;
+
     private List<String> cf_names;
 
+    //为了用列来限定(找)行，找到符合条件的几行
     private List<TermCell> terms;
 
-    private List<Order> orders;
+    String orderCfName;
+    //0 desc
+    //1 asc
+    boolean sort;
 
-    private List<Aggregate> aggregate;
+//    private List<Aggregate> aggregate;
 
+    public byte[] getCfNameByteArray(){
+        int cfNamesLength=0;
+        for (String cfName:cf_names){
+            cfNamesLength+=cfName.getBytes().length;
+        }
+        byte[] bytes=new byte[4+cfNamesLength];
+        int pos=0;
+        pos= Bytes.putInt(bytes,pos,terms.size());
+        for (String cfName:cf_names){
+            Bytes.putBytes(bytes,pos,cfName.getBytes(),0,cfName.getBytes().length);
+        }
+        return bytes;
+    }
+
+    private byte[] getTermsByteArray(){
+        int termsLength=0;
+        for (TermCell termCell:terms){
+            termsLength+=termCell.toByteArray().length;
+        }
+        byte[] bytes=new byte[4+termsLength];
+        int pos=0;
+        pos= Bytes.putInt(bytes,pos,terms.size());
+        for (TermCell termCell:terms){
+//            Bytes.putInt(bytes,pos,versionTerm.toByteArray().length);
+            Bytes.putBytes(bytes,pos,termCell.toByteArray(),0,termCell.toByteArray().length);
+        }
+        return bytes;
+    }
     public void setLimit(int limit) {
         this.limit = limit;
     }
@@ -33,11 +68,15 @@ public class SingleSearch extends RequestEntity {
         this.terms = terms;
     }
 
-    public void setOrders(List<Order> orders) {
-        this.orders = orders;
+    public void setSort(boolean sort) {
+        this.sort = sort;
     }
 
-    public void setAggregate(List<Aggregate> aggregate) {
-        this.aggregate = aggregate;
+    public void setOrderCfName(String orderCfName) {
+        this.orderCfName = orderCfName;
     }
+
+//    public void setAggregate(List<Aggregate> aggregate) {
+//        this.aggregate = aggregate;
+//    }
 }
