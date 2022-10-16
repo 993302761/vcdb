@@ -256,6 +256,10 @@ public class KV {
                          final byte[] value, final int vOffset, final int vLength) {
             this.bytes = createByteArray(timestamp, type, qualifier, qOffset, qLength, value, vOffset, vLength);
         }
+        public ValueNode(byte[] bytes){
+            this.bytes=bytes;
+            this.length=bytes.length;
+        }
 
         private byte[] createByteArray(long timestamp, Type type,
                                        byte[] qualifier, int qOffset, int qLength,

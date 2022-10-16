@@ -496,7 +496,7 @@ public class EX {
                     }
                 } else if ("equivalence".equalsIgnoreCase(cell.getKey())) {
                     if (termCell.getEquivalence() == null) {
-                        termCell.setEquivalence(Integer.parseInt(cell.getValue()));
+                        termCell.setEquivalence(cell.getValue());
                     } else {
                         System.err.println("报错重复设置equivalence属性");
                     }
@@ -576,9 +576,11 @@ public class EX {
         for (HashMap.Entry<String, List<HashMap<String, String>>> entry : actionEntity.getCompoundAttribute().entrySet()) {
             if ("terms".equalsIgnoreCase(entry.getKey())) {
                 singleSearch.setTerms(selectTerms(entry.getValue()));
-            }  else if ("Aggregate".equalsIgnoreCase(entry.getKey())) {
-                singleSearch.setAggregate(selectAggregate(entry.getValue()));
-            } else {
+            }
+//            else if ("Aggregate".equalsIgnoreCase(entry.getKey())) {
+//                singleSearch.setAggregate(selectAggregate(entry.getValue()));
+//            }
+            else {
                 System.err.println("把key打印出来，说明它不属于关键字");
             }
         }

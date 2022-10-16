@@ -1,6 +1,7 @@
 package org.example.vcdb.store.region;
 
 import com.google.protobuf.Empty;
+import com.sun.jdi.ShortType;
 import io.grpc.stub.StreamObserver;
 import org.example.vcdb.store.file.VCFIleWriter;
 import org.example.vcdb.store.file.VCFileReader;
@@ -18,10 +19,7 @@ import org.example.vcdb.store.region.fileStore.KVRange;
 import org.example.vcdb.util.Bytes;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.example.vcdb.store.mem.KV.byteToType;
@@ -404,25 +402,115 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
     public byte[] singleSearch(String dBName,String tabName,String limit,
                                String orderCfName,boolean sort,
                                byte[] cfNames,byte[] terms){
-        int pos=0;
-        int count=Bytes.toInt(cfNames,pos,4);
-        pos+=4;
-        // 查memStore
-        for (int i = 0; i < cfNames.length; i++) {
-            int cfNameLength=Bytes.toInt(cfNames,pos,4);
-            pos+=4;
-            String cfName=Bytes.toString(cfNames,pos,cfNameLength);
-            pos+=cfNameLength;
-            MemStore memStore = outboundMemStore.get(dBName + "." + tabName + ":" + cfName);
+        //加载terms
+        int pos1=0;
+        int termsCount=Bytes.toInt(terms,pos1,4);
+        pos1+=4;
+        Map<String,CFTerm> cfTermMap=new HashMap<>();
+        for (int i = 0; i < termsCount; i++) {
+             int cfLength=Bytes. toInt(terms,pos1);
+             pos1+=4;
+             String cfName=Bytes.toString(terms,pos1,cfLength);
+             pos1+=cfLength;
+
+            int cLength=Bytes. toInt(terms,pos1);
+            pos1+=4;
+            String cName=Bytes.toString(terms,pos1,cLength);
+            pos1+=cLength;
+
+            long size=Bytes.toLong(terms,pos1);
+            pos1+=8;
+
+            double max=Bytes.toDouble(terms,pos1);
+            pos1+=8;
+
+            double min=Bytes.toDouble(terms,pos1);
+            pos1+=8;
+
+            int equivalenceLength=Bytes. toInt(terms,pos1);
+            pos1+=4;
+            String equivalence=Bytes.toString(terms,pos1,equivalenceLength);
+            pos1+=equivalenceLength;
+
+
+            int likeLength=Bytes. toInt(terms,pos1);
+            pos1+=4;
+            String like=Bytes.toString(terms,pos1,likeLength);
+            pos1+=equivalenceLength;
+
+            cfTermMap.put(cfName,new CFTerm(cfName,cName,size,max,equivalence,min,like));
+        }
+
+        Set<Integer> rowKeysRes=new HashSet<>();
+        //结合term筛选出来rowKeys
+        for (Map.Entry<String,CFTerm> entry : cfTermMap.entrySet()) {
+            MemStore memStore = outboundMemStore.get(dBName + "." + tabName + ":" + entry.getKey());
+            KeyValueSkipListSet kvs=new KeyValueSkipListSet(new KV.KVComparator());
+            byte type=99;
             if (memStore==null){
                 //从磁盘里读出来
+                RegionMeta regionMeta = getRegionMeta(dBName + "." + tabName);
+                String fileStoreMetaName=regionMeta.getfileStoreMetaName(entry.getKey());
+                FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
+                List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
+                FileStore fileStore =new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName()));
 
+                //装了一个fileStore的东西
+                for (int j = 0; j < pageTrailer.size(); j++) {
+                    kvs.addKVs(fileStore.getDataSet(1+j));
+                }
+            }
+            if (memStore!=null){
+                type= memStore.getType();
+            }
+
+            // 在读出来的memStore里面筛选出来rowKeys,和rowKeysRes取交集
+            Set<Integer> rowKeys=new HashSet<>();
+            for (KV kv:kvs){
+                List<KV.ValueNode> values = kv.getValues();
+                int size = values.size();
+                KV.ValueNode valueNode = values.get(size);
+                //结合Term筛选valueNode
+                String value = valueNode.getValue();
+                CFTerm term = entry.getValue();
+                Object o = transferType(value, type);
+
+
+            }
+
+        }
+
+        //加载cfNames
+        int pos2=0;
+        int cfNameCount=Bytes.toInt(cfNames,pos2,4);
+        pos2+=4;
+        // 查memStore
+        for (int i = 0; i < cfNames.length; i++) {
+            int cfNameLength=Bytes.toInt(cfNames,pos2,4);
+            pos2+=4;
+            String cfName=Bytes.toString(cfNames,pos2,cfNameLength);
+            pos2+=cfNameLength;
+            MemStore memStore = outboundMemStore.get(dBName + "." + tabName + ":" + cfName);
+            //装了一个fileStore的东西
+            KeyValueSkipListSet kvs=new KeyValueSkipListSet(new KV.KVComparator());
+            if (memStore==null){
+                //从磁盘里读出来
+                RegionMeta regionMeta = getRegionMeta(dBName + "." + tabName);
+                String fileStoreMetaName=regionMeta.getfileStoreMetaName(cfName);
+                FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
+                List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
+                FileStore fileStore =new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName())) ;
+                for (int j = 0; j < pageTrailer.size(); j++) {
+                    kvs.addKVs(fileStore.getDataSet(1+i));
+                }
             }
             // 在读出来的memStore里面筛选
 
-
-
         }
+
+
+
+
         // 读文件，找到页号，加载到内存
 
         // 加载到memStore
@@ -489,6 +577,30 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
 
 
+    public Object transferType(String value,byte type){
+        switch (type){
+            case 42:
+                return Byte.parseByte(value);
+            case 44:
+                return Short.parseShort(value);
+            case 46:
+                return Integer.parseInt(value);
+            case 48:
+                return Long.parseLong(value);
+            case 50:
+                return Float.parseFloat(value);
+            case 52:
+                return Long.parseLong(value);
+            case 54:
+                return value.toCharArray()[0];
+            case 56:
+                return value;
+            case 58:
+                return value.getBytes();
+            default:
+                return null;
+        }
+    }
 
 
 

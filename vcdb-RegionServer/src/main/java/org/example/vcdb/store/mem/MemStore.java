@@ -8,6 +8,7 @@ public class MemStore {
     long timeOfOldestEdit = Long.MAX_VALUE;
     //lock for memStore version
     public AtomicLong size;
+    byte type;
     //from juc
     public KeyValueSkipListSet kvSet;
 
@@ -16,6 +17,10 @@ public class MemStore {
     public MemStore(){
         size=new AtomicLong(0);
         kvSet =new KeyValueSkipListSet(new KV.KVComparator());
+    }
+
+    public byte getType() {
+        return type;
     }
 
     public void add(final KV kv) {

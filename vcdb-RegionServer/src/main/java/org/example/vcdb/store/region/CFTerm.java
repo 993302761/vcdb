@@ -1,12 +1,14 @@
-package org.example.vcdb.entity.Cell;
-
-import org.example.vcdb.util.Bytes;
+package org.example.vcdb.store.region;
 
 /**
- * @author : wyy
- * @Date : 2022.7.11
+ * @ClassName CFTerm
+ * @Description TODO
+ * @Author lqc
+ * @Date 2022/10/16 下午6:30
+ * @Version 1.0
  */
-public class TermCell {
+
+public class CFTerm {
     /**
      * cf_name : 列族名称
      * c_name : 列名
@@ -26,6 +28,18 @@ public class TermCell {
     private String equivalence;
     private double min=Double.MIN_VALUE;
     private String like;
+
+    public CFTerm(String cf_name, String c_name,
+                  long size, double max, String equivalence,
+                  double min, String like) {
+        this.cf_name = cf_name;
+        this.c_name = c_name;
+        this.size = size;
+        this.max = max;
+        this.equivalence = equivalence;
+        this.min = min;
+        this.like = like;
+    }
 
     public String getCf_name() {
         return cf_name;
@@ -81,22 +95,5 @@ public class TermCell {
 
     public void setLike(String like) {
         this.like = like;
-    }
-
-    public byte[] toByteArray(){
-        byte[] bytes=new byte[4+cf_name.getBytes().length+4+c_name.getBytes().length+8+8+4+8+ 4+like.getBytes().length];
-        int pos=0;
-        pos= Bytes.putInt(bytes,pos,cf_name.getBytes().length);
-        pos=Bytes.putBytes(bytes,pos,cf_name.getBytes(),0,cf_name.getBytes().length);
-        pos= Bytes.putInt(bytes,pos,c_name.getBytes().length);
-        pos=Bytes.putBytes(bytes,pos,c_name.getBytes(),0,c_name.getBytes().length);
-        pos= Bytes.putLong(bytes,pos,size);
-        pos= Bytes.putDouble(bytes,pos,max);
-        pos= Bytes.putDouble(bytes,pos,min);
-        pos= Bytes.putInt(bytes,pos,equivalence.getBytes().length);
-        pos=Bytes.putBytes(bytes,pos,equivalence.getBytes(),0,equivalence.getBytes().length);
-        pos= Bytes.putInt(bytes,pos,like.getBytes().length);
-        pos=Bytes.putBytes(bytes,pos,like.getBytes(),0,like.getBytes().length);
-        return bytes;
     }
 }
