@@ -29,4 +29,5 @@ public class DeleteCells extends RequestEntity {
     public int getCount(){
         return terms.size();
     }
+
 }

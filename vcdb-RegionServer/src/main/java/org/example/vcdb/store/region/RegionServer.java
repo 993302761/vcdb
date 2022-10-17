@@ -418,14 +418,16 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
             String cName=Bytes.toString(terms,pos1,cLength);
             pos1+=cLength;
 
-            long size=Bytes.toLong(terms,pos1);
-            pos1+=8;
 
-            double max=Bytes.toDouble(terms,pos1);
-            pos1+=8;
+            int maxLength=Bytes. toInt(terms,pos1);
+            pos1+=4;
+            String max=Bytes.toString(terms,pos1,maxLength);
+            pos1+=maxLength;
 
-            double min=Bytes.toDouble(terms,pos1);
-            pos1+=8;
+            int minLength=Bytes. toInt(terms,pos1);
+            pos1+=4;
+            String min=Bytes.toString(terms,pos1,minLength);
+            pos1+=minLength;
 
             int equivalenceLength=Bytes. toInt(terms,pos1);
             pos1+=4;
@@ -438,7 +440,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
             String like=Bytes.toString(terms,pos1,likeLength);
             pos1+=equivalenceLength;
 
-            cfTermMap.put(cfName,new CFTerm(cfName,cName,size,max,equivalence,min,like));
+            cfTermMap.put(cfName,new CFTerm(cfName,cName, max,equivalence,min,like));
         }
 
         Set<Integer> rowKeysRes=new HashSet<>();
@@ -465,19 +467,91 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
             }
 
             // 在读出来的memStore里面筛选出来rowKeys,和rowKeysRes取交集
-            Set<Integer> rowKeys=new HashSet<>();
+            Set<String> rowKeys=new HashSet<>();
             for (KV kv:kvs){
                 List<KV.ValueNode> values = kv.getValues();
                 int size = values.size();
-                KV.ValueNode valueNode = values.get(size);
+                KV.ValueNode valueNode = values.get(size-1);
                 //结合Term筛选valueNode
                 String value = valueNode.getValue();
                 CFTerm term = entry.getValue();
                 Object o = transferType(value, type);
+                //判断cfName,cName是否是rowKey
+                if (term.getCf_name().equals("rowKey")){
 
-
+                } else {
+                    switch (type) {
+                        case 42:
+                            byte byteValue = Byte.parseByte(value);
+                            byte byteMax = Byte.parseByte(term.getMax());
+                            byte byteMin = Byte.parseByte(term.getMin());
+                            byte byteEquivalence = Byte.parseByte(term.getMin());
+                            byte byteLike = Byte.parseByte(term.getLike());
+                            if (byteValue>=byteMin&&byteValue<=byteMax){
+                                if (byteEquivalence == 32){
+                                    if (byteEquivalence==byteValue){
+                                        rowKeys.add(kv.getRowKey());
+                                    }
+                                }else {
+                                    rowKeys.add(kv.getRowKey());
+                                }
+                            }
+                            break;
+                        case 44:
+                            short shortValue = Short.parseShort(value);
+                            short shortMax = Short.parseShort(term.getMax());
+                            short shortMin = Short.parseShort(term.getMin());
+                            short shortEquivalence = Short.parseShort(term.getMin());
+                            short shortLike = Short.parseShort(term.getLike());
+                            break;
+                        case 46:
+                            int intValue = Integer.parseInt(value);
+                            int intMax = Integer.parseInt(term.getMax());
+                            int intMin = Integer.parseInt(term.getMin());
+                            int intEquivalence = Integer.parseInt(term.getMin());
+                            int intLike = Integer.parseInt(term.getLike());
+                            break;
+                        case 48:
+                            long longValue = Long.parseLong(value);
+                            long longMax = Long.parseLong(term.getMax());
+                            long longMin = Long.parseLong(term.getMin());
+                            long longEquivalence = Long.parseLong(term.getMin());
+                            long longLike = Long.parseLong(term.getLike());
+                            break;
+                        case 50:
+                            float floatValue = Float.parseFloat(value);
+                            float floatMax = Float.parseFloat(term.getMax());
+                            float floatMin = Float.parseFloat(term.getMin());
+                            float floatEquivalence = Float.parseFloat(term.getMin());
+                            float floatLike = Float.parseFloat(term.getLike());
+                            break;
+                        case 52:
+                            long dateValue = Long.parseLong(value);
+                            long dateMax = Long.parseLong(term.getMax());
+                            long dateMin = Long.parseLong(term.getMin());
+                            long dateEquivalence = Long.parseLong(term.getMin());
+                            long dateLike = Long.parseLong(term.getLike());
+                            break;
+                        case 54:
+                            char charValue = value.toCharArray()[0];
+                            char charMax = term.getMax().toCharArray()[0];
+                            char charMin = term.getMin().toCharArray()[0];
+                            char charEquivalence = term.getMin().toCharArray()[0];
+                            char charLike = term.getLike().toCharArray()[0];
+                            break;
+                        case 56:
+                            break;
+                        case 58:
+                            byte[] bytesValue = value.getBytes();
+                            byte[] bytesMax = term.getMax().getBytes();
+                            byte[] bytesMin = term.getMin().getBytes();
+                            byte[] bytesEquivalence = term.getMin().getBytes();
+                            byte[] bytesLike = term.getLike().getBytes();
+                        default:
+                            return null;
+                    }
+                }
             }
-
         }
 
         //加载cfNames

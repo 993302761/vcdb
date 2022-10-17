@@ -21,20 +21,18 @@ public class CFTerm {
      * tablename : 表名
      */
 
-    private String cf_name;
-    private String c_name;
-    private long size=0;
-    private double max=Double.MAX_VALUE;
-    private String equivalence;
-    private double min=Double.MIN_VALUE;
-    private String like;
+    private String cf_name="";
+    private String c_name="";
+    private String max="";
+    private String equivalence="";
+    private String min="";
+    private String like="";
 
     public CFTerm(String cf_name, String c_name,
-                  long size, double max, String equivalence,
-                  double min, String like) {
+                  String max, String equivalence,
+                  String min, String like) {
         this.cf_name = cf_name;
         this.c_name = c_name;
-        this.size = size;
         this.max = max;
         this.equivalence = equivalence;
         this.min = min;
@@ -49,11 +47,8 @@ public class CFTerm {
         return c_name;
     }
 
-    public long getSize() {
-        return size;
-    }
 
-    public double getMax() {
+    public String getMax() {
         return max;
     }
 
@@ -61,7 +56,7 @@ public class CFTerm {
         return equivalence;
     }
 
-    public double getMin() {
+    public String getMin() {
         return min;
     }
 
@@ -77,11 +72,7 @@ public class CFTerm {
         this.c_name = c_name;
     }
 
-    public void setSize(long size) {
-        this.size = size;
-    }
-
-    public void setMax(double max) {
+    public void setMax(String max) {
         this.max = max;
     }
 
@@ -89,7 +80,7 @@ public class CFTerm {
         this.equivalence = equivalence;
     }
 
-    public void setMin(double min) {
+    public void setMin(String min) {
         this.min = min;
     }
 
