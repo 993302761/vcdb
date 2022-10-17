@@ -21,6 +21,7 @@ import org.example.vcdb.util.Bytes;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import static org.example.vcdb.store.mem.KV.byteToType;
 import static org.example.vcdb.store.region.fileStore.ColumnFamilyMeta.byteToCFType;
@@ -486,7 +487,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                             byte byteMax = Byte.parseByte(term.getMax());
                             byte byteMin = Byte.parseByte(term.getMin());
                             byte byteEquivalence = Byte.parseByte(term.getMin());
-                            byte byteLike = Byte.parseByte(term.getLike());
                             if (byteValue>=byteMin&&byteValue<=byteMax){
                                 if (byteEquivalence == 32){
                                     if (byteEquivalence==byteValue){
@@ -502,7 +502,15 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                             short shortMax = Short.parseShort(term.getMax());
                             short shortMin = Short.parseShort(term.getMin());
                             short shortEquivalence = Short.parseShort(term.getMin());
-                            short shortLike = Short.parseShort(term.getLike());
+                            if (shortValue>=shortMin&&shortValue<=shortMax){
+                                if (shortEquivalence == 32){
+                                    if (shortEquivalence==shortValue){
+                                        rowKeys.add(kv.getRowKey());
+                                    }
+                                }else {
+                                    rowKeys.add(kv.getRowKey());
+                                }
+                            }
                             break;
                         case 46:
                             int intValue = Integer.parseInt(value);
@@ -611,7 +619,63 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         return null;
     }
 
+    public static boolean like(final String str, final String expr)
 
+    {
+        String regex = quotemeta(expr);
+
+        regex = regex.replace("_",".").replace("%",".*?");
+
+        Pattern p = Pattern.compile(regex,
+
+                Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+
+        return p.matcher(str).matches();
+
+    }
+
+    public static String quotemeta(String s)
+
+    {
+        if (s == null)
+
+        {
+            throw new IllegalArgumentException("String cannot be null");
+
+        }
+
+        int len = s.length();
+
+        if (len == 0)
+
+        {
+            return"";
+
+        }
+
+        StringBuilder sb = new StringBuilder(len * 2);
+
+        for (int i = 0; i < len; i++)
+
+        {
+            char c = s.charAt(i);
+            String s1="[](){}.*+?$^|#\\";
+            String s2="\\";
+            for (byte b:s2.getBytes()){
+                System.out.println(b);
+        }
+            if (s1.indexOf(c) != -1)
+
+            {
+                sb.append(s2);
+
+            }
+
+            sb.append(c);
+
+        }
+        return sb.toString();
+    }
     public int deleteCells(){
         //添加多个kv到memStore
         //类似于putKVs
