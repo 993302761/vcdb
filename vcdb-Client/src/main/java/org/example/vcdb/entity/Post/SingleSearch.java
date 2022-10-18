@@ -51,11 +51,11 @@ public class SingleSearch extends RequestEntity {
         int pos=0;
         pos= Bytes.putInt(bytes,pos,terms.size());
         for (TermCell termCell:terms){
-//            Bytes.putInt(bytes,pos,versionTerm.toByteArray().length);
             Bytes.putBytes(bytes,pos,termCell.toByteArray(),0,termCell.toByteArray().length);
         }
         return bytes;
     }
+
     public void setLimit(int limit) {
         this.limit = limit;
     }

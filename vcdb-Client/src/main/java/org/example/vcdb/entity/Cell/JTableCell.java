@@ -1,4 +1,7 @@
 package org.example.vcdb.entity.Cell;
+
+import org.example.vcdb.util.Bytes;
+
 /**
  * @author : wyy
  * @Date : 2022.7.11
@@ -26,5 +29,15 @@ public class JTableCell {
 
     public void setMethod(String method) {
         this.method = method;
+    }
+
+    public byte[] toByteArray(){
+        byte[] bytes=new byte[4+tableName.getBytes().length+4+method.getBytes().length];
+        int pos=0;
+        pos= Bytes.putInt(bytes,pos,tableName.getBytes().length);
+        pos=Bytes.putBytes(bytes,pos,tableName.getBytes(),0,tableName.getBytes().length);
+        pos= Bytes.putInt(bytes,pos,method.getBytes().length);
+        pos=Bytes.putBytes(bytes,pos,method.getBytes(),0,method.getBytes().length);
+        return bytes;
     }
 }

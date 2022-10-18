@@ -297,7 +297,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
             //找到合并的KVs在哪一页
 
-            String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
+            String fileStoreMetaName = getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
             FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
             int pageIndex = findPageIndex(dBName, tabName, rowKey ,cfName);
 
@@ -404,15 +404,219 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                                String orderCfName,boolean sort,
                                byte[] cfNames,byte[] terms){
         //加载terms
+        Set<String> rowKeysRes= findRowKeysByTerms(dBName, tabName, terms);
+
+        //加载cfNames
+        /*rowKey.cfName----kvs*/
+        Map<String,KeyValueSkipListSet> result=new HashMap<>();
+        int pos2=0;
+        int cfNameCount=Bytes.toInt(cfNames,pos2,4);
+        pos2+=4;
+        // 查memStore
+        for (int i = 0; i < cfNameCount; i++) {
+            int cfNameLength=Bytes.toInt(cfNames,pos2,4);
+            pos2+=4;
+            String cfName=Bytes.toString(cfNames,pos2,cfNameLength);
+            pos2+=cfNameLength;
+            MemStore memStore = outboundMemStore.get(dBName + "." + tabName + ":" + cfName);
+            if (memStore==null){
+                //从磁盘里读出来
+                RegionMeta regionMeta = getRegionMeta(dBName + "." + tabName);
+                String fileStoreMetaName=regionMeta.getfileStoreMetaName(cfName);
+                FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
+                List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
+                FileStore fileStore =new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName())) ;
+                //装了一个fileStore的东西
+                KeyValueSkipListSet kvs=new KeyValueSkipListSet(new KV.KVComparator());
+                for (int j = 0; j < pageTrailer.size(); j++) {
+                    kvs.addKVs(fileStore.getDataSet(1+i));
+                }
+                // 加载到memStore
+                memStore=new MemStore();
+                memStore.kvSet=kvs;
+                outboundMemStore.put(dBName + "." + tabName + ":" + cfName,memStore);
+            }
+
+            // 在读出来的memStore里面筛选
+            for (KV kv:memStore.kvSet){
+                for (String row:rowKeysRes){
+                    if (row.equals(kv.getRowKey())){
+                        if (result.get(cfName+"."+row)==null){
+                            result.put(cfName+"."+row,new KeyValueSkipListSet(new  KV.KVComparator()));
+                        }
+                        result.get(cfName+"."+row).add(kv);
+                    }
+                }
+            }
+        }
+
+        StringBuilder ss= new StringBuilder();
+        //返回kvs的toByteArray
+        for (Map.Entry<String,KeyValueSkipListSet> entry : result.entrySet()) {
+            ss.append(entry.getKey());
+            for (KV kv: entry.getValue()){
+                ss.append(kv.getValues()).append("\t");
+            }
+            ss.append("\n");
+        }
+        return ss.toString().getBytes();
+    }
+
+
+//    public byte[] multiSearch(String dBName,String tabName,String limit,
+//                              String orderCfName,boolean sort,byte[] jTables,
+//                              byte[] cfNames,byte[] terms){
+//        //查memStore
+//
+//
+//        //读文件，找到多个页号，加载到内存
+//
+//
+//        //加载到memStore
+//
+//
+//        //返回 kvs 的 toByteArray
+//
+//
+//        return null;
+//    }
+
+    public static boolean like(final String str, final String expr)
+
+    {
+        String regex = quotemeta(expr);
+        regex = regex.replace("_",".").replace(".*",".*?");
+        Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        return p.matcher(str).matches();
+    }
+
+    public static String quotemeta(String s)
+
+    {
+        if (s == null)
+
+        {
+            throw new IllegalArgumentException("String cannot be null");
+
+        }
+
+        int len = s.length();
+
+        if (len == 0)
+
+        {
+            return"";
+
+        }
+
+        StringBuilder sb = new StringBuilder(len * 2);
+
+        for (int i = 0; i < len; i++)
+
+        {
+            char c = s.charAt(i);
+            String s1="[](){}+?$^|#\\";
+            String s2="\\";
+            if (s1.indexOf(c) != -1)
+
+            {
+                sb.append(s2);
+
+            }
+
+            sb.append(c);
+
+        }
+        return sb.toString();
+    }
+
+
+    public int updateCells (String dBName,String tabName,
+                           byte[] terms,byte[] values){
+        //结合term找到符合条件的几行
+        Set<String> rowKeys = findRowKeysByTerms(dBName, tabName, terms);
+
+        //根据values,添加多个kv中的kvNode到memStore
+        int pos2=0;
+        int cfNameCount=Bytes.toInt(values,pos2,4);
+        pos2+=4;
+        // 查memStore
+        //类似于putKVs
+        for (int i = 0; i < cfNameCount; i++) {
+            int cfNameLength=Bytes.toInt(values,pos2,4);
+            pos2+=4;
+            String cfName=Bytes.toString(values,pos2,cfNameLength);
+            pos2+=cfNameLength;
+
+            int cNameLength=Bytes.toInt(values,pos2,4);
+            pos2+=4;
+            String cName=Bytes.toString(values,pos2,cNameLength);
+            pos2+=cNameLength;
+
+            int valueLength=Bytes.toInt(values,pos2,4);
+            pos2+=4;
+            String value=Bytes.toString(values,pos2,cNameLength);
+            pos2+=valueLength;
+
+            MemStore memStore = inboundMemStore.get(dBName+"."+tabName+ ":" +cfName);
+            for (String row:rowKeys){
+                /*添加KVNode到memStore*/
+                KV kv = memStore.kvSet.get(row);
+                if (kv==null){
+                    kv=new KV(row.getBytes(),0,row.getBytes().length,null);
+                }
+                List<KV.ValueNode> valueNodes = kv.getValues();
+                KV.ValueNode valueNode=new KV.ValueNode(new Date().getTime(),byteToType((byte) 30),
+                        cName.getBytes(),0,cName.getBytes().length,
+                        value.getBytes(),0,value.getBytes().length);
+                valueNodes.add(valueNode);
+                kv=new KV(row.getBytes(),0,row.getBytes().length,valueNodes);
+                memStore.kvSet.add(kv);
+            }
+        }
+
+        return rowKeys.size();
+    }
+
+
+
+    public int deleteCells(String dBName,String tabName,
+                           String cfName, byte[] terms){
+        //结合term找到符合条件的几行
+        Set<String> rowKeys = findRowKeysByTerms(dBName, tabName, terms);
+        //添加多个kv中的kvNode(表示删除)到memStore,类似于putKVs
+        for (String row:rowKeys){
+            /*添加KV到memStore*/
+            MemStore memStore = inboundMemStore.get(dBName+"."+tabName+ ":" +cfName);
+            KV kv = memStore.kvSet.get(row);
+            if (kv==null){
+                kv=new KV(row.getBytes(),0,row.getBytes().length,null);
+            }
+            List<KV.ValueNode> values = kv.getValues();
+            KV.ValueNode valueNode=new KV.ValueNode(new Date().getTime(),byteToType((byte) 8),
+                    "".getBytes(),0,"".getBytes().length,
+                    "del".getBytes(),0,"".getBytes().length);
+            values.add(valueNode);
+            kv=new KV(row.getBytes(),0,row.getBytes().length,values);
+            memStore.kvSet.add(kv);
+        }
+        return rowKeys.size();
+    }
+
+
+    public Set<String> findRowKeysByTerms(String dBName,
+                                          String tabName,
+                                          byte[] terms){
+        //加载terms
         int pos1=0;
         int termsCount=Bytes.toInt(terms,pos1,4);
         pos1+=4;
         Map<String,CFTerm> cfTermMap=new HashMap<>();
         for (int i = 0; i < termsCount; i++) {
-             int cfLength=Bytes. toInt(terms,pos1);
-             pos1+=4;
-             String cfName=Bytes.toString(terms,pos1,cfLength);
-             pos1+=cfLength;
+            int cfLength=Bytes. toInt(terms,pos1);
+            pos1+=4;
+            String cfName=Bytes.toString(terms,pos1,cfLength);
+            pos1+=cfLength;
 
             int cLength=Bytes. toInt(terms,pos1);
             pos1+=4;
@@ -613,145 +817,13 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                 }
             }
         }
-
-        //加载cfNames
-        /*rowKey.cfName----kvs*/
-        Map<String,KeyValueSkipListSet> result=new HashMap<>();
-        int pos2=0;
-        int cfNameCount=Bytes.toInt(cfNames,pos2,4);
-        pos2+=4;
-        // 查memStore
-        for (int i = 0; i < cfNameCount; i++) {
-            int cfNameLength=Bytes.toInt(cfNames,pos2,4);
-            pos2+=4;
-            String cfName=Bytes.toString(cfNames,pos2,cfNameLength);
-            pos2+=cfNameLength;
-            MemStore memStore = outboundMemStore.get(dBName + "." + tabName + ":" + cfName);
-            if (memStore==null){
-                //从磁盘里读出来
-                RegionMeta regionMeta = getRegionMeta(dBName + "." + tabName);
-                String fileStoreMetaName=regionMeta.getfileStoreMetaName(cfName);
-                FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
-                List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
-                FileStore fileStore =new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName())) ;
-                //装了一个fileStore的东西
-                KeyValueSkipListSet kvs=new KeyValueSkipListSet(new KV.KVComparator());
-                for (int j = 0; j < pageTrailer.size(); j++) {
-                    kvs.addKVs(fileStore.getDataSet(1+i));
-                }
-                // 加载到memStore
-                memStore=new MemStore();
-                memStore.kvSet=kvs;
-                outboundMemStore.put(dBName + "." + tabName + ":" + cfName,memStore);
-            }
-
-            // 在读出来的memStore里面筛选
-            for (KV kv:memStore.kvSet){
-                for (String row:rowKeysRes){
-                    if (row.equals(kv.getRowKey())){
-                        if (result.get(cfName+"."+row)==null){
-                            result.put(cfName+"."+row,new KeyValueSkipListSet(new  KV.KVComparator()));
-                        }
-                        result.get(cfName+"."+row).add(kv);
-                    }
-                }
-            }
-        }
-
-        //返回kvs的toByteArray
-
-
-        return null;
-    }
-
-
-    public byte[] multiSearch(){
-        //查memStore
-
-
-        //读文件，找到多个页号，加载到内存
-
-
-        //加载到memStore
-
-
-        //返回 kvs 的 toByteArray
-
-
-        return null;
-    }
-
-    public static boolean like(final String str, final String expr)
-
-    {
-        String regex = quotemeta(expr);
-        regex = regex.replace("_",".").replace(".*",".*?");
-        Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-        return p.matcher(str).matches();
-    }
-
-    public static String quotemeta(String s)
-
-    {
-        if (s == null)
-
-        {
-            throw new IllegalArgumentException("String cannot be null");
-
-        }
-
-        int len = s.length();
-
-        if (len == 0)
-
-        {
-            return"";
-
-        }
-
-        StringBuilder sb = new StringBuilder(len * 2);
-
-        for (int i = 0; i < len; i++)
-
-        {
-            char c = s.charAt(i);
-            String s1="[](){}+?$^|#\\";
-            String s2="\\";
-            if (s1.indexOf(c) != -1)
-
-            {
-                sb.append(s2);
-
-            }
-
-            sb.append(c);
-
-        }
-        return sb.toString();
-    }
-
-
-    public int deleteCells(){
-        //添加多个kv到memStore
-        //类似于putKVs
-
-
-        return 11;
-    }
+        return rowKeysRes;
+}
 
 
 
-    public int updateCells(){
-        //添加多个kv到memStore
-        //类似于putKVs
-
-        return 11;
-    }
-
-
-
-
-    private static void commonSet(String rowKey,String fullTableName,String cfName,byte actionType){
+    private static void commonSet(String rowKey,String fullTableName,
+                                  String cfName, byte actionType){
             MemStore memStore = inboundMemStore.get(fullTableName+ ":" +cfName);
             KV kv = memStore.kvSet.get(rowKey);
             if (kv==null){
@@ -765,10 +837,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
             kv=new KV(rowKey.getBytes(),0,rowKey.getBytes().length,values);
             memStore.kvSet.add(kv);
     }
-
-
-
-
 
     public Object transferType(String value,byte type){
         switch (type){
@@ -794,8 +862,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                 return null;
         }
     }
-
-
 
     public static void addKVToMemStore(String fullCfName,KV kv){
         if (inboundMemStore.get(fullCfName)==null){
@@ -833,9 +899,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta, cfName);
         return fileStoreMeta.getPageTrailer();
     }
-
-
-
 
     public static void insertPageWithSplit(String tabName, String cfName, int pageIndex, List<KV> kvs) {
         RegionMeta regionMeta = getRegionMeta(tabName);
