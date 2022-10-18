@@ -42,11 +42,14 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
     public static void readConfig(String fileName) {
         regionServerMeta = new RegionServerMeta(VCFileReader.readAll(fileName));
+        inboundMemStore=new ConcurrentHashMap<>();
+        outboundMemStore=new ConcurrentHashMap<>();
     }
 
     public RegionServer(String fileName) {
         regionServerMeta = new RegionServerMeta(VCFileReader.readAll(fileName));
         inboundMemStore=new ConcurrentHashMap<>();
+        outboundMemStore=new ConcurrentHashMap<>();
     }
 
     public RegionServer() {
@@ -819,7 +822,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         }
         return rowKeysRes;
 }
-
 
 
     private static void commonSet(String rowKey,String fullTableName,
