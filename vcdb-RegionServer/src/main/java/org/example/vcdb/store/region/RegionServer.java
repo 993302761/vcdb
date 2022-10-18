@@ -444,11 +444,10 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
             cfTermMap.put(cfName,new CFTerm(cfName,cName, max,equivalence,min,like));
         }
 
-        Set<Integer> rowKeysRes=new HashSet<>();
+        Set<String> rowKeysRes=new HashSet<>();
         //结合term筛选出来rowKeys
         for (Map.Entry<String,CFTerm> entry : cfTermMap.entrySet()) {
             MemStore memStore = outboundMemStore.get(dBName + "." + tabName + ":" + entry.getKey());
-            KeyValueSkipListSet kvs=new KeyValueSkipListSet(new KV.KVComparator());
             byte type=99;
             if (memStore==null){
                 //从磁盘里读出来
@@ -456,20 +455,23 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                 String fileStoreMetaName=regionMeta.getfileStoreMetaName(entry.getKey());
                 FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
                 List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
-                FileStore fileStore =new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName()));
-
+                FileStore fileStore =new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName())) ;
                 //装了一个fileStore的东西
+                KeyValueSkipListSet kvs=new KeyValueSkipListSet(new KV.KVComparator());
                 for (int j = 0; j < pageTrailer.size(); j++) {
                     kvs.addKVs(fileStore.getDataSet(1+j));
                 }
-            }
-            if (memStore!=null){
-                type= memStore.getType();
+                memStore=new MemStore();
+                memStore.kvSet=kvs;
+                // 加载到memStore
+                outboundMemStore.put(dBName + "." + tabName + ":" + entry.getKey(),memStore);
             }
 
+            type= memStore.getType();
+
             // 在读出来的memStore里面筛选出来rowKeys,和rowKeysRes取交集
-            Set<String> rowKeys=new HashSet<>();
-            for (KV kv:kvs){
+            Set<String> newRowKeys=new HashSet<>();
+            for (KV kv:memStore.kvSet){
                 List<KV.ValueNode> values = kv.getValues();
                 int size = values.size();
                 KV.ValueNode valueNode = values.get(size-1);
@@ -477,9 +479,18 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                 String value = valueNode.getValue();
                 CFTerm term = entry.getValue();
                 Object o = transferType(value, type);
+                String like=term.getLike();
                 //判断cfName,cName是否是rowKey
                 if (term.getCf_name().equals("rowKey")){
-
+                    if (" ".equals(term.getEquivalence())){
+                        if (like(kv.getRowKey(),like)){
+                            newRowKeys.add(kv.getRowKey());
+                        }
+                    } else {
+                        if ((kv.getRowKey()).equals(term.getEquivalence())){
+                            newRowKeys.add(kv.getRowKey());
+                        }
+                    }
                 } else {
                     switch (type) {
                         case 42:
@@ -490,10 +501,10 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                             if (byteValue>=byteMin&&byteValue<=byteMax){
                                 if (byteEquivalence == 32){
                                     if (byteEquivalence==byteValue){
-                                        rowKeys.add(kv.getRowKey());
+                                        newRowKeys.add(kv.getRowKey());
                                     }
-                                }else {
-                                    rowKeys.add(kv.getRowKey());
+                                } else {
+                                    newRowKeys.add(kv.getRowKey());
                                 }
                             }
                             break;
@@ -505,10 +516,10 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                             if (shortValue>=shortMin&&shortValue<=shortMax){
                                 if (shortEquivalence == 32){
                                     if (shortEquivalence==shortValue){
-                                        rowKeys.add(kv.getRowKey());
+                                        newRowKeys.add(kv.getRowKey());
                                     }
                                 }else {
-                                    rowKeys.add(kv.getRowKey());
+                                    newRowKeys.add(kv.getRowKey());
                                 }
                             }
                             break;
@@ -517,64 +528,105 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                             int intMax = Integer.parseInt(term.getMax());
                             int intMin = Integer.parseInt(term.getMin());
                             int intEquivalence = Integer.parseInt(term.getMin());
-                            int intLike = Integer.parseInt(term.getLike());
+                            if (intValue>=intMin&&intValue<=intMax){
+                                if (intEquivalence == 32){
+                                    if (intEquivalence==intValue){
+                                        newRowKeys.add(kv.getRowKey());
+                                    }
+                                }else {
+                                    newRowKeys.add(kv.getRowKey());
+                                }
+                            }
                             break;
                         case 48:
+                        case 52:
                             long longValue = Long.parseLong(value);
                             long longMax = Long.parseLong(term.getMax());
                             long longMin = Long.parseLong(term.getMin());
                             long longEquivalence = Long.parseLong(term.getMin());
-                            long longLike = Long.parseLong(term.getLike());
+                            if (longValue>=longMin&&longValue<=longMax){
+                                if (longEquivalence == 32){
+                                    if (longEquivalence==longValue){
+                                        newRowKeys.add(kv.getRowKey());
+                                    }
+                                }else {
+                                    newRowKeys.add(kv.getRowKey());
+                                }
+                            }
                             break;
                         case 50:
                             float floatValue = Float.parseFloat(value);
                             float floatMax = Float.parseFloat(term.getMax());
                             float floatMin = Float.parseFloat(term.getMin());
                             float floatEquivalence = Float.parseFloat(term.getMin());
-                            float floatLike = Float.parseFloat(term.getLike());
-                            break;
-                        case 52:
-                            long dateValue = Long.parseLong(value);
-                            long dateMax = Long.parseLong(term.getMax());
-                            long dateMin = Long.parseLong(term.getMin());
-                            long dateEquivalence = Long.parseLong(term.getMin());
-                            long dateLike = Long.parseLong(term.getLike());
+                            if (floatValue>=floatMin&&floatValue<=floatMax){
+                                if (floatEquivalence == 32){
+                                    if (floatEquivalence==floatValue){
+                                        newRowKeys.add(kv.getRowKey());
+                                    }
+                                }else {
+                                    newRowKeys.add(kv.getRowKey());
+                                }
+                            }
                             break;
                         case 54:
                             char charValue = value.toCharArray()[0];
                             char charMax = term.getMax().toCharArray()[0];
                             char charMin = term.getMin().toCharArray()[0];
                             char charEquivalence = term.getMin().toCharArray()[0];
-                            char charLike = term.getLike().toCharArray()[0];
+                            if (charValue>=charMin&&charValue<=charMax){
+                                if (charEquivalence == 32){
+                                    if (charEquivalence==charValue){
+                                        newRowKeys.add(kv.getRowKey());
+                                    }
+                                } else {
+                                    newRowKeys.add(kv.getRowKey());
+                                }
+                            }
                             break;
                         case 56:
+                            if (" ".equals(term.getEquivalence())){
+                                if (like(value,like)){
+                                    newRowKeys.add(kv.getRowKey());
+                                }
+                            } else {
+                                if (value.equals(term.getEquivalence())){
+                                    newRowKeys.add(kv.getRowKey());
+                                }
+                            }
                             break;
                         case 58:
-                            byte[] bytesValue = value.getBytes();
-                            byte[] bytesMax = term.getMax().getBytes();
-                            byte[] bytesMin = term.getMin().getBytes();
-                            byte[] bytesEquivalence = term.getMin().getBytes();
-                            byte[] bytesLike = term.getLike().getBytes();
+                            System.err.println("二进制不能比较");
                         default:
+                            System.err.println("类型转换错误");
                             return null;
+                    }
+                }
+            }
+            if (rowKeysRes.isEmpty()){
+                rowKeysRes.addAll(newRowKeys);
+            } else {
+                for (String rowKey:newRowKeys){
+                    if (!rowKeysRes.contains(rowKey)){
+                        rowKeysRes.remove(rowKey);
                     }
                 }
             }
         }
 
         //加载cfNames
+        /*rowKey.cfName----kvs*/
+        Map<String,KeyValueSkipListSet> result=new HashMap<>();
         int pos2=0;
         int cfNameCount=Bytes.toInt(cfNames,pos2,4);
         pos2+=4;
         // 查memStore
-        for (int i = 0; i < cfNames.length; i++) {
+        for (int i = 0; i < cfNameCount; i++) {
             int cfNameLength=Bytes.toInt(cfNames,pos2,4);
             pos2+=4;
             String cfName=Bytes.toString(cfNames,pos2,cfNameLength);
             pos2+=cfNameLength;
             MemStore memStore = outboundMemStore.get(dBName + "." + tabName + ":" + cfName);
-            //装了一个fileStore的东西
-            KeyValueSkipListSet kvs=new KeyValueSkipListSet(new KV.KVComparator());
             if (memStore==null){
                 //从磁盘里读出来
                 RegionMeta regionMeta = getRegionMeta(dBName + "." + tabName);
@@ -582,22 +634,32 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                 FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
                 List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
                 FileStore fileStore =new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName())) ;
+                //装了一个fileStore的东西
+                KeyValueSkipListSet kvs=new KeyValueSkipListSet(new KV.KVComparator());
                 for (int j = 0; j < pageTrailer.size(); j++) {
                     kvs.addKVs(fileStore.getDataSet(1+i));
                 }
+                // 加载到memStore
+                memStore=new MemStore();
+                memStore.kvSet=kvs;
+                outboundMemStore.put(dBName + "." + tabName + ":" + cfName,memStore);
             }
-            // 在读出来的memStore里面筛选
 
+            // 在读出来的memStore里面筛选
+            for (KV kv:memStore.kvSet){
+                for (String row:rowKeysRes){
+                    if (row.equals(kv.getRowKey())){
+                        if (result.get(cfName+"."+row)==null){
+                            result.put(cfName+"."+row,new KeyValueSkipListSet(new  KV.KVComparator()));
+                        }
+                        result.get(cfName+"."+row).add(kv);
+                    }
+                }
+            }
         }
 
+        //返回kvs的toByteArray
 
-
-
-        // 读文件，找到页号，加载到内存
-
-        // 加载到memStore
-
-        //返回kvs 的toByteArray
 
         return null;
     }
@@ -623,15 +685,9 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
     {
         String regex = quotemeta(expr);
-
-        regex = regex.replace("_",".").replace("%",".*?");
-
-        Pattern p = Pattern.compile(regex,
-
-                Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-
+        regex = regex.replace("_",".").replace(".*",".*?");
+        Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
         return p.matcher(str).matches();
-
     }
 
     public static String quotemeta(String s)
@@ -659,11 +715,8 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
         {
             char c = s.charAt(i);
-            String s1="[](){}.*+?$^|#\\";
+            String s1="[](){}+?$^|#\\";
             String s2="\\";
-            for (byte b:s2.getBytes()){
-                System.out.println(b);
-        }
             if (s1.indexOf(c) != -1)
 
             {
@@ -676,6 +729,8 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         }
         return sb.toString();
     }
+
+
     public int deleteCells(){
         //添加多个kv到memStore
         //类似于putKVs
@@ -739,19 +794,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                 return null;
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1006,5 +1048,9 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         return 1;
     }
 
-
+//    public static void main(String[] args) {
+//        System.out.println(like("jioo", "ji.*"));
+//        System.out.println(like( "jioo","jio_"));
+//    }
 }
+
