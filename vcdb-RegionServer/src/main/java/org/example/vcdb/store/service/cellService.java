@@ -34,7 +34,6 @@ public class cellService extends cellsServiceGrpc.cellsServiceImplBase{
         Version.intReply.Builder builder = Version.intReply.newBuilder();
         builder.setReply(666);
         Version.intReply reply=builder.build();
-
         //返回
         responseObserver.onNext(reply);
     }

@@ -25,11 +25,14 @@ public class searchService extends searchServiceGrpc.searchServiceImplBase{
     public void singleSearch(Search.singleSearchRequest request, StreamObserver<Version.bytesReply> responseObserver) {
         //生成返回对象
         Version.bytesReply.Builder builder = Version.bytesReply.newBuilder();
+
+        System.out.println("0000");
         String s="666";
         builder.setReply(ByteString.copyFrom(s.getBytes(StandardCharsets.UTF_8)));
         Version.bytesReply reply=builder.build();
 
         //返回
         responseObserver.onNext(reply);
+        responseObserver.onCompleted();
     }
 }
