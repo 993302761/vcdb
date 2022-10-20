@@ -16,15 +16,14 @@ public class CreateTable extends RequestEntity {
     public byte[] toByteArray(){
         int valueLength=0;
         for (ColumnFamilyCell columnFamilyCell:column_family){
-            valueLength += 4+columnFamilyCell.toByteArray().length;
+            valueLength += columnFamilyCell.toByteArray().length;
         }
         byte[] bytes=new byte[4+valueLength];
         int count=this.column_family.size();
         int pos=0;
-        Bytes.putInt(bytes,pos,count);
+        pos=Bytes.putInt(bytes,pos,count);
         for (ColumnFamilyCell columnFamilyCell:column_family){
-            Bytes.putInt(bytes,pos,columnFamilyCell.toByteArray().length);
-            Bytes.putBytes(bytes,pos,columnFamilyCell.toByteArray(),0,columnFamilyCell.toByteArray().length);
+            pos=Bytes.putBytes(bytes,pos,columnFamilyCell.toByteArray(),0,columnFamilyCell.toByteArray().length);
         }
         return bytes;
     }

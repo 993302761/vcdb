@@ -17,9 +17,12 @@ public class VersionTerm {
         int pos=0;
         pos= Bytes.putInt(bytes,pos,rowKey.getBytes().length);
         pos=Bytes.putBytes(bytes,pos,rowKey.getBytes(),0,rowKey.getBytes().length);
+
         pos= Bytes.putInt(bytes,pos,cfName.getBytes().length);
         pos=Bytes.putBytes(bytes,pos,cfName.getBytes(),0,cfName.getBytes().length);
+
         pos= Bytes.putInt(bytes,pos,versionFrom);
+
         pos= Bytes.putInt(bytes,pos,versionTo);
         return bytes;
     }

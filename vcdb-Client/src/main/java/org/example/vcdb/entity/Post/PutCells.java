@@ -28,15 +28,14 @@ public class PutCells extends RequestEntity {
     public byte[] valuesToByteArray(){
         int valuesLength=0;
         for (Value value:values){
-            valuesLength += 4+value.toByteArray().length;
+            valuesLength += value.toByteArray().length;
         }
         byte[] bytes=new byte[4+valuesLength];
         int count=this.values.size();
         int pos=0;
-        Bytes.putInt(bytes,pos,count);
+        pos=Bytes.putInt(bytes,pos,count);
         for (Value value:values){
-            Bytes.putInt(bytes,pos,value.toByteArray().length);
-            Bytes.putBytes(bytes,pos,value.toByteArray(),0,value.toByteArray().length);
+            pos=Bytes.putBytes(bytes,pos,value.toByteArray(),0,value.toByteArray().length);
         }
         return bytes;
     }

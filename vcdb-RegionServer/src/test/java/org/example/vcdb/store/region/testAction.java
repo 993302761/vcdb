@@ -12,9 +12,14 @@ import org.junit.Test;
 
 public class testAction {
 
+    @Test
+    public void  initRegionServer(){
+        RegionServer.readConfig("regionServerMeta");
+    }
 
     @Test
     public void testOpenTransaction(){
+        initRegionServer();
 
     }
 

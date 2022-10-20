@@ -21,10 +21,9 @@ public class TermCell {
 
     private String cf_name;
     private String c_name;
-    private long size=0;
-    private double max=Double.MAX_VALUE;
+    private String max;
     private String equivalence;
-    private double min=Double.MIN_VALUE;
+    private String min;
     private String like;
 
     public String getCf_name() {
@@ -35,11 +34,8 @@ public class TermCell {
         return c_name;
     }
 
-    public long getSize() {
-        return size;
-    }
 
-    public double getMax() {
+    public String getMax() {
         return max;
     }
 
@@ -47,7 +43,7 @@ public class TermCell {
         return equivalence;
     }
 
-    public double getMin() {
+    public String getMin() {
         return min;
     }
 
@@ -63,11 +59,8 @@ public class TermCell {
         this.c_name = c_name;
     }
 
-    public void setSize(long size) {
-        this.size = size;
-    }
 
-    public void setMax(double max) {
+    public void setMax(String max) {
         this.max = max;
     }
 
@@ -75,7 +68,7 @@ public class TermCell {
         this.equivalence = equivalence;
     }
 
-    public void setMin(double min) {
+    public void setMin(String min) {
         this.min = min;
     }
 
@@ -84,19 +77,28 @@ public class TermCell {
     }
 
     public byte[] toByteArray(){
-        byte[] bytes=new byte[4+cf_name.getBytes().length+4+c_name.getBytes().length+8+8+4+8+ 4+like.getBytes().length];
+        byte[] bytes=new byte[4+cf_name.getBytes().length+4+c_name.getBytes().length+4+max.getBytes().length+4+min.getBytes().length+4+like.getBytes().length];
         int pos=0;
+
         pos= Bytes.putInt(bytes,pos,cf_name.getBytes().length);
         pos=Bytes.putBytes(bytes,pos,cf_name.getBytes(),0,cf_name.getBytes().length);
+
         pos= Bytes.putInt(bytes,pos,c_name.getBytes().length);
         pos=Bytes.putBytes(bytes,pos,c_name.getBytes(),0,c_name.getBytes().length);
-        pos= Bytes.putLong(bytes,pos,size);
-        pos= Bytes.putDouble(bytes,pos,max);
-        pos= Bytes.putDouble(bytes,pos,min);
+
+        pos= Bytes.putInt(bytes,pos,max.getBytes().length);
+        pos=Bytes.putBytes(bytes,pos,max.getBytes(),0,max.getBytes().length);
+
+        pos= Bytes.putInt(bytes,pos,min.getBytes().length);
+        pos=Bytes.putBytes(bytes,pos,min.getBytes(),0,min.getBytes().length);
+
+
         pos= Bytes.putInt(bytes,pos,equivalence.getBytes().length);
         pos=Bytes.putBytes(bytes,pos,equivalence.getBytes(),0,equivalence.getBytes().length);
+
         pos= Bytes.putInt(bytes,pos,like.getBytes().length);
         pos=Bytes.putBytes(bytes,pos,like.getBytes(),0,like.getBytes().length);
+
         return bytes;
     }
 }

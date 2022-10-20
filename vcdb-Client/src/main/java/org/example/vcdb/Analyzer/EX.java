@@ -489,9 +489,9 @@ public class EX {
                         System.err.println("报错重复设置size属性");
                     }
                 } else if ("max".equalsIgnoreCase(cell.getKey())) {
-                    if (termCell.getMax() == Double.MAX_VALUE) {
-                        termCell.setMax(Double.parseDouble(cell.getValue()));
-                    } else {
+                    if (termCell.getMax() == null) {
+                        termCell.setMax(cell.getValue());
+                    }else {
                         System.err.println("报错重复设置max属性");
                     }
                 } else if ("equivalence".equalsIgnoreCase(cell.getKey())) {
@@ -501,8 +501,8 @@ public class EX {
                         System.err.println("报错重复设置equivalence属性");
                     }
                 } else if ("min".equalsIgnoreCase(cell.getKey())) {
-                    if (termCell.getMin() == Double.MIN_VALUE) {
-                        termCell.setMin(Double.parseDouble(cell.getValue()));
+                    if (termCell.getMin() == null) {
+                        termCell.setMin(cell.getValue());
                     } else {
                         System.err.println("报错重复设置min属性");
                     }

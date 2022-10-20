@@ -22,7 +22,6 @@ public class MergeVersion extends RequestEntity {
         int pos=0;
         pos= Bytes.putInt(bytes,pos,terms.size());
         for (VersionTerm versionTerm:terms){
-//            Bytes.putInt(bytes,pos,versionTerm.toByteArray().length);
             Bytes.putBytes(bytes,pos,versionTerm.toByteArray(),0,versionTerm.toByteArray().length);
         }
         return bytes;

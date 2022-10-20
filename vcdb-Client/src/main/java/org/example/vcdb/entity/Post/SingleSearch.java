@@ -37,7 +37,7 @@ public class SingleSearch extends RequestEntity {
         int pos=0;
         pos= Bytes.putInt(bytes,pos,terms.size());
         for (String cfName:cf_names){
-            Bytes.putBytes(bytes,pos,cfName.getBytes(),0,cfName.getBytes().length);
+            pos= Bytes.putBytes(bytes,pos,cfName.getBytes(),0,cfName.getBytes().length);
         }
         return bytes;
     }
@@ -51,7 +51,7 @@ public class SingleSearch extends RequestEntity {
         int pos=0;
         pos= Bytes.putInt(bytes,pos,terms.size());
         for (TermCell termCell:terms){
-            Bytes.putBytes(bytes,pos,termCell.toByteArray(),0,termCell.toByteArray().length);
+            pos= Bytes.putBytes(bytes,pos,termCell.toByteArray(),0,termCell.toByteArray().length);
         }
         return bytes;
     }

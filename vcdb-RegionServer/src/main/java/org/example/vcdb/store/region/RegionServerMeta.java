@@ -18,25 +18,11 @@ import java.util.concurrent.ConcurrentHashMap;
 /*
 * dbName,table,cfName----------regionMetaName*/
 public class RegionServerMeta {
-//    Inet4Address regionServerIP;
-    int RSPort;
-    Map<String,String> regionMap;
     /*db.tableName-------->regionMetaName*/
     byte[] metaByte;
 
     public RegionServerMeta(byte[] data){
         this.metaByte=data;
-    }
-
-    public void RegionServerMeta(String metaName,byte[] ip4, int rsPort){
-        metaByte=new byte[1024*4];
-        int pos=0;
-        pos=Bytes.putInt(this.metaByte,pos,metaName.getBytes().length);
-        pos = Bytes.putBytes(this.metaByte, pos, metaName.getBytes(), 0,metaName.getBytes().length);
-        for (byte b:ip4){
-            pos=Bytes.putByte(this.metaByte,pos,b);
-        }
-        pos=Bytes.putInt(this.metaByte,pos,rsPort);
     }
 
     public RegionServerMeta(String metaName,byte[] ip4,
@@ -57,9 +43,11 @@ public class RegionServerMeta {
             pos = Bytes.putBytes(this.metaByte, pos, entry.getValue().getBytes(), 0, entry.getValue().getBytes().length);
         }
     }
+
     public int getNameLength(){
         return Bytes.toInt(this.metaByte,0,4);
     }
+
     public String getName(){
         return Bytes.toString(this.metaByte,4,getNameLength());
     }
@@ -72,6 +60,7 @@ public class RegionServerMeta {
     public int getMapCount(){
         return Bytes.toInt(this.metaByte,12+getNameLength(),4);
     }
+
     /*db.tableName-------->regionMetaName*/
     public Map<String,String> getRegionMap(){
         Map<String,String> map=new ConcurrentHashMap<>();
@@ -113,4 +102,5 @@ public class RegionServerMeta {
             pos = Bytes.putBytes(this.metaByte, pos, entry.getValue().getBytes(), 0, entry.getValue().getBytes().length);
         }
     }
+
 }

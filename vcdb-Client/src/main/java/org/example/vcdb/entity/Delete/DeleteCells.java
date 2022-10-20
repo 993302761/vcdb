@@ -46,6 +46,7 @@ public class DeleteCells extends RequestEntity {
         }
         return bytes;
     }
+
     public void setCf_names(List<String> cf_names) {
         this.cf_names = cf_names;
     }

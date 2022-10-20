@@ -8,14 +8,14 @@ import org.example.vcdb.store.file.VCFileReader;
 import org.example.vcdb.store.mem.KV;
 import org.example.vcdb.store.mem.KeyValueSkipListSet;
 import org.example.vcdb.store.mem.MemStore;
-import org.example.vcdb.store.proto.Meta;
-import org.example.vcdb.store.proto.getRegionMetaGrpc;
+import org.example.vcdb.store.proto.*;
 import org.example.vcdb.store.region.Region.RegionMeta;
 import org.example.vcdb.store.region.Region.VCRegion;
 import org.example.vcdb.store.region.fileStore.ColumnFamilyMeta;
 import org.example.vcdb.store.region.fileStore.FileStore;
 import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 import org.example.vcdb.store.region.fileStore.KVRange;
+import org.example.vcdb.store.region.version.TableAlter;
 import org.example.vcdb.util.Bytes;
 
 import java.text.SimpleDateFormat;
@@ -30,11 +30,29 @@ import static org.example.vcdb.store.region.fileStore.FileStore.*;
 public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
     //cache for fileStores
 
+    //操作缓存部分
+    //事务记录
+    /*IP4host:explainValue----startTime----endTime*/
+    static Map<String, Transaction> transactionMap;
+
+    //库表结构操作记录
+    /*dbName-------timeStamp*/
+    static Map<String, DB> dbMap;
+
+    /*tableName------timeStamp*/
+    static Map<String, Table> tableMap;
+
+    /*tableName:cfName-------timeStamp*/
+    static Map<String, TableAlter> tableAlterMap;
+
+
+    //数据缓存部分
     //负责接收sql请求的KV
     static Map<String,MemStore> inboundMemStore;
 
     //负责接收从文件加载过来的的KV
     static Map<String,MemStore> outboundMemStore;
+
 
     static RegionServerMeta regionServerMeta;
 
@@ -83,18 +101,25 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
             pos+=4;
 
             for (int i = 0; i < count; i++) {
+
                 int cfNameLength=Bytes.toInt(requestEntity,pos,4);
                 pos+=4;
+
                 String cfName=Bytes.toString(requestEntity,pos,cfNameLength);
                 pos+=cfNameLength;
+
                 byte type=requestEntity[pos];
                 pos+=1;
+
                 long min=Bytes.toLong(requestEntity,pos,8);
                 pos+=8;
+
                 long max=Bytes.toLong(requestEntity,pos,8);
                 pos+=8;
+
                 boolean unique=requestEntity[pos]==1;
                 pos+=1;
+
                 boolean isNil=requestEntity[pos]==1;
                 pos+=1;
 
@@ -103,7 +128,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                 String regionMetaFileName="region/"+fileName;
                 String fileStoreName="fileStore/"+fileName;
                 String fileStoreMetaName="fileStoreMeta/"+fileName;
-
                 /*createTable*/
                 /*注册该表到RegionServerMeta*/
                 /*先读出RegionServerMeta*/
@@ -187,6 +211,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         int count=Bytes.toInt(requestEntity,pos,4);
         pos+=4;
         for (int i = 0; i < count; i++) {
+
             int cfNameLength=Bytes.toInt(requestEntity,pos,4);
             pos+=4;
             String cfName=Bytes.toString(requestEntity,pos,cfNameLength);
@@ -242,6 +267,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                 pos+=4;
                 String method=Bytes.toString(requestEntity,pos,cfNameLength);
                 pos+=methodLength;
+
                 RegionMeta regionMeta = RegionServer.getRegionMeta(dBName+"."+tabName);
                 Map<String, String> fileStoreMap = regionMeta.getFileStoreMap();
                 if ("put".equalsIgnoreCase(method)) {
@@ -344,7 +370,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         return 0;
     }
 
-    public  boolean  useVersion(String dBName,String tabName,String rowKey, String cfName){
+    public  boolean  useVersion(String dBName,String tabName,String rowKey, String cfName,int version){
         //找到修改的KVs在哪一页
         String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
         FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
@@ -356,7 +382,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         KV kv = kvs.get(rowKey);
         List<KV.ValueNode> values = kv.getValues();
 
-        KV.ValueNode valueNode = values.get(values.size() - 1);
+        KV.ValueNode valueNode = values.get(version);
         values.add(valueNode);
         kv.setValues(values);
 
@@ -416,6 +442,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         int pos2=0;
         int cfNameCount=Bytes.toInt(cfNames,pos2,4);
         pos2+=4;
+
         // 查memStore
         for (int i = 0; i < cfNameCount; i++) {
             int cfNameLength=Bytes.toInt(cfNames,pos2,4);
@@ -583,26 +610,36 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
     }
 
 
-
-    public int deleteCells(String dBName,String tabName,
-                           String cfName, byte[] terms){
+    public int deleteCells(String dBName, String tabName,
+                           byte[] cfNames, byte[] terms) {
         //结合term找到符合条件的几行
         Set<String> rowKeys = findRowKeysByTerms(dBName, tabName, terms);
-        //添加多个kv中的kvNode(表示删除)到memStore,类似于putKVs
-        for (String row:rowKeys){
-            /*添加KV到memStore*/
-            MemStore memStore = inboundMemStore.get(dBName+"."+tabName+ ":" +cfName);
-            KV kv = memStore.kvSet.get(row);
-            if (kv==null){
-                kv=new KV(row.getBytes(),0,row.getBytes().length,null);
+        int pos2 = 0;
+        int cfNameCount = Bytes.toInt(cfNames, pos2, 4);
+        pos2 += 4;
+
+        // 查memStore
+        for (int i = 0; i < cfNameCount; i++) {
+            int cfNameLength = Bytes.toInt(cfNames, pos2, 4);
+            pos2 += 4;
+            String cfName = Bytes.toString(cfNames, pos2, cfNameLength);
+            pos2 += cfNameLength;
+            //添加多个kv中的kvNode(表示删除)到memStore,类似于putKVs
+            for (String row : rowKeys) {
+                /*添加KV到memStore*/
+                MemStore memStore = inboundMemStore.get(dBName + "." + tabName + ":" + cfName);
+                KV kv = memStore.kvSet.get(row);
+                if (kv == null) {
+                    kv = new KV(row.getBytes(), 0, row.getBytes().length, null);
+                }
+                List<KV.ValueNode> values = kv.getValues();
+                KV.ValueNode valueNode = new KV.ValueNode(new Date().getTime(), byteToType((byte) 8),
+                        "".getBytes(), 0, "".getBytes().length,
+                        "del".getBytes(), 0, "".getBytes().length);
+                values.add(valueNode);
+                kv = new KV(row.getBytes(), 0, row.getBytes().length, values);
+                memStore.kvSet.add(kv);
             }
-            List<KV.ValueNode> values = kv.getValues();
-            KV.ValueNode valueNode=new KV.ValueNode(new Date().getTime(),byteToType((byte) 8),
-                    "".getBytes(),0,"".getBytes().length,
-                    "del".getBytes(),0,"".getBytes().length);
-            values.add(valueNode);
-            kv=new KV(row.getBytes(),0,row.getBytes().length,values);
-            memStore.kvSet.add(kv);
         }
         return rowKeys.size();
     }
@@ -630,6 +667,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
             int maxLength=Bytes. toInt(terms,pos1);
             pos1+=4;
+
             String max=Bytes.toString(terms,pos1,maxLength);
             pos1+=maxLength;
 

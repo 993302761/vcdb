@@ -23,15 +23,14 @@ public class AlterTable extends RequestEntity {
     public byte[] alterCellsToByteArray(){
         int length=0;
         for (AlterCell alterCell :alter_cells){
-            length += 4+alterCell.toByteArray().length;
+            length += alterCell.toByteArray().length;
         }
         byte[] bytes=new byte[4+length];
         int count=this.alter_cells.size();
         int pos=0;
-        Bytes.putInt(bytes,pos,count);
+        pos=Bytes.putInt(bytes,pos,count);
         for (AlterCell alterCell:alter_cells){
-            Bytes.putInt(bytes,pos,alterCell.toByteArray().length);
-            Bytes.putBytes(bytes,pos,alterCell.toByteArray(),0,alterCell.toByteArray().length);
+            pos=Bytes.putBytes(bytes,pos,alterCell.toByteArray(),0,alterCell.toByteArray().length);
         }
         return bytes;
     }

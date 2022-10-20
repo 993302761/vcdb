@@ -11,7 +11,6 @@ import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 import org.example.vcdb.store.region.fileStore.KVRange;
 import org.example.vcdb.util.Bytes;
 import org.junit.Test;
-import org.omg.CORBA.PUBLIC_MEMBER;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -90,8 +89,6 @@ public class TestRegionServer {
         ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(true, false, 1, 100, ColumnFamilyMeta.byteToCFType((byte) 44));
         FileStore fileStore=new FileStore(cfMeta);
         VCFIleWriter.writeAll(fileStore.getData(), fileStoreName);
-
-
     }
 
     @Test
