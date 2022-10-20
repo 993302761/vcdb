@@ -1,5 +1,7 @@
 package org.example.vcdb.store.region;
 
+import org.junit.Test;
+
 /**
  * @ClassName testAction
  * @Description TODO
@@ -9,4 +11,82 @@ package org.example.vcdb.store.region;
  */
 
 public class testAction {
+
+
+    @Test
+    public void testOpenTransaction(){
+
+    }
+
+    @Test
+    public void testCloseTransaction(){
+
+    }
+
+    @Test
+    public void testCreateDB(){
+
+    }
+
+    @Test
+    public void testCreateTable(){
+
+    }
+
+    @Test
+    public void testDeleteDB(){
+
+    }
+
+    @Test
+    public void testDeleteTable(){
+
+    }
+
+    @Test
+    public void testPutCells(){
+
+    }
+
+    @Test
+    public void testAlterTable(){
+
+    }
+
+    @Test
+    public void testMergeVersion(){
+
+    }
+
+    @Test
+    public void testUseVersion(){
+
+    }
+
+
+    @Test
+    public void testShowVersion(){
+
+    }
+
+    @Test
+    public void testDeleteVersion(){
+
+    }
+
+    @Test
+    public void testSingleSearch(){
+
+    }
+
+    @Test
+    public void testUpdateCells(){
+
+    }
+
+    @Test
+    public void testDeleteCells(){
+
+    }
+
 }

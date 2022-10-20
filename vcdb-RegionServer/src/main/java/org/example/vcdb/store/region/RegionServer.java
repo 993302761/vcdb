@@ -64,7 +64,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
     /*Transaction:Transaction*/
     /*Table:Table*/
     //用dbName当做rowKey
-    public static boolean createDBService(String dbName){
+    public static boolean createDB(String dbName){
         try {
             commonSet(dbName,"DB","DB",(byte) 0);
             return true;
