@@ -1,22 +1,23 @@
 package org.example.vcdb.store.region;
 
-import com.google.protobuf.Empty;
-import io.grpc.stub.StreamObserver;
 import org.example.vcdb.store.file.VCFIleWriter;
 import org.example.vcdb.store.file.VCFileReader;
 import org.example.vcdb.store.mem.KV;
 import org.example.vcdb.store.mem.KeyValueSkipListSet;
 import org.example.vcdb.store.mem.MemStore;
-import org.example.vcdb.store.proto.*;
 import org.example.vcdb.store.region.Region.RegionMeta;
 import org.example.vcdb.store.region.Region.VCRegion;
 import org.example.vcdb.store.region.fileStore.ColumnFamilyMeta;
 import org.example.vcdb.store.region.fileStore.FileStore;
 import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 import org.example.vcdb.store.region.fileStore.KVRange;
+import org.example.vcdb.store.region.version.DataBase;
+import org.example.vcdb.store.region.version.Table;
 import org.example.vcdb.store.region.version.TableAlter;
+import org.example.vcdb.store.region.version.Transaction;
 import org.example.vcdb.util.Bytes;
 
+import javax.xml.crypto.Data;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,7 +27,7 @@ import static org.example.vcdb.store.mem.KV.byteToType;
 import static org.example.vcdb.store.region.fileStore.ColumnFamilyMeta.byteToCFType;
 import static org.example.vcdb.store.region.fileStore.FileStore.*;
 
-public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
+public class RegionServer  {
     //cache for fileStores
 
     //操作缓存部分
@@ -36,7 +37,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
     //库表结构操作记录
     /*dbName-------timeStamp*/
-    static Map<String, DB> dbMap;
+    static Map<String, DataBase> dbMap;
 
     /*tableName------timeStamp*/
     static Map<String, Table> tableMap;
@@ -74,8 +75,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
     }
 
-
-
     /*table:cfName-----fileStoreMeta------fileStore*/
     /*createDB:createDB*/
     /*Transaction:Transaction*/
@@ -83,7 +82,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
     //用dbName当做rowKey
     public static boolean createDB(String dbName){
         try {
-            commonSet(dbName,"DB","DB",(byte) 0);
+            dbMap.put(dbName,new DataBase(new Date().getTime(), (byte) 1,dbName));
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -91,8 +90,47 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         }
     }
 
+    public static boolean createTable(String dbName, String tabName, byte[] requestEntity){
+        try {
+            tableMap.put(dbName+"."+tabName,new Table(new Date().getTime(), (byte) 1,tabName));
+            int pos=0;
+            int count=Bytes.toInt(requestEntity,pos,4);
+            pos+=4;
+            for (int i = 0; i < count; i++) {
+                int cfNameLength = Bytes.toInt(requestEntity, pos, 4);
+                pos += 4;
+                String cfName = Bytes.toString(requestEntity, pos, cfNameLength);
+                pos += cfNameLength;
 
-    public static boolean createTable(String dbName,String tabName,byte[] requestEntity){
+                int minLength = Bytes.toInt(requestEntity, pos, 4);
+                pos += 4;
+                String min = Bytes.toString(requestEntity, pos, minLength);
+                pos += minLength;
+
+                int maxLength = Bytes.toInt(requestEntity, pos, 4);
+                pos += 4;
+                String max = Bytes.toString(requestEntity, pos, maxLength);
+                pos += maxLength;
+
+                byte type = requestEntity[pos];
+                pos += 1;
+
+                boolean unique = requestEntity[pos] == 1;
+                pos += 1;
+
+                boolean isNil = requestEntity[pos] == 1;
+                pos += 1;
+                tableAlterMap.put(tabName,new TableAlter(new Date().getTime(), (byte) 1,type,
+                        unique,isNil, min,max,tabName,cfName," "));
+            }
+            return true;
+        } catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean forCreateTable(String dbName, String tabName, byte[] requestEntity){
         try {
             commonSet(dbName+"."+tabName,"Table","Table",(byte) 4);
             int pos=0;
@@ -100,7 +138,6 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
             pos+=4;
 
             for (int i = 0; i < count; i++) {
-
                 int cfNameLength=Bytes.toInt(requestEntity,pos,4);
                 pos+=4;
                 String cfName=Bytes.toString(requestEntity,pos,cfNameLength);
@@ -170,7 +207,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
     public static boolean deleteDB(String dbName){
         try {
-            commonSet(dbName,"DB","DB",(byte) 8);
+            dbMap.put(dbName,new DataBase(new Date().getTime(), (byte) 0,dbName));
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -180,7 +217,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
     public static boolean deleteTable(String tabName){
         try {
-            commonSet(tabName,"Table","Table",(byte) 10);
+            tableMap.put(tabName,new Table(new Date().getTime(), (byte) 0,tabName));
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -190,7 +227,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
     public static boolean openTransaction(String explainValue){
         try {
-            commonSet(explainValue,"Transaction","Transaction",(byte) 12);
+            transactionMap.put(explainValue,new Transaction(new Date().getTime(),0,explainValue));
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -200,9 +237,11 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
     public static boolean closeTransaction(String explainValue){
         try {
-            commonSet(explainValue,"Transaction","Transaction",(byte) 14);
+            Transaction transaction = transactionMap.get(explainValue);
+            transaction.setEndTime(new Date().getTime());
+            transactionMap.put(explainValue,transaction);
             return true;
-        }catch (Exception e){
+        } catch (Exception e){
             e.printStackTrace();
             return false;
         }
@@ -247,9 +286,57 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
     }
 
 
+    public static boolean alterTable(String dBName, String tabName, byte[] requestEntity){
+        try {
+            int pos=0;
+            int count=Bytes.toInt(requestEntity,pos,4);
+            pos+=4;
+            for (int i = 0; i < count; i++) {
+                int cfNameLength=Bytes.toInt(requestEntity,pos,4);
+                pos+=4;
+                String cfName=Bytes.toString(requestEntity,pos,cfNameLength);
+                pos+=cfNameLength;
+
+                int old_cfNameLength=Bytes.toInt(requestEntity,pos,4);
+                pos+=4;
+                String old_cfName=Bytes.toString(requestEntity,pos,cfNameLength);
+                pos+=old_cfNameLength;
+
+                int minLength=Bytes.toInt(requestEntity,pos,4);
+                pos+=4;
+                String min=Bytes.toString(requestEntity,pos,minLength);
+                pos+=minLength;
+
+                int maxLength=Bytes.toInt(requestEntity,pos,4);
+                pos+=4;
+                String max=Bytes.toString(requestEntity,pos,maxLength);
+                pos+=maxLength;
+
+                byte type=requestEntity[pos];
+                pos+=1;
+
+                byte method=requestEntity[pos];
+                pos+=1;
+
+                boolean unique=requestEntity[pos]==1;
+                pos+=1;
+
+                boolean isNil=requestEntity[pos]==1;
+                pos+=1;
+
+                tableAlterMap.put(tabName,new TableAlter(new Date().getTime(), method,type,
+                        unique,isNil, min,max,tabName,cfName,old_cfName));
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     //有问题功能局限，应该可以修改，columnFamilyMeta
     /*修改列族名字---table：cf--->fileStoreMeta*/
-    public static boolean alterTable(String dBName,String tabName,byte[] requestEntity){
+    public static boolean forAlterTable(String dBName, String tabName, byte[] requestEntity){
         try {
             int pos=0;
             int count=Bytes.toInt(requestEntity,pos,4);
@@ -885,7 +972,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
 
     private static void commonSet(String rowKey,String fullTableName,
-                                  String cfName, byte actionType){
+                                  String cfName, byte actionType) {
             MemStore memStore = inboundMemStore.get(fullTableName+ ":" +cfName);
             if (memStore==null){
                 memStore=new MemStore();
@@ -1157,19 +1244,19 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
         return new RegionMeta(VCFileReader.readAll(regionMap.get(tableName)));
     }
 
-    //接受rpc调用
-    //获取元数据
-    // responseObserver 为返回值
-    @Override
-    public void getRegionMeta(Empty request, StreamObserver<Meta.regionMeta> responseObserver) {
-        Meta.regionMeta regionMeta = null;
-        //获取元数据
-
-        //返回元数据
-        responseObserver.onNext(regionMeta);
-        //告知本次处理完毕
-        responseObserver.onCompleted();
-    }
+//    //接受rpc调用
+//    //获取元数据
+//    // responseObserver 为返回值
+//    @Override
+//    public void getRegionMeta(Empty request, StreamObserver<Meta.regionMeta> responseObserver) {
+//        Meta.regionMeta regionMeta = null;
+//        //获取元数据
+//
+//        //返回元数据
+//        responseObserver.onNext(regionMeta);
+//        //告知本次处理完毕
+//        responseObserver.onCompleted();
+//    }
 
     //合并KV里的ValueNode
     public int MergeKV(String dbName, String tableName, String cfName, String rowKey, int versionFrom, int versionTo) {
