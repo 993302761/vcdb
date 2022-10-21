@@ -67,13 +67,12 @@ public class FileStoreMeta {
 
 
     public FileStoreMeta(long timeStamp, boolean split, String encodedName,
-                         byte[] endKey, byte[] startKey, String tableName,
-                         String nameSpace, List<KVRange> pageTrailer) {
+                         byte[] endKey, byte[] startKey, List<KVRange> pageTrailer) {
         byte spl = 0;
         if (split) {
             spl = 1;
         }
-        this.data = createByteArray(timeStamp, spl, encodedName, endKey, startKey, tableName, nameSpace, pageTrailer);
+        this.data = createByteArray(timeStamp, spl, encodedName, endKey, startKey, pageTrailer);
 
     }
 
@@ -95,7 +94,7 @@ public class FileStoreMeta {
 
     private byte[] createByteArray(long timeStamp, byte spl,
                                    String encodedName, byte[] endKey,
-                                   byte[] startKey, String tableName, String nameSpace, List<KVRange> pageTrailer) {
+                                   byte[] startKey,List<KVRange> pageTrailer) {
         int pos = 0;
 //        byte[] bytes = new byte[8 + 1 + 4 + encodedName.getBytes().length + 4 + startKey.length + 4 + endKey.length + 4 + tableName.getBytes().length + 4 + nameSpace.getBytes().length + 4 + getPageTrailerLength(pageTrailer)];
         byte[] bytes = new byte[4 * 1024];
@@ -111,11 +110,6 @@ public class FileStoreMeta {
         pos = Bytes.putInt(bytes, pos, endKey.length);
         pos = Bytes.putBytes(bytes, pos, endKey, 0, endKey.length);
 
-        pos = Bytes.putInt(bytes, pos, tableName.getBytes().length);
-        pos = Bytes.putBytes(bytes, pos, tableName.getBytes(), 0, tableName.getBytes().length);
-
-        pos = Bytes.putInt(bytes, pos, nameSpace.getBytes().length);
-        pos = Bytes.putBytes(bytes, pos, nameSpace.getBytes(), 0, nameSpace.getBytes().length);
 
         pos = Bytes.putInt(bytes, pos, pageTrailer.size());
         for (KVRange kvRange : pageTrailer) {
@@ -157,6 +151,7 @@ public class FileStoreMeta {
     public byte[] getEndKey() {
         return Bytes.subByte(this.data, 21 + getEncodeNameLength() + getStartKeyLength(), getEndKeyLength());
     }
+
 
     public List<KVRange> getPageTrailer() {
         int pos = 21 + getEncodeNameLength() + getEndKeyLength() + getStartKeyLength();

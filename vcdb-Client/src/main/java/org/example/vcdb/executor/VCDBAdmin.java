@@ -25,9 +25,6 @@ public class VCDBAdmin {
     private final static int serverPort=9999;
 
 
-//-----------------------------------------------------------------------------------
-
-
     //return int(返回改动KV的数量)
     public String createDB(String dBName, CreateDB createDB) {
         //建立一个传输文本的通道

@@ -22,8 +22,8 @@ public class ColumnFamilyMeta {
     public byte[] getData() {
         return data;
     }
-    public ColumnFamilyMeta(boolean unique, boolean isNull, long min,
-                            long max, CFType type){
+    public ColumnFamilyMeta( String min, String max,
+                             boolean unique, boolean isNull,CFType type){
         byte uni=0;
         byte isNil=0;
         if (unique){
@@ -32,41 +32,49 @@ public class ColumnFamilyMeta {
         if (isNull){
             isNil=1;
         }
-        this.data = createByteArray(uni, isNil, min,
-                max,  type);
+        this.data = createByteArray( min, max,uni, isNil,  type);
     }
 
     public ColumnFamilyMeta(byte[] data){
         this.data=data;
     }
 
-    private byte[] createByteArray(byte unique, byte isNull, long min,
-                                   long max, CFType type) {
-        byte[] bytes = new byte[8+8+1+1+1];
+    private byte[] createByteArray(String min, String max,
+                                   byte unique, byte isNull, CFType type) {
+        byte[] bytes = new byte[4+min.getBytes().length+4+max.getBytes().length+1+1+1];
         int pos=0;
+        pos= Bytes.putInt(bytes,pos,min.getBytes().length);
+        pos=Bytes.putBytes(bytes,pos,min.getBytes(),0,min.getBytes().length);
+        pos= Bytes.putInt(bytes,pos,max.getBytes().length);
+        pos=Bytes.putBytes(bytes,pos,max.getBytes(),0,max.getBytes().length);
         pos= Bytes.putByte(bytes,pos,unique);
         pos=Bytes.putByte(bytes,pos,isNull);
-        pos=Bytes.putLong(bytes,pos,min);
-        pos=Bytes.putLong(bytes,pos,max);
         pos=Bytes.putByte(bytes,pos,type.getCode());
         return bytes;
     }
+
+    public int getMinLength() {
+        return Bytes.toInt(this.data,0,4);
+    }
+    public String getMin(){
+        return Bytes.toString(this.data,4,getMinLength());
+    }
+    public int getMaxLength() {
+        return Bytes.toInt(this.data,4+getMinLength(),4);
+    }
+
+    public String getMax(){
+        return Bytes.toString(this.data,8+getMinLength(),getMaxLength());
+    }
+
     public boolean isUnique() {
-        return data[0] != 0;
+        return data[8+getMinLength()+getMaxLength()] != 0;
     }
     public boolean isNull() {
-        return data[1]!=0;
+        return data[9+getMinLength()+getMaxLength()]!=0;
     }
-    public long getMin() {
-        return Bytes.toLong(this.data,2,8);
-    }
-
-    public long getMax() {
-        return Bytes.toLong(this.data,10,8);
-    }
-
     public CFType getType() {
-        return byteToCFType(data[18]);
+        return byteToCFType(data[10+getMinLength()+getMaxLength()]);
     }
 
     public void dis(){

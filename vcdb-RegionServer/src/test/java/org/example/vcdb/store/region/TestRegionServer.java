@@ -86,7 +86,7 @@ public class TestRegionServer {
         VCFIleWriter.writeAll(fileStoreMeta.getData(), fileStoreMetaName);
 
         /*创建fileStore*/
-        ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(true, false, 1, 100, ColumnFamilyMeta.byteToCFType((byte) 44));
+        ColumnFamilyMeta cfMeta = new ColumnFamilyMeta("1", "100",true, false,  ColumnFamilyMeta.byteToCFType((byte) 44));
         FileStore fileStore=new FileStore(cfMeta);
         VCFIleWriter.writeAll(fileStore.getData(), fileStoreName);
     }

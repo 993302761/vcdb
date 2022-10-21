@@ -69,7 +69,7 @@ public class TestWriterAndReader {
             list.add(new KVRange(1111,"startKey"+i,"endKey"+i));
         }
         FileStoreMeta fileStoreMeta = new FileStoreMeta((new Date()).getTime(), false,
-                "fileStore/fileStore1", "r1".getBytes(), "r2".getBytes(), "table1","db1",list);
+                "fileStore/fileStore1", "r1".getBytes(), "r2".getBytes(), list);
         VCFIleWriter.writeAll(fileStoreMeta.getData(), "fileStoreMeta/fileStoreMeta1");
         FileStoreMeta fileStoreMeta1=new FileStoreMeta(VCFileReader.readAll("fileStoreMeta/fileStoreMeta1"));
         fileStoreMeta1.dis();
@@ -78,7 +78,7 @@ public class TestWriterAndReader {
     @Test
     public void testFileStore(){
         /*------------------------------fileStore--------------------------*/
-        ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(true, false, 1, 100, ColumnFamilyMeta.byteToCFType((byte) 44));
+        ColumnFamilyMeta cfMeta = new ColumnFamilyMeta("1", "100", true, false, ColumnFamilyMeta.byteToCFType((byte) 44));
         byte[] row = "row1".getBytes(StandardCharsets.UTF_8);
         byte[] family = "fam1".getBytes(StandardCharsets.UTF_8);
         List<KV.ValueNode> values = new ArrayList<>();
@@ -101,7 +101,7 @@ public class TestWriterAndReader {
     @Test
     public void testSetPage(){
         /*-------------------------page-----------------------*/
-        ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(true, false, 1, 100, ColumnFamilyMeta.byteToCFType((byte) 44));
+        ColumnFamilyMeta cfMeta = new ColumnFamilyMeta("1", "100",true, false,  ColumnFamilyMeta.byteToCFType((byte) 44));
         byte[] row = "row1".getBytes(StandardCharsets.UTF_8);
         byte[] family = "fam1".getBytes(StandardCharsets.UTF_8);
         List<KV.ValueNode> values = new ArrayList<>();

@@ -12,8 +12,8 @@ import org.example.vcdb.util.Bytes;
 public class ColumnFamilyCell{
     private String cf_name;
     private byte type=100;
-    private long min=Long.MIN_VALUE;
-    private long max=Long.MAX_VALUE;
+    private String min;
+    private String max;
     private Boolean unique;
     private Boolean isNull;
 
@@ -26,11 +26,11 @@ public class ColumnFamilyCell{
         return type;
     }
 
-    public double getMin() {
+    public String getMin() {
         return min;
     }
 
-    public double getMax() {
+    public String getMax() {
         return max;
     }
 
@@ -53,11 +53,11 @@ public class ColumnFamilyCell{
         this.type = type;
     }
 
-    public void setMin(long min) {
+    public void setMin(String min) {
         this.min = min;
     }
 
-    public void setMax(long max) {
+    public void setMax(String max) {
         this.max = max;
     }
 
@@ -82,9 +82,14 @@ public class ColumnFamilyCell{
         int pos=0;
         pos= Bytes.putInt(bytes,pos,cf_name.getBytes().length);
         pos=Bytes.putBytes(bytes,pos,cf_name.getBytes(),0,cf_name.getBytes().length);
+
+        pos= Bytes.putInt(bytes,pos,min.getBytes().length);
+        pos=Bytes.putBytes(bytes,pos,min.getBytes(),0,min.getBytes().length);
+
+        pos= Bytes.putInt(bytes,pos,max.getBytes().length);
+        pos=Bytes.putBytes(bytes,pos,max.getBytes(),0,max.getBytes().length);
+
         pos=Bytes.putByte(bytes,pos,type);
-        pos=Bytes.putLong(bytes,pos,min);
-        pos=Bytes.putLong(bytes,pos,max);
         pos=Bytes.putByte(bytes,pos,uni);
         pos=Bytes.putByte(bytes,pos,isNil);
         return bytes;

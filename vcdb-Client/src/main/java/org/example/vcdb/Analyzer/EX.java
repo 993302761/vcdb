@@ -113,14 +113,14 @@ public class EX {
                         System.err.println("报错重复设置type属性");
                     }
                 } else if ("min".equalsIgnoreCase(cell.getKey())) {
-                    if (columnFamilyCell.getMin() == Long.MIN_VALUE) {
-                        columnFamilyCell.setMin(Long.parseLong(cell.getValue()));
+                    if (columnFamilyCell.getMin() == null) {
+                        columnFamilyCell.setMin(cell.getValue());
                     } else {
                         System.err.println("报错重复设置min属性");
                     }
                 } else if ("max".equalsIgnoreCase(cell.getKey())) {
-                    if (columnFamilyCell.getMax() == Long.MAX_VALUE) {
-                        columnFamilyCell.setMax(Long.parseLong(cell.getValue()));
+                    if (columnFamilyCell.getMax() == null) {
+                        columnFamilyCell.setMax(cell.getValue());
                     } else {
                         System.err.println("报错重复设置max属性");
                     }
@@ -482,12 +482,6 @@ public class EX {
                     } else {
                         System.err.println("报错重复设置c_name属性");
                     }
-                } else if ("size".equalsIgnoreCase(cell.getKey())) {
-                    if (termCell.getSize() == 0) {
-                        termCell.setSize(Long.parseLong(cell.getValue()));
-                    } else {
-                        System.err.println("报错重复设置size属性");
-                    }
                 } else if ("max".equalsIgnoreCase(cell.getKey())) {
                     if (termCell.getMax() == null) {
                         termCell.setMax(cell.getValue());
@@ -746,8 +740,8 @@ public class EX {
                         System.err.println("报错重复设置old_cfName属性");
                     }
                 } else if ("method".equalsIgnoreCase(cell.getKey())) {
-                    if (alterCell.getMethod() == null) {
-                        alterCell.setMethod(cell.getValue());
+                    if (alterCell.getMethod() == 0) {
+                        alterCell.setMethod((byte) 1);
                     } else {
                         System.err.println("报错重复设置method属性");
                     }
@@ -756,19 +750,40 @@ public class EX {
                 }
             }
             //TODO检查termCell必要属性是否为空
-            if ("put".equalsIgnoreCase(alterCell.getMethod())) {
+//            if ("put".equalsIgnoreCase(alterCell.getMethod())) {
+//                if (!isNull(alterCell.getCfName()) && isNull(alterCell.getOld_cfName())) {
+//                    alterCells.add(alterCell);
+//                } else {
+//                    System.err.println("aggregate缺少必要属性");
+//                }
+//            } else if ("delete".equalsIgnoreCase(alterCell.getMethod())) {
+//                if (isNull(alterCell.getCfName()) && !isNull(alterCell.getOld_cfName())) {
+//                    alterCells.add(alterCell);
+//                } else {
+//                    System.err.println("aggregate缺少必要属性");
+//                }
+//            } else if ("update".equalsIgnoreCase(alterCell.getMethod())) {
+//                if (!isNull(alterCell.getCfName()) && !isNull(alterCell.getOld_cfName())) {
+//                    alterCells.add(alterCell);
+//                } else {
+//                    System.err.println("aggregate缺少必要属性");
+//                }
+//            } else {
+//                System.err.println("aggregate缺少必要属性");
+//            }
+            if (alterCell.getMethod()==1) {
                 if (!isNull(alterCell.getCfName()) && isNull(alterCell.getOld_cfName())) {
                     alterCells.add(alterCell);
                 } else {
                     System.err.println("aggregate缺少必要属性");
                 }
-            } else if ("delete".equalsIgnoreCase(alterCell.getMethod())) {
+            } else if (alterCell.getMethod()==2) {
                 if (isNull(alterCell.getCfName()) && !isNull(alterCell.getOld_cfName())) {
                     alterCells.add(alterCell);
                 } else {
                     System.err.println("aggregate缺少必要属性");
                 }
-            } else if ("update".equalsIgnoreCase(alterCell.getMethod())) {
+            } else if (alterCell.getMethod()==3) {
                 if (!isNull(alterCell.getCfName()) && !isNull(alterCell.getOld_cfName())) {
                     alterCells.add(alterCell);
                 } else {

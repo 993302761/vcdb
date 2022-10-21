@@ -1,7 +1,6 @@
 package org.example.vcdb.store.region;
 
 import com.google.protobuf.Empty;
-import com.sun.jdi.ShortType;
 import io.grpc.stub.StreamObserver;
 import org.example.vcdb.store.file.VCFIleWriter;
 import org.example.vcdb.store.file.VCFileReader;
@@ -104,18 +103,21 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
 
                 int cfNameLength=Bytes.toInt(requestEntity,pos,4);
                 pos+=4;
-
                 String cfName=Bytes.toString(requestEntity,pos,cfNameLength);
                 pos+=cfNameLength;
 
+                int minLength=Bytes.toInt(requestEntity,pos,4);
+                pos+=4;
+                String min=Bytes.toString(requestEntity,pos,minLength);
+                pos+=minLength;
+
+                int maxLength=Bytes.toInt(requestEntity,pos,4);
+                pos+=4;
+                String max=Bytes.toString(requestEntity,pos,maxLength);
+                pos+=maxLength;
+
                 byte type=requestEntity[pos];
                 pos+=1;
-
-                long min=Bytes.toLong(requestEntity,pos,8);
-                pos+=8;
-
-                long max=Bytes.toLong(requestEntity,pos,8);
-                pos+=8;
 
                 boolean unique=requestEntity[pos]==1;
                 pos+=1;
@@ -155,7 +157,7 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                 VCFIleWriter.writeAll(fileStoreMeta.getData(), fileStoreMetaName);
 
                 /*创建fileStore*/
-                ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(unique,isNil,min,max,byteToCFType(type));
+                ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(min,max,unique,isNil,byteToCFType(type));
                 FileStore fileStore=new FileStore(cfMeta);
                 VCFIleWriter.writeAll(fileStore.getData(), fileStoreName);
             }
@@ -263,14 +265,33 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                 String old_cfName=Bytes.toString(requestEntity,pos,cfNameLength);
                 pos+=old_cfNameLength;
 
-                int methodLength=Bytes.toInt(requestEntity,pos,4);
+                int minLength=Bytes.toInt(requestEntity,pos,4);
                 pos+=4;
-                String method=Bytes.toString(requestEntity,pos,cfNameLength);
-                pos+=methodLength;
+                String min=Bytes.toString(requestEntity,pos,minLength);
+                pos+=minLength;
+
+                int maxLength=Bytes.toInt(requestEntity,pos,4);
+                pos+=4;
+                String max=Bytes.toString(requestEntity,pos,maxLength);
+                pos+=maxLength;
+
+                byte type=requestEntity[pos];
+                pos+=1;
+
+                byte method=requestEntity[pos];
+                pos+=1;
+
+                boolean unique=requestEntity[pos]==1;
+                pos+=1;
+
+                boolean isNil=requestEntity[pos]==1;
+                pos+=1;
 
                 RegionMeta regionMeta = RegionServer.getRegionMeta(dBName+"."+tabName);
                 Map<String, String> fileStoreMap = regionMeta.getFileStoreMap();
-                if ("put".equalsIgnoreCase(method)) {
+
+                //主要在于修改ColumnFamilyMeta
+                if (type==1) {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
                     String fileName=sdf.format(new Date());
                     String fileStoreName="fileStore/"+fileName;
@@ -281,15 +302,15 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
                     VCFIleWriter.writeAll(fileStoreMeta.getData(), fileStoreMetaName);
 
                     /*创建fileStore*/
-                    ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(false,false,Long.MIN_VALUE,Long.MAX_VALUE,byteToCFType((byte) 56));
+                    ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(min,max,unique,isNil,byteToCFType( type));
                     FileStore fileStore=new FileStore(cfMeta);
                     VCFIleWriter.writeAll(fileStore.getData(), fileStoreName);
                     fileStoreMap.put(cfName,fileStoreMetaName);
-                } else if ("delete".equalsIgnoreCase(method)) {
+                } else if (type==2) {
                     String fileStoreMetaName = fileStoreMap.get(old_cfName);
                     fileStoreMap.remove(old_cfName);
                     VCFIleWriter.deleteAll(fileStoreMetaName);
-                } else if ("update".equalsIgnoreCase(method)) {
+                } else if (type==3) {
                     String fileStoreMetaName = fileStoreMap.get(old_cfName);
                     fileStoreMap.remove(old_cfName);
                     fileStoreMap.put(cfName,fileStoreMetaName);
@@ -866,7 +887,10 @@ public class RegionServer extends getRegionMetaGrpc.getRegionMetaImplBase {
     private static void commonSet(String rowKey,String fullTableName,
                                   String cfName, byte actionType){
             MemStore memStore = inboundMemStore.get(fullTableName+ ":" +cfName);
-            KV kv = memStore.kvSet.get(rowKey);
+            if (memStore==null){
+                memStore=new MemStore();
+            }
+            KV  kv=memStore.kvSet.get(rowKey);
             if (kv==null){
                 kv=new KV(rowKey.getBytes(),0,rowKey.getBytes().length,null);
             }

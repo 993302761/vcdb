@@ -25,16 +25,16 @@ public class TestFileStore {
             list.add(new KVRange(1111,"startKey"+i,"endKey"+i));
         }
         FileStoreMeta fileStoreMeta = new FileStoreMeta((new Date()).getTime(), false,
-                "fileStoreMeta1", "r1".getBytes(), "r2".getBytes(), "table1","db1",list);
+                "fileStoreMeta1", "r1".getBytes(), "r2".getBytes(), list);
+
         fileStoreMeta.dis();
         System.out.println("===================================");
 
-        ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(true, false, 1, 100, ColumnFamilyMeta.byteToCFType((byte) 44));
+        ColumnFamilyMeta cfMeta = new ColumnFamilyMeta("1", "100",true, false,  ColumnFamilyMeta.byteToCFType((byte) 44));
         cfMeta.dis();
         System.out.println("=======================================");
 
         byte[] row = "row1".getBytes(StandardCharsets.UTF_8);
-        byte[] family = "fam1".getBytes(StandardCharsets.UTF_8);
         List<KV.ValueNode> values = new ArrayList<>();
         for (int i = 1; i <= 2; i++) {
             long time = (new Date()).getTime();

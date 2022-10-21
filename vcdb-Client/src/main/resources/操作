@@ -35,19 +35,16 @@ curl -H "Content-Type: application/json" -X POST -d\
    '{"rowKey":"row1","values":[{"cf_name":"info","c_name":"myName","value":"n3"}]}'\
    "localhost:8080/myDataBase/myTable/_insert"
 
+基本查询流程
+curl -H "Content-Type: application/json" -X POST -d\
+ '{"limit":9,"cf_names":["row1","info"],"terms":[{"cf_name":"info","min":1,"max": 99}],"orders":[{"cf_name":"info1","sort":"asc"}]}'\
+ "localhost:8080/myDataBase/myTable/_search"
 
-关闭事务
-  curl -X POST "localhost:8080/_close"
 
 查看全部版本
 curl -H "Content-Type: application/json" -X POST -d\
  '{"rowKey":"row1"}}'\
  "localhost:8080/myDataBase/myTable/_showVersion"
-
-  3.版本合并
-curl -H "Content-Type: application/json" -X POST -d\
- '{"Version_terms":[{"rowKey":"row1","version-from":0,"version-to":2}]}'\
- "localhost:8080/myDataBase/myTable/_merge"
 
 删除某一版本
  curl -H "Content-Type: application/json" -X POST -d\
@@ -59,7 +56,10 @@ curl -H "Content-Type: application/json" -X POST -d\
  '{"rowKey":"row1","version":0}}'\
  "localhost:8080/myDataBase/myTable/_use"
 
-基本查询流程
+  3.版本合并
 curl -H "Content-Type: application/json" -X POST -d\
- '{"limit":9,"cf_names":["row1","info"],"terms":[{"cf_name":"info","min":1,"max": 99}],"orders":[{"cf_name":"info1","sort":"asc"}]}'\
- "localhost:8080/myDataBase/myTable/_search"
+ '{"Version_terms":[{"rowKey":"row1","version-from":0,"version-to":2}]}'\
+ "localhost:8080/myDataBase/myTable/_merge"
+
+ 关闭事务
+   curl -X POST "localhost:8080/_close"

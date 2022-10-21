@@ -60,7 +60,7 @@ public class FileStore {
         //fileStoreMeta也会随时更新
         this.data = new byte[4 * 1024 * 16];
         int pos=0;
-        pos=Bytes.putBytes(this.data, pos, columnFamilyMeta.getData(), 0, 19);
+        pos=Bytes.putBytes(this.data, pos, columnFamilyMeta.getData(), 0, columnFamilyMeta.getData().length);
         appendPage(1,dataSet);
     }
     public void appendPage(int pageIndex,KeyValueSkipListSet dataSet){
@@ -145,53 +145,36 @@ public class FileStore {
     boolean isNull;1
     byte type;1
     */
+
     public ColumnFamilyMeta getColumnFamilyMeta(){
-        return new ColumnFamilyMeta(Bytes.subByte(this.data,0,19));
+        int minLength=Bytes.toInt(this.data,0,4);
+        String min=Bytes.toString(this.data,4,minLength);
+
+        int maxLength=Bytes.toInt(this.data,4+minLength,4);
+        String max=Bytes.toString(this.data,8+minLength,maxLength);
+
+        boolean isUnique=data[8+minLength+maxLength] != 0;
+        boolean isNull=data[9+minLength+maxLength] != 0;
+        byte cfType=data[10+minLength+maxLength];
+
+        return new ColumnFamilyMeta(min,max,isUnique,isNull,ColumnFamilyMeta.byteToCFType(cfType));
     }
     public void setColumnFamilyMeta(ColumnFamilyMeta columnFamilyMeta){
-        Bytes.putBytes(this.data, 0, columnFamilyMeta.getData(), 0, 19);
+        Bytes.putBytes(this.data, 0, columnFamilyMeta.getData(), 0, columnFamilyMeta.getData().length);
     }
 
     /*-----------------------------------------------------------------*/
-    public boolean isUnique(){
-        return this.data[0] != 0;
-    }
-    public boolean isNull(){
-        return this.data[1]!=0;
-    }
-    public long getMin(){
-        return Bytes.toLong(this.data,2,8);
-    }
-    public long getMax(){
-        return Bytes.toLong(this.data,10,8);
-    }
-    public byte getType(){
-        return this.data[18];
-    }
-
-    public void setMin(long val){
-         Bytes.putLong(this.data,0,val);
-    }
-    public void setMax(long val){
-         Bytes.putLong(this.data,8,val);
-    }
-    public void setUnique(boolean val){
-        Bytes.putByte(this.data,16, (byte) (val?1:0));
-    }
-    public void setNull(boolean val){
-        Bytes.putByte(this.data,17, (byte) (val?1:0));
-    }
-    public void setType(byte val){
-        Bytes.putByte(this.data,18, val);
-    }
 
     /*---------------------action-------------------------------*/
     public void dis(){
-        System.out.println(isUnique());
-        System.out.println(isNull());
-        System.out.println(getMin());
-        System.out.println(getMax());
-        System.out.println(ColumnFamilyMeta.byteToCFType(getType()));
+        ColumnFamilyMeta columnFamilyMeta = getColumnFamilyMeta();
+
+        System.out.println(columnFamilyMeta.getMin());
+        System.out.println(columnFamilyMeta.getMax());
+        System.out.println(columnFamilyMeta.isUnique());
+        System.out.println(columnFamilyMeta.isNull());
+        System.out.println(columnFamilyMeta.getType());
+
         System.out.println(getDataSet(1));
     }
 
