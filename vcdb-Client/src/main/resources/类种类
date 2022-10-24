@@ -42,6 +42,7 @@ POST http://ip:端口/dbname/tab_name/_alter
                 "min"：最小长度,(不必要)
                 "max"：最大长度,(不必要)
                 "unique":是否唯一,(不必要)
+                "isNull":是否可以为空
  			}
           .......
         ]
@@ -50,7 +51,7 @@ POST http://ip:端口/dbname/tab_name/_alter
 
 
 curl -H "Content-Type: application/json" -X POST -d\
- '{"alter_cells":[{"cf_name":"info","old_cf_name":"myName","method":"update"}]}'\
+ '{"alter_cells":[{"cf_name":"info","old_cf_name":"myName","method":"3","type":"2","min":"11","max":"99","unique":"true","isNull":"true"}]}'\
  "localhost:8080/myDataBase/myTable/_alter"
 
 
@@ -144,11 +145,17 @@ curl -H "Content-Type: application/json" -X POST -d\
 4.1 查看所有事务
 post http://ip:端口/_showTransaction
 
+curl -X POST "localhost:8080/_showTransaction"
+
 4.2 删除某个事务
 delete http://ip:端口/_deleteTransaction
 {
     "explainValue":"value"(必要)
 }
+
+curl -H "Content-Type: application/json" -X DELETE -d\
+ '{"explainValue":  "I want update some Info"}'\
+ "localhost:8080/_deleteTransaction"
 
 4.3 提取某个事务到最新
 POST http://ip:端口/_useTransaction
@@ -156,17 +163,9 @@ POST http://ip:端口/_useTransaction
     "explainValue":"value"(必要)
 }
 
-
-
-
-
-
-
-
-
-
-
-
+curl -H "Content-Type: application/json" -X POST -d\
+ '{"explainValue":  "I want update some Info"}'\
+ "localhost:8080/_useTransaction"
 
 
 7.基本查询流程
@@ -196,7 +195,6 @@ post http://ip:端口/dbname/tab_name/_search
             {
             "function":avg/min/max/sum,(必要)
             cf_name:"StudentAge",(必要)
-
             as:“xxx”(必要)
             },
         .....

@@ -19,9 +19,9 @@ public class AlterCell {
 
     private String max;
 
-    private byte type;
+    private byte type=0;
 
-    private byte  method;
+    private byte  method=0;
 
     private Boolean unique;
 

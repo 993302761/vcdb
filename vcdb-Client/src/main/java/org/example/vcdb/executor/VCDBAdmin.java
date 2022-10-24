@@ -135,4 +135,8 @@ public class VCDBAdmin {
                 "=====>1---row1---info:myName----n2\n" +
                 "=====>2---row1---info:myName----n3\n";
     }
+
+    public String useTransaction(UseTransaction useTransaction) {
+        return "use "+useTransaction.getExplainValue()+" success\n";
+    }
 }
