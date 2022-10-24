@@ -6,6 +6,7 @@ import org.example.vcdb.config.ClientConfig;
 import org.example.vcdb.entity.Delete.DeleteCells;
 import org.example.vcdb.entity.Delete.DeleteDB;
 import org.example.vcdb.entity.Delete.DeleteTable;
+import org.example.vcdb.entity.Delete.DeleteTransaction;
 import org.example.vcdb.entity.Post.*;
 import org.example.vcdb.entity.Put.CreateDB;
 import org.example.vcdb.entity.Put.CreateTable;
@@ -123,4 +124,15 @@ public class VCDBAdmin {
         return "update  success\n";
     }
 
+    public String showTransaction(ShowTransaction requestEntity) {
+        return "=====>0---row1---info:myName----n1\n" +
+                "=====>1---row1---info:myName----n2\n" +
+                "=====>2---row1---info:myName----n3\n";
+    }
+
+    public String deleteTransaction(DeleteTransaction requestEntity) {
+        return "=====>0---row1---info:myName----n1\n" +
+                "=====>1---row1---info:myName----n2\n" +
+                "=====>2---row1---info:myName----n3\n";
+    }
 }

@@ -13,7 +13,6 @@
         <module>vcdb-RegionServer</module>
         <module>vcdb-Client</module>
         <module>BasicTools</module>
-
     </modules>
     <dependencies>
         <dependency>

@@ -135,12 +135,4 @@ public class JsonToRestFulEntityHandler extends SimpleChannelInboundHandler {
     }
 }
 
-class tt{
-    public static void main(String[] args) {
-        String s2="\\";
-        for (byte b:s2.getBytes()){
-            System.out.println(b);
-        }
-    }
-}
 

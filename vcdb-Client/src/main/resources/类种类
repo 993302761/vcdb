@@ -77,7 +77,9 @@ POST     http://ip:端口/_close
 
 curl -X POST "localhost:8080/_close"
 
-3.版本合并
+3.数据版本操作
+
+3.3.版本合并
 
 POST http://ip:端口/dbname/tab_name/_merge
 {
@@ -100,12 +102,9 @@ curl -H "Content-Type: application/json" -X POST -d\
  "localhost:8080/myDataBase/myTable/_merge"
 
 
+3.4.提取某一版本到最新版本
 
-
-
-4.提取某一版本到最新版本
-
-POST http://ip:端口/dbname/tab_name/_use
+POST http://ip:端口/dbname/tab_name/_useVersion
 {
     "rowKey":"行建名"(必要)
     "cfName":"列族名字"（必要）
@@ -114,10 +113,10 @@ POST http://ip:端口/dbname/tab_name/_use
 
 curl -H "Content-Type: application/json" -X POST -d\
  '{"rowKey":"row1","version":0}}'\
- "localhost:8080/myDataBase/myTable/_use"
+ "localhost:8080/myDataBase/myTable/_useVersion"
 
 
-5.删除某一版本
+3.5.删除某一版本
 
 POST http://ip:端口/dbname/tab_name/delete_version
 {
@@ -130,7 +129,7 @@ curl -H "Content-Type: application/json" -X POST -d\
  '{"rowKey":"row1","version":0}}'\
  "localhost:8080/myDataBase/myTable/delete_version"
 
-6.查看全部版本
+3.6.查看全部版本
 post http://ip:端口/dbname/tab_name/_showVersion
 {
     "rowKey":"行建名"(必要)
@@ -139,6 +138,36 @@ post http://ip:端口/dbname/tab_name/_showVersion
 curl -H "Content-Type: application/json" -X POST -d\
  '{"rowKey":"row1"}}'\
  "localhost:8080/myDataBase/myTable/_showVersion"
+
+4.事务版本操作
+
+4.1 查看所有事务
+post http://ip:端口/_showTransaction
+
+4.2 删除某个事务
+delete http://ip:端口/_deleteTransaction
+{
+    "explainValue":"value"(必要)
+}
+
+4.3 提取某个事务到最新
+POST http://ip:端口/_useTransaction
+{
+    "explainValue":"value"(必要)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 7.基本查询流程
 #语法
@@ -276,5 +305,4 @@ post http://ip:端口/dbname/tab_name /_mget
             },
                 ......
         ]
-
 }

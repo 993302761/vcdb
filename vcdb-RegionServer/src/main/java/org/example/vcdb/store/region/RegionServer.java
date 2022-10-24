@@ -252,7 +252,6 @@ public class RegionServer  {
         int count=Bytes.toInt(requestEntity,pos,4);
         pos+=4;
         for (int i = 0; i < count; i++) {
-
             int cfNameLength=Bytes.toInt(requestEntity,pos,4);
             pos+=4;
             String cfName=Bytes.toString(requestEntity,pos,cfNameLength);
@@ -1132,7 +1131,8 @@ public class RegionServer  {
     }
 
     private static void insertOldPage(List<KV> newKVs, List<KVRange> pageTrailer,
-                                      int pageIndex, String fileStoreName, FileStoreMeta fileStoreMeta, String fileStoreMetaName) {
+                                      int pageIndex, String fileStoreName,
+                                      FileStoreMeta fileStoreMeta, String fileStoreMetaName) {
         List<KVRange> list = updatePageTrailer2(newKVs, pageTrailer, pageIndex);
         fileStoreMeta.setPageTrailer(list);
         VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, fileStoreMetaName);

@@ -228,7 +228,7 @@ public class TestRegionServer {
             values.add(new KV.ValueNode(time, type, qualifier, 0, qualifier.length, value, 0, value.length));
         }
 
-        for (int i = 80 ; i < 120; i++) {
+        for (int i = 0 ; i < 40; i++) {
             kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length, values));
         }
         RegionServer.readConfig("regionServerMeta");
@@ -248,7 +248,6 @@ public class TestRegionServer {
     @Test
     public void ttt(){
         FileStore fileStore2=new FileStore(VCFileReader.readAll("fileStore/fileStore2"));
-
         FileStore.disDataSet(fileStore2.getDataSet(1));
         System.out.println("==========================================");
         FileStore.disDataSet(fileStore2.getDataSet(2));

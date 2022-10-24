@@ -1,10 +1,12 @@
 package org.example.vcdb.Analyzer;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.example.vcdb.entity.Cell.*;
 import org.example.vcdb.entity.Cell.ColumnFamilyCell;
 import org.example.vcdb.entity.Delete.DeleteCells;
 import org.example.vcdb.entity.Delete.DeleteDB;
 import org.example.vcdb.entity.Delete.DeleteTable;
+import org.example.vcdb.entity.Delete.DeleteTransaction;
 import org.example.vcdb.entity.Post.*;
 import org.example.vcdb.entity.Put.CreateDB;
 import org.example.vcdb.entity.Put.CreateTable;
@@ -96,7 +98,7 @@ public class EX {
     }
 
     private static List<ColumnFamilyCell> selectColumn_family(List<HashMap<String, String>> value) {
-        List<ColumnFamilyCell> columnFamilyCells = new ArrayList<ColumnFamilyCell>();
+        List<ColumnFamilyCell> columnFamilyCells = new ArrayList<>();
         for (HashMap<String, String> kv : value) {
             ColumnFamilyCell columnFamilyCell = new ColumnFamilyCell();
             for (Map.Entry<String, String> cell : kv.entrySet()) {
@@ -167,11 +169,18 @@ public class EX {
         String[] deleteUrl = actionEntity.getUrl().split("/");
         switch (deleteUrl.length) {
             case 2:
-                requestEntity = getDeleteDB(actionEntity);
-                //项任务池里投放任务
-//                putCell(Node);
-                System.out.println("deleteDB------------");
-                result=vcdbAdmin.deleteDB(deleteUrl[1],(DeleteDB) requestEntity);
+                if ("deleteDB".equalsIgnoreCase(deleteUrl[1])) {
+                    requestEntity = getDeleteDB(actionEntity);
+                    //项任务池里投放任务
+                    //putCell(Node);
+                    System.out.println("deleteDB------------");
+                    result=vcdbAdmin.deleteDB(deleteUrl[1],(DeleteDB) requestEntity);
+                } else if ("_deleteTransaction".equalsIgnoreCase(deleteUrl[1])) {
+                    requestEntity = getDeleteTransaction(actionEntity);
+                    System.out.println("_deleteTransaction------------");
+                    result=vcdbAdmin.deleteTransaction((DeleteTransaction) requestEntity);
+                }
+
                 break;
             case 3:
                 requestEntity = getDeleteTable(actionEntity);
@@ -182,6 +191,22 @@ public class EX {
                 System.out.println("the URL Segment is error" + "给出提示（把Delete开头的所有的命令返还给他");
         }
         return result;
+    }
+
+    private static RequestEntity getDeleteTransaction(ActionEntity actionEntity) {
+        DeleteTransaction deleteTransaction = new DeleteTransaction();
+        setBaseAttribute(deleteTransaction, actionEntity);
+        for (Map.Entry<String, Object> cfs : actionEntity.getRegularAttribute().entrySet()) {
+            if ("explainValue".equalsIgnoreCase(cfs.getKey())) {
+                deleteTransaction.setExplainValue((String) cfs.getValue());
+            } else {
+                System.err.println("出现未知属性，打印key");
+            }
+        }
+        if (actionEntity.getCompoundAttribute() != null) {
+            System.err.println("出现未知属性，打印key");
+        }
+        return deleteTransaction;
     }
 
     private static RequestEntity getDeleteTable(ActionEntity actionEntity) {
@@ -222,7 +247,15 @@ public class EX {
                     requestEntity = getCloseTransaction(actionEntity);
                     System.out.println("closeTransaction------------");
                     result=vcdbAdmin.closeTransaction((CloseTransaction) requestEntity);
-                } else {
+                } else if ("_showTransaction".equalsIgnoreCase(postUrl[1])) {
+                    requestEntity = getShowTransaction(actionEntity);
+                    System.out.println("_showTransaction------------");
+                    result=vcdbAdmin.showTransaction((ShowTransaction) requestEntity);
+                }else if ("_useTransaction".equalsIgnoreCase(postUrl[1])) {
+                    requestEntity = getUseTransaction(actionEntity);
+                    System.out.println("_useTransaction------------");
+                    result=vcdbAdmin.closeTransaction((CloseTransaction) requestEntity);
+                }  else {
                     System.out.println("the URL Segment is error" + "给出提示（把POST开头的所有的命令返还给他");
                 }
                 break;
@@ -239,7 +272,7 @@ public class EX {
                     requestEntity = getMergeVersion(actionEntity);
                     System.out.println("mergeVersion---------------");
                     result=vcdbAdmin.mergeVersion(postUrl[1],postUrl[2],(MergeVersion) requestEntity);
-                } else if ("_use".equalsIgnoreCase(postUrl[3])) {
+                } else if ("_useVersion".equalsIgnoreCase(postUrl[3])) {
                     requestEntity = getUseVersion(actionEntity);
                     System.out.println("useVersion-----------");
                     result=vcdbAdmin.useVersion(postUrl[1],postUrl[2],(UseVersion) requestEntity);
@@ -276,6 +309,35 @@ public class EX {
                 break;
         }
         return result;
+    }
+
+    private static RequestEntity getUseTransaction(ActionEntity actionEntity) {
+        UseTransaction useTransaction = new UseTransaction();
+        setBaseAttribute(useTransaction, actionEntity);
+        for (Map.Entry<String, Object> cfs : actionEntity.getRegularAttribute().entrySet()) {
+            if ("explainValue".equalsIgnoreCase(cfs.getKey())) {
+                useTransaction.setExplainValue((String) cfs.getValue());
+            } else {
+                System.err.println("出现未知属性，打印key");
+            }
+        }
+        if (actionEntity.getCompoundAttribute() != null) {
+            System.err.println("出现未知属性，打印key");
+        }
+        return useTransaction;
+    }
+
+    private static RequestEntity getShowTransaction(ActionEntity actionEntity) {
+        ShowTransaction showTransaction = new ShowTransaction();
+        setBaseAttribute(showTransaction, actionEntity);
+        if (actionEntity.getRegularAttribute() != null) {
+            System.err.println("出现未知属性，打印key");
+        }
+        if (actionEntity.getCompoundAttribute() != null) {
+            System.err.println("出现未知属性，打印key");
+        }
+        return showTransaction;
+
     }
 
     private static RequestEntity getDeleteVersion(ActionEntity actionEntity) {
@@ -669,7 +731,7 @@ public class EX {
     }
 
     private static List<VersionTerm> selectVersionTerms(List<HashMap<String, String>> value) {
-        List<VersionTerm> terms = new ArrayList<VersionTerm>();
+        List<VersionTerm> terms = new ArrayList<>();
         for (HashMap<String, String> kv : value) {
             VersionTerm termCell = new VersionTerm();
             for (Map.Entry<String, String> cell : kv.entrySet()) {
@@ -739,13 +801,43 @@ public class EX {
                     } else {
                         System.err.println("报错重复设置old_cfName属性");
                     }
+                } else if ("min".equalsIgnoreCase(cell.getKey())) {
+                    if (alterCell.getMin() == null) {
+                        alterCell.setMin(cell.getValue());
+                    } else {
+                        System.err.println("报错重复设置min属性");
+                    }
+                }else if ("max".equalsIgnoreCase(cell.getKey())) {
+                    if (alterCell.getMax() == null) {
+                        alterCell.setMax(cell.getValue());
+                    } else {
+                        System.err.println("报错重复设置max属性");
+                    }
+                } else if ("type".equalsIgnoreCase(cell.getKey())) {
+                    if (alterCell.getType() == 0) {
+                        alterCell.setType(Byte.parseByte(cell.getValue()));
+                    } else {
+                        System.err.println("报错重复设置type属性");
+                    }
                 } else if ("method".equalsIgnoreCase(cell.getKey())) {
                     if (alterCell.getMethod() == 0) {
-                        alterCell.setMethod((byte) 1);
+                        alterCell.setMethod(Byte.parseByte(cell.getValue()));
                     } else {
                         System.err.println("报错重复设置method属性");
                     }
-                } else {
+                } else if ("unique".equalsIgnoreCase(cell.getKey())) {
+                    if (!alterCell.isUnique()) {
+                        alterCell.setUnique(Boolean.parseBoolean(cell.getValue()));
+                    } else {
+                        System.err.println("报错重复设置unique属性");
+                    }
+                }else if ("isNull".equalsIgnoreCase(cell.getKey())) {
+                    if (!alterCell.isNull()) {
+                        alterCell.setNull(Boolean.parseBoolean(cell.getValue()));
+                    } else {
+                        System.err.println("报错重复设置isNull属性");
+                    }
+                }else {
                     System.err.println("出现未知属性，打印key"+cell.getKey());
                 }
             }

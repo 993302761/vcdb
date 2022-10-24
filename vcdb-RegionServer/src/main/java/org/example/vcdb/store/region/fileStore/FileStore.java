@@ -54,7 +54,7 @@ public class FileStore {
         //fileStoreMeta也会随时更新
         this.data = new byte[4 * 1024 * 16];
         int pos=0;
-        pos=Bytes.putBytes(this.data, pos, columnFamilyMeta.getData(), 0, 19);
+        pos=Bytes.putBytes(this.data, pos, columnFamilyMeta.getData(), 0, columnFamilyMeta.getData().length);
     }
     public FileStore(ColumnFamilyMeta columnFamilyMeta, KeyValueSkipListSet dataSet) {
         //fileStoreMeta也会随时更新
