@@ -11,10 +11,7 @@ import org.example.vcdb.store.region.fileStore.ColumnFamilyMeta;
 import org.example.vcdb.store.region.fileStore.FileStore;
 import org.example.vcdb.store.region.fileStore.FileStoreMeta;
 import org.example.vcdb.store.region.fileStore.KVRange;
-import org.example.vcdb.store.region.version.DataBase;
-import org.example.vcdb.store.region.version.Table;
-import org.example.vcdb.store.region.version.TableAlter;
-import org.example.vcdb.store.region.version.Transaction;
+import org.example.vcdb.store.region.version.*;
 import org.example.vcdb.util.Bytes;
 
 import javax.xml.crypto.Data;
@@ -752,6 +749,60 @@ public class RegionServer  {
     }
 
 
+    public String showTransaction(){
+        StringBuilder result= new StringBuilder();
+        if (!transactionMap.isEmpty()){
+            for (Map.Entry<String,Transaction> entry : transactionMap.entrySet()) {
+                result.append(entry.getValue().toString());
+            }
+        }
+        TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
+        for (Transaction transaction:transactionFile.getTransactions()){
+            result.append(transaction.toString());
+        }
+        return result.toString();
+    }
+
+    public boolean deleteTransaction(String explainValue){
+        try{
+            if (!transactionMap.isEmpty()){
+                transactionMap.remove(explainValue);
+            }else {
+                TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
+                List<Transaction> transactions = transactionFile.getTransactions();
+                transactions.removeIf(transaction -> explainValue.equalsIgnoreCase(transaction.getExplainValue()));
+                transactionFile=new TransactionFile(transactions);
+                VCFIleWriter.writeAll(transactionFile.getData(),"/x2/vcdb/common/transaction");
+            }
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean useTransaction(String explainValue,String newExplainValue){
+        Transaction transaction=null;
+        try{
+            if (!transactionMap.isEmpty()){
+                transaction = transactionMap.get(explainValue);
+            } else {
+                TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
+                List<Transaction> transactions = transactionFile.getTransactions();
+                for (Transaction transaction1:transactions){
+                    if(explainValue.equalsIgnoreCase(transaction1.getExplainValue())){
+                        transaction=transaction1;
+                    }
+                }
+            }
+            assert transaction != null;
+            transactionMap.put(newExplainValue,new Transaction(transaction.getStartTime(),transaction.getEndTime(),newExplainValue));
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
     public Set<String> findRowKeysByTerms(String dBName,
                                           String tabName,
                                           byte[] terms){
@@ -981,7 +1032,7 @@ public class RegionServer  {
                 kv=new KV(rowKey.getBytes(),0,rowKey.getBytes().length,null);
             }
             List<KV.ValueNode> values = kv.getValues();
-            KV.ValueNode valueNode=new KV.ValueNode(new Date().getTime(),byteToType((byte) 10),
+            KV.ValueNode valueNode=new KV.ValueNode(new Date().getTime(),byteToType(actionType),
                     "".getBytes(),"".getBytes().length,0,
                     "".getBytes(),"".getBytes().length,0);
             values.add(valueNode);
@@ -1184,7 +1235,7 @@ public class RegionServer  {
 
     public static List<KVRange> updatePageTrailer(List<KV> newKVs, List<KVRange> pageTrailer, int pageIndex) {
         String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzz";
-        String maxKey = "\0";
+        String maxKey = "\u0000";
         int pageLength = getKVsLength(newKVs);
         for (KV kv : newKVs) {
             if (minKey.compareTo(kv.getRowKey()) > 0) {
@@ -1200,7 +1251,7 @@ public class RegionServer  {
 
     public static List<KVRange> updatePageTrailer(KeyValueSkipListSet newKVs, List<KVRange> pageTrailer, int pageIndex) {
         String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
-        String maxKey = "\0";
+        String maxKey = "\u0000";
         int pageLength = getKVsLength(newKVs);
         minKey=newKVs.first().getRowKey();
         maxKey=newKVs.last().getRowKey();
@@ -1210,7 +1261,7 @@ public class RegionServer  {
 
     public static List<KVRange> updatePageTrailer2(List<KV> newKVs, List<KVRange> pageTrailer, int pageIndex) {
         String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzzz";
-        String maxKey = "\0";
+        String maxKey = "\u0000";
         int pageLength = getKVsLength(newKVs);
         for (KV kv : newKVs) {
             if (minKey.compareTo(kv.getRowKey()) > 0) {
@@ -1226,7 +1277,7 @@ public class RegionServer  {
 
     public static List<KVRange> updatePageTrailer2(KeyValueSkipListSet newKVs, List<KVRange> pageTrailer, int pageIndex) {
         String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
-        String maxKey = "\0";
+        String maxKey = "\u0000";
         int pageLength = getKVsLength(newKVs);
         minKey=newKVs.first().getRowKey();
         maxKey=newKVs.last().getRowKey();

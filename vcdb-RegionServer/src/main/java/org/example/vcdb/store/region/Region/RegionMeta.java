@@ -29,6 +29,7 @@ public class RegionMeta {
     public RegionMeta(byte[] metaByte){
         this.metaByte=metaByte;
     }
+
     public RegionMeta(String metaName){
         metaByte=new byte[1024*4];
         int pos=0;

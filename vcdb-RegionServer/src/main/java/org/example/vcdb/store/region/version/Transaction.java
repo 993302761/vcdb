@@ -12,7 +12,12 @@ import org.example.vcdb.util.Bytes;
 
 public class Transaction {
     byte[] data;
-    public Transaction(long startTime,long endTime,String explainValue){
+
+    public byte[] getData() {
+        return data;
+    }
+
+    public Transaction(long startTime, long endTime, String explainValue){
         data=new byte[8+8+explainValue.getBytes().length];
         int pos=0;
         pos= Bytes.putLong(this.data,pos,startTime);
@@ -24,7 +29,28 @@ public class Transaction {
 
     }
 
+    public Transaction(byte[] data) {
+        this.data = data;
+    }
+
     public void setEndTime(long endTime) {
         Bytes.putLong(this.data,8,endTime);
+    }
+
+    public long getStartTime(){
+        return Bytes.toLong(this.data,0,8);
+    }
+
+    public long getEndTime(){
+        return Bytes.toLong(this.data,8,8);
+    }
+
+    public String getExplainValue(){
+        int explainValueLength=Bytes.toInt(this.data,16,4);
+        return Bytes.toString(this.data,20,explainValueLength);
+    }
+
+    public String toString(){
+        return getStartTime()+"\t"+getEndTime()+"\t"+getExplainValue()+"\n";
     }
 }
