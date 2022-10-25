@@ -168,10 +168,10 @@ public class RegionServer  {
                 /*注册该表到RegionServerMeta*/
                 /*先读出RegionServerMeta*/
                 RegionServerMeta serverMeta = new RegionServerMeta(VCFileReader.readAll("regionServerMeta"));
-                Map<String, String> regionMap = serverMeta.getRegionMap();
+                Map<String, TableTrailer> regionMap = serverMeta.getRegionMap();
 
                 /*应该查重*/
-                regionMap.put(dbName +"."+tabName,regionMetaFileName);
+                regionMap.put(dbName +"."+tabName,new TableTrailer(new Date().getTime(),regionMetaFileName) );
 
                 /*替换新map*/
                 serverMeta.setRegionMap(regionMap);
@@ -1215,9 +1215,9 @@ public class RegionServer  {
 
     public static void addTabName(String dbName, String tabName, String regionMetaFileName) {
         RegionServerMeta serverMeta = new RegionServerMeta(VCFileReader.readAll("regionServerMeta"));
-        Map<String, String> regionMap = serverMeta.getRegionMap();
+        Map<String, TableTrailer> regionMap = serverMeta.getRegionMap();
         /*应该查重*/
-        regionMap.put(dbName + "." + tabName, regionMetaFileName);
+        regionMap.put(dbName + "." + tabName,new TableTrailer(new Date().getTime(),regionMetaFileName));
         /*替换新map*/
         serverMeta.setRegionMap(regionMap);
         /*写入文件*/
@@ -1255,7 +1255,7 @@ public class RegionServer  {
         int pageLength = getKVsLength(newKVs);
         minKey=newKVs.first().getRowKey();
         maxKey=newKVs.last().getRowKey();
-        pageTrailer.set(pageIndex,new KVRange(pageLength, minKey, maxKey));
+        pageTrailer.set(pageIndex-1,new KVRange(pageLength, minKey, maxKey));
         return pageTrailer;
     }
 
@@ -1291,8 +1291,8 @@ public class RegionServer  {
 
     public static RegionMeta getRegionMeta(String tableName) {
         //取出的应该缓存
-        Map<String, String> regionMap = regionServerMeta.getRegionMap();
-        return new RegionMeta(VCFileReader.readAll(regionMap.get(tableName)));
+        Map<String, TableTrailer> regionMap = regionServerMeta.getRegionMap();
+        return new RegionMeta(VCFileReader.readAll(regionMap.get(tableName).getRegionMetaName()));
     }
 
 //    //接受rpc调用

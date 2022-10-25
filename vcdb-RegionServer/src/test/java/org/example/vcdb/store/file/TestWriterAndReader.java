@@ -4,6 +4,7 @@ import org.example.vcdb.store.mem.KV;
 import org.example.vcdb.store.mem.KeyValueSkipListSet;
 import org.example.vcdb.store.region.Region.RegionMeta;
 import org.example.vcdb.store.region.RegionServerMeta;
+import org.example.vcdb.store.region.TableTrailer;
 import org.example.vcdb.store.region.fileStore.ColumnFamilyMeta;
 import org.example.vcdb.store.region.fileStore.FileStore;
 import org.example.vcdb.store.region.fileStore.FileStoreMeta;
@@ -34,9 +35,9 @@ public class TestWriterAndReader {
     @Test
     public void testRegionServer(){
         /*-----------------regionServer-------------------*/
-        Map<String,String> map=new ConcurrentHashMap<>();
+        Map<String,TableTrailer> map=new ConcurrentHashMap<>();
         for (int i = 1; i < 3; i++) {
-            map.put("db.table"+i,"region/regionMeta"+i);
+            map.put("db.table"+i,new TableTrailer(new Date().getTime(),"region/regionMeta"+i));
         }
         byte[] ip4=new byte[]{127,0,0,1};
         int port=9091;

@@ -40,7 +40,7 @@ public class VCDBAdmin {
             Version.intReply db = blockingStub.createDB(request);
             int reply = db.getReply();
             System.out.println(reply);
-        }finally {
+        } finally {
             build.shutdown();
         }
         return "xxxx";

@@ -19,8 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.example.vcdb.store.region.fileStore.FileStore.disDataSet;
-import static org.example.vcdb.store.region.fileStore.FileStore.kvsToByteArray;
+import static org.example.vcdb.store.region.fileStore.FileStore.*;
 
 /**
  * @ClassName TestRegionServer
@@ -44,13 +43,14 @@ public class TestRegionServer {
 
     @Test
     public void testRegionServerMeta(){
-        Map<String,String> map=new ConcurrentHashMap<>();
+        Map<String,TableTrailer> map=new ConcurrentHashMap<>();
         for (int i = 1; i < 3; i++) {
-            map.put("db.table"+i,"region/regionMeta"+i);
+            map.put("db.table"+i,new TableTrailer(new Date().getTime(),"region/regionMeta"+i));
         }
         byte[] ip4=new byte[]{127,0,0,1};
         int port=9091;
         RegionServerMeta serverMeta=new RegionServerMeta("regionServerMeta",ip4,port,map);
+        VCFIleWriter.writeAll(serverMeta.getData(), "regionServerMeta");
         serverMeta.dis();
     }
     @Test
@@ -64,9 +64,9 @@ public class TestRegionServer {
         /*注册该表到RegionServerMeta*/
         /*先读出RegionServerMeta*/
         RegionServerMeta serverMeta = new RegionServerMeta(VCFileReader.readAll("regionServerMeta"));
-        Map<String, String> regionMap = serverMeta.getRegionMap();
+        Map<String, TableTrailer> regionMap = serverMeta.getRegionMap();
         /*应该查重*/
-        regionMap.put(dbName +"."+tabName,regionMetaFileName);
+        regionMap.put(dbName +"."+tabName,new TableTrailer(new Date().getTime(),regionMetaFileName));
         /*替换新map*/
         serverMeta.setRegionMap(regionMap);
         /*写入文件*/
@@ -135,9 +135,17 @@ public class TestRegionServer {
             FileStore fileStore2=new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName()));
             disDataSet(fileStore2.getDataSet(pageIndex));
             fileStore2.dis();
-            List<KVRange> kvRanges = RegionServer.updatePageTrailer(kvs, pageTrailer, pageIndex);
-            System.out.println(kvRanges);
-            fileStoreMeta.setPageTrailer(kvRanges);
+//            System.out.println(pageIndex);
+            String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
+            String maxKey = "\u0000";
+            int pageLength = getKVsLength(kvs);
+            minKey=kvs.first().getRowKey();
+            maxKey=kvs.last().getRowKey();
+            pageTrailer.add(0,new KVRange(pageLength, minKey, maxKey));
+//            return pageTrailer;
+//            List<KVRange> kvRanges = RegionServer.updatePageTrailer(kvs, pageTrailer, pageIndex);
+            System.out.println(pageTrailer);
+            fileStoreMeta.setPageTrailer(pageTrailer);
             VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, regionMeta.getfileStoreMetaName(cfName));
         }
     }
@@ -228,7 +236,7 @@ public class TestRegionServer {
             values.add(new KV.ValueNode(time, type, qualifier, 0, qualifier.length, value, 0, value.length));
         }
 
-        for (int i = 0 ; i < 40; i++) {
+        for (int i = 40 ; i < 140; i++) {
             kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length, values));
         }
         RegionServer.readConfig("regionServerMeta");
