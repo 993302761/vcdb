@@ -1161,7 +1161,7 @@ public class RegionServer  {
                                       String fileStoreName, FileStoreMeta fileStoreMeta,
                                       String fileStoreMetaName) {
         int pageTrailerIndex = pageTrailer.size();
-        pageTrailer.set(pageTrailerIndex, new KVRange(4 + kv.getLength(), kv.getRowKey(), kv.getRowKey()));
+        pageTrailer.set(pageTrailerIndex, new KVRange(new Date().getTime(),4 + kv.getLength(), kv.getRowKey(), kv.getRowKey()));
         fileStoreMeta.setPageTrailer(pageTrailer);
         VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, fileStoreMetaName);
         List<KV> kvs = new ArrayList<>();
@@ -1245,7 +1245,7 @@ public class RegionServer  {
                 maxKey = kv.getRowKey();
             }
         }
-        pageTrailer.set(pageIndex , new KVRange(pageLength, minKey, maxKey));
+        pageTrailer.set(pageIndex , new KVRange(new Date().getTime(),pageLength, minKey, maxKey));
         return pageTrailer;
     }
 
@@ -1255,7 +1255,7 @@ public class RegionServer  {
         int pageLength = getKVsLength(newKVs);
         minKey=newKVs.first().getRowKey();
         maxKey=newKVs.last().getRowKey();
-        pageTrailer.set(pageIndex-1,new KVRange(pageLength, minKey, maxKey));
+        pageTrailer.set(pageIndex-1,new KVRange(new Date().getTime(),pageLength, minKey, maxKey));
         return pageTrailer;
     }
 
@@ -1271,7 +1271,7 @@ public class RegionServer  {
                 maxKey = kv.getRowKey();
             }
         }
-        pageTrailer.add(pageIndex , new KVRange(pageLength, minKey, maxKey));
+        pageTrailer.add(pageIndex , new KVRange(new Date().getTime(),pageLength, minKey, maxKey));
         return pageTrailer;
     }
 
@@ -1281,7 +1281,7 @@ public class RegionServer  {
         int pageLength = getKVsLength(newKVs);
         minKey=newKVs.first().getRowKey();
         maxKey=newKVs.last().getRowKey();
-        pageTrailer.add(pageIndex,new KVRange(pageLength, minKey, maxKey));
+        pageTrailer.add(pageIndex,new KVRange(new Date().getTime(),pageLength, minKey, maxKey));
         return pageTrailer;
     }
 

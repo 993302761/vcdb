@@ -67,7 +67,7 @@ public class TestWriterAndReader {
         /*------------------------fileStoreMeta---------------------------------*/
         List<KVRange> list=new ArrayList<>();
         for (int i = 1; i < 4; i++) {
-            list.add(new KVRange(1111,"startKey"+i,"endKey"+i));
+            list.add(new KVRange(new Date().getTime(),1111,"startKey"+i,"endKey"+i));
         }
         FileStoreMeta fileStoreMeta = new FileStoreMeta((new Date()).getTime(), false,
                 "fileStore/fileStore1", "r1".getBytes(), "r2".getBytes(), list);

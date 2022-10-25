@@ -6,6 +6,7 @@ import org.example.vcdb.util.Bytes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import static org.example.vcdb.store.region.fileStore.FileStore.kvsToByteArray;
@@ -59,7 +60,7 @@ public class FileStoreMeta {
 
 
         pos = Bytes.putInt(bytes, pos, 1);
-        KVRange kvRange = new KVRange(0, "", "zzzzzzzzzzzzzzzzz");
+        KVRange kvRange = new KVRange(new Date().getTime(),0, "", "zzzzzzzzzzzzzzzzz");
         pos = Bytes.putInt(bytes, pos, kvRange.getLength());
         pos = Bytes.putBytes(bytes, pos, kvRange.getData(), 0, kvRange.getLength());
         this.data = bytes;

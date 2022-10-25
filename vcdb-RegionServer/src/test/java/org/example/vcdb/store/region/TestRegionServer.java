@@ -141,7 +141,7 @@ public class TestRegionServer {
             int pageLength = getKVsLength(kvs);
             minKey=kvs.first().getRowKey();
             maxKey=kvs.last().getRowKey();
-            pageTrailer.add(0,new KVRange(pageLength, minKey, maxKey));
+            pageTrailer.add(0,new KVRange(new Date().getTime(),pageLength, minKey, maxKey));
 //            return pageTrailer;
 //            List<KVRange> kvRanges = RegionServer.updatePageTrailer(kvs, pageTrailer, pageIndex);
             System.out.println(pageTrailer);

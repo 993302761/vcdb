@@ -24,32 +24,37 @@ public class KVRange {
         this.bytes = bytes;
     }
 
-    public KVRange(int pageLength,String startKey, String endKey) {
+    public KVRange(long timestamp,int pageLength,String startKey, String endKey) {
         int pos = 0;
-        this.bytes = new byte[4+4 + startKey.getBytes().length + 4 + endKey.getBytes().length];
+        this.bytes = new byte[8+4+4 + startKey.getBytes().length + 4 + endKey.getBytes().length];
+        pos = Bytes.putLong(bytes,pos,timestamp);
         pos = Bytes.putInt(bytes, pos, pageLength);
         pos = Bytes.putInt(bytes, pos, startKey.getBytes().length);
         pos = Bytes.putBytes(bytes, pos, startKey.getBytes(), 0, startKey.getBytes().length);
         pos = Bytes.putInt(bytes, pos, endKey.getBytes().length);
         pos = Bytes.putBytes(bytes, pos, endKey.getBytes(), 0, endKey.getBytes().length);
     }
+    public long getTimestamp(){
+        return Bytes.toLong(this.bytes,0,8);
+    }
+
     public int getPageLength(){
-        return Bytes.toInt(this.bytes, 0, 4);
+        return Bytes.toInt(this.bytes, 8, 4);
     }
     public int getStartKeyLength() {
-        return Bytes.toInt(this.bytes, 4, 4);
+        return Bytes.toInt(this.bytes, 12, 4);
     }
 
     public byte[] getStartKey() {
-        return Bytes.subByte(this.bytes, 8, getStartKeyLength());
+        return Bytes.subByte(this.bytes, 16, getStartKeyLength());
     }
 
     public int getEndKeyLength() {
-        return Bytes.toInt(this.bytes, 8 + getStartKeyLength(), 4);
+        return Bytes.toInt(this.bytes, 16 + getStartKeyLength(), 4);
     }
 
     public byte[] getEndKey() {
-        return Bytes.subByte(this.bytes, 12 + getStartKeyLength(), getEndKeyLength());
+        return Bytes.subByte(this.bytes, 20 + getStartKeyLength(), getEndKeyLength());
     }
 
     public byte[] getData() {
@@ -71,6 +76,7 @@ public class KVRange {
     @Override
     public String toString() {
         return "KVRange{" +"\n"+
+                "timestamp="+getTimestamp()+"\n"+
                 "pageLength="+getPageLength()+"\n"+
                 "startKey=" + Bytes.toString(getStartKey()) +"\n"+
                 "endKey=" + Bytes.toString(getEndKey()) +
