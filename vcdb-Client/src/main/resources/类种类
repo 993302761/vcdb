@@ -167,6 +167,17 @@ curl -H "Content-Type: application/json" -X POST -d\
  '{"explainValue":  "I want update some Info"}'\
  "localhost:8080/_useTransaction"
 
+5.查看所有库
+
+POST http://ip:端口/_showDataBases
+
+curl -X POST "localhost:8080/_showDataBases"
+
+6.查看所有表
+POST http://ip:端口/dbname/_showTables
+
+curl -X POST "localhost:8080/dbname/_showTables"
+
 
 7.基本查询流程
 #语法

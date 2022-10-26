@@ -277,8 +277,19 @@ public class EX {
                     requestEntity = getUseTransaction(actionEntity);
                     System.out.println("_useTransaction------------");
                     result = vcdbAdmin.useTransaction((UseTransaction) requestEntity);
+                } else if ("_showDataBases".equalsIgnoreCase(postUrl[1])) {
+                    requestEntity = getShowDataBases(actionEntity);
+                    System.out.println("_showDataBases------------");
+                    result = vcdbAdmin.showDataBases((ShowDataBases) requestEntity);
                 } else {
                     System.out.println("the URL Segment is error" + "给出提示（把POST开头的所有的命令返还给他");
+                }
+                break;
+            case 3:
+                if ("_showTables".equalsIgnoreCase(postUrl[2])) {
+                    requestEntity = getShowTables(actionEntity);
+                    System.out.println("_showTables---------------");
+                    result = vcdbAdmin.showTables(postUrl[1],(ShowTables) requestEntity);
                 }
                 break;
             case 4:
@@ -331,6 +342,31 @@ public class EX {
                 break;
         }
         return result;
+    }
+
+    private static RequestEntity getShowTables(ActionEntity actionEntity) {
+        ShowTables showTables = new ShowTables();
+        setBaseAttribute(showTables, actionEntity);
+        if (actionEntity.getRegularAttribute() != null) {
+            System.err.println("出现未知属性，打印key");
+        }
+        if (actionEntity.getCompoundAttribute() != null) {
+            System.err.println("出现未知属性，打印key");
+        }
+        return showTables;
+    }
+
+    private static RequestEntity getShowDataBases(ActionEntity actionEntity) {
+        ShowDataBases showDataBases = new ShowDataBases();
+        setBaseAttribute(showDataBases, actionEntity);
+        if (actionEntity.getRegularAttribute() != null) {
+            System.err.println("出现未知属性，打印key");
+        }
+        if (actionEntity.getCompoundAttribute() != null) {
+            System.err.println("出现未知属性，打印key");
+        }
+        return showDataBases;
+
     }
 
     private static RequestEntity getUseTransaction(ActionEntity actionEntity) {

@@ -140,4 +140,15 @@ public class VCDBAdmin {
         return "use "+useTransaction.getExplainValue()+" success\n";
     }
 
+    public String showDataBases(ShowDataBases showDataBases){
+        return "=====>0---row1---info:myName----n1\n" +
+                "=====>1---row1---info:myName----n2\n" +
+                "=====>2---row1---info:myName----n3\n";
+    }
+
+    public String showTables(String dbName,ShowTables showTables){
+        return "=====>0---row1---info:myName----n1\n" +
+                "=====>1---row1---info:myName----n2\n" +
+                "=====>2---row1---info:myName----n3\n";
+    }
 }
