@@ -766,16 +766,53 @@ public class RegionServer  {
 
     //删除条目（表结构操作和数据）
     public boolean deleteTransaction(String explainValue){
+        Transaction transaction = null;
+        TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
+        List<Transaction> transactions = transactionFile.getTransactions();
         try{
             if (!transactionMap.isEmpty()){
+                transaction=transactionMap.get(explainValue);
                 transactionMap.remove(explainValue);
-            }else {
-                TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
-                List<Transaction> transactions = transactionFile.getTransactions();
-                transactions.removeIf(transaction -> explainValue.equalsIgnoreCase(transaction.getExplainValue()));
-                transactionFile=new TransactionFile(transactions);
-                VCFIleWriter.writeAll(transactionFile.getData(),"/x2/vcdb/common/transaction");
+            } else {
+                for (Transaction transaction1:transactions){
+                    if(explainValue.equalsIgnoreCase(transaction1.getExplainValue())){
+                        transaction=transaction1;
+                        transactions.remove(transaction1);
+                    }
+                }
             }
+
+            assert transaction != null;
+            long endTime = transaction.getEndTime();
+            long startTime = transaction.getStartTime();
+            RegionServerMeta serverMeta=new RegionServerMeta(VCFileReader.readAll("/x2/vcdb/regionServerMeta"));
+            Map<String, TableTrailer> regionMap = serverMeta.getRegionMap();
+            for (Map.Entry<String,TableTrailer> entry : regionMap.entrySet()) {
+                //判断时间
+                if (entry.getValue().getTimestamp()>=startTime){
+                    FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(entry.getValue().getRegionMetaName()));
+                    List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
+                    //判断时间
+                    if (fileStoreMeta.getTimeStamp()>startTime){
+                        for (int i = 0; i < pageTrailer.size(); i++) {
+                            //判断时间
+                            if (pageTrailer.get(i).getTimestamp()>startTime){
+                                int pageIndex=i+1;
+                                //读盘
+                                KeyValueSkipListSet kvs = byteArrayToKvs(VCFileReader.openFileStorePage(pageIndex, fileStoreMeta.getEncodedName()));
+                                for (KV kv:kvs){
+                                    List<KV.ValueNode> values = kv.getValues();
+                                    values.removeIf(valueNode -> valueNode.getTime() < endTime);
+                                }
+                                //落盘
+                                VCFIleWriter.setFileStorePage(kvsToByteArray(kvs),pageIndex,fileStoreMeta.getEncodedName());
+                            }
+                        }
+                    }
+                }
+            }
+            transactionFile=new TransactionFile(transactions);
+            VCFIleWriter.writeAll(transactionFile.getData(),"/x2/vcdb/common/transaction");
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -786,12 +823,13 @@ public class RegionServer  {
     //添加新的条目（表结构操作和数据）
     public boolean useTransaction(String explainValue,String newExplainValue){
         Transaction transaction=null;
+        TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
+        List<Transaction> transactions = transactionFile.getTransactions();
         try{
             if (!transactionMap.isEmpty()){
                 transaction = transactionMap.get(explainValue);
             } else {
-                TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
-                List<Transaction> transactions = transactionFile.getTransactions();
+
                 for (Transaction transaction1:transactions){
                     if(explainValue.equalsIgnoreCase(transaction1.getExplainValue())){
                         transaction=transaction1;
@@ -799,6 +837,43 @@ public class RegionServer  {
                 }
             }
             assert transaction != null;
+            long endTime = transaction.getEndTime();
+            long startTime = transaction.getStartTime();
+            RegionServerMeta serverMeta=new RegionServerMeta(VCFileReader.readAll("/x2/vcdb/regionServerMeta"));
+            Map<String, TableTrailer> regionMap = serverMeta.getRegionMap();
+            for (Map.Entry<String,TableTrailer> entry : regionMap.entrySet()) {
+                //判断时间
+                if (entry.getValue().getTimestamp()>=startTime){
+                    FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(entry.getValue().getRegionMetaName()));
+                    List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
+                    //判断时间
+                    if (fileStoreMeta.getTimeStamp()>startTime){
+                        for (int i = 0; i < pageTrailer.size(); i++) {
+                            //判断时间
+                            if (pageTrailer.get(i).getTimestamp()>startTime){
+                                int pageIndex=i+1;
+                                //读盘
+                                KeyValueSkipListSet kvs = byteArrayToKvs(VCFileReader.openFileStorePage(pageIndex, fileStoreMeta.getEncodedName()));
+                                for (KV kv:kvs){
+                                    List<KV.ValueNode> values = kv.getValues();
+                                    for (KV.ValueNode valueNode:values){
+                                        if (valueNode.getTime()<endTime){
+                                            values.add(valueNode);
+                                        }
+                                    }
+                                    // TODO: 2022/10/26  没有考虑新增加valueNode导致分裂
+                                    kv.setValues(values);
+                                    kvs.add(kv);
+                                }
+                                //落盘
+                                VCFIleWriter.setFileStorePage(kvsToByteArray(kvs),pageIndex,fileStoreMeta.getEncodedName());
+                            }
+                        }
+                    }
+                }
+            }
+            transactionFile=new TransactionFile(transactions);
+            VCFIleWriter.writeAll(transactionFile.getData(),"/x2/vcdb/common/transaction");
             transactionMap.put(newExplainValue,new Transaction(transaction.getStartTime(),transaction.getEndTime(),newExplainValue));
             return true;
         }catch (Exception e){

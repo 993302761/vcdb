@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TableAlterFile {
+
     byte[] data;
+
     public TableAlterFile(List<TableAlter> tableAlters){
         this.data=new byte[1024*4];
         int pos=0;
