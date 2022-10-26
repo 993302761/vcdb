@@ -1,8 +1,13 @@
 package org.example.vcdb.store.region;
 
+import org.example.vcdb.store.file.VCFIleWriter;
+import org.example.vcdb.store.file.VCFileReader;
+import org.example.vcdb.store.mem.KV;
 import org.example.vcdb.store.mem.KeyValueSkipListSet;
 import org.example.vcdb.store.mem.MemStore;
+import org.example.vcdb.store.region.version.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,6 +48,47 @@ public class DaemonRegionServer {
                 }
             }
         }, 1, 1, TimeUnit.SECONDS);// 1s 后开始执行，每 1s 执行一次
+
+        // 执行任务,里面写执行代码
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            if (!RegionServer.transactionMap.isEmpty()){
+                TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
+                List<Transaction> transactions = transactionFile.getTransactions();
+                for (Map.Entry<String,Transaction> entry : RegionServer.transactionMap.entrySet()) {
+                    transactions.add(entry.getValue());
+                }
+                VCFIleWriter.writeAll(new TransactionFile(transactions).getData(),"/x2/vcdb/common/transaction");
+            }
+
+            if (!RegionServer.dbMap.isEmpty()){
+                DataBaseFile dataBaseFile=new DataBaseFile(VCFileReader.readAll("/x2/vcdb/common/dbFileStore"));
+                List<DataBase> dataBases = dataBaseFile.getDataBases();
+                for (Map.Entry<String,DataBase> entry : RegionServer.dbMap.entrySet()) {
+                    dataBases.add(entry.getValue());
+                }
+                VCFIleWriter.writeAll(new DataBaseFile(dataBases).getData(),"/x2/vcdb/common/dbFileStore");
+            }
+
+            if (!RegionServer.tableMap.isEmpty()){
+                TableFile tableFile=new TableFile(VCFileReader.readAll("/x2/vcdb/common/tableFileStore"));
+                List<Table> tables = tableFile.getTables();
+                for (Map.Entry<String,Table> entry : RegionServer.tableMap.entrySet()) {
+                    tables.add(entry.getValue());
+                }
+                VCFIleWriter.writeAll(new TableFile(tables).getData(),"/x2/vcdb/common/tableFileStore");
+            }
+
+            if (!RegionServer.tableAlterMap.isEmpty()){
+                TableAlterFile tableAlterFile=new TableAlterFile(VCFileReader.readAll("/x2/vcdb/common/tableAlterFileStore"));
+                List<TableAlter> tableAlters = tableAlterFile.getTableAlters();
+                for (Map.Entry<String,TableAlter> entry : RegionServer.tableAlterMap.entrySet()) {
+                    tableAlters.add(entry.getValue());
+                }
+                VCFIleWriter.writeAll(new TableAlterFile(tableAlters).getData(),"/x2/vcdb/common/tableAlterFileStore");
+            }
+
+        }, 1, 5, TimeUnit.SECONDS);// 1s 后开始执行，每 1s 执行一次
+
     }
 
     private static void addMemStoreToDisk(AtomicInteger count) {

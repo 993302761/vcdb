@@ -41,5 +41,13 @@ public class TransactionFile {
     }
 
 
-
+    public void setTransactions(List<Transaction> transactions) {
+        int pos=0;
+        int count=Bytes.toInt(this.data,pos,4);
+        pos= Bytes.putInt(this.data,pos,count);
+        for (Transaction transaction:transactions){
+            pos = Bytes.putInt(this.data,pos,transaction.getData().length);
+            pos = Bytes.putBytes(this.data, pos, transaction.getData(), 0,transaction.getData().length);
+        }
+    }
 }
