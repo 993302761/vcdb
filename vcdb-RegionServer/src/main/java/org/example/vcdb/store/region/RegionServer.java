@@ -763,6 +763,8 @@ public class RegionServer  {
         return result.toString();
     }
 
+
+    //删除条目（表结构操作和数据）
     public boolean deleteTransaction(String explainValue){
         try{
             if (!transactionMap.isEmpty()){
@@ -781,6 +783,7 @@ public class RegionServer  {
         }
     }
 
+    //添加新的条目（表结构操作和数据）
     public boolean useTransaction(String explainValue,String newExplainValue){
         Transaction transaction=null;
         try{
@@ -803,6 +806,7 @@ public class RegionServer  {
             return false;
         }
     }
+
     public Set<String> findRowKeysByTerms(String dBName,
                                           String tabName,
                                           byte[] terms){

@@ -51,4 +51,12 @@ public class TableAlter {
         pos= Bytes.putInt(this.data,pos,oldCfName.getBytes().length);
         pos=Bytes.putBytes(this.data,pos,oldCfName.getBytes(),0,oldCfName.getBytes().length);
     }
+
+    public TableAlter(byte[] data) {
+        this.data = data;
+    }
+
+    public byte[] getData() {
+        return data;
+    }
 }

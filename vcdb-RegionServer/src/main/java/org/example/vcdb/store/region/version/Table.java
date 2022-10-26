@@ -12,7 +12,12 @@ import org.example.vcdb.util.Bytes;
 
 public class Table {
     byte[] data;
-    public Table(long timeStamp,byte type,String tabName){
+
+    public byte[] getData() {
+        return data;
+    }
+
+    public Table(long timeStamp, byte type, String tabName){
         data=new byte[8+1+tabName.getBytes().length];
         int pos=0;
         pos= Bytes.putLong(this.data,pos,timeStamp);
@@ -22,5 +27,9 @@ public class Table {
         pos= Bytes.putInt(this.data,pos,tabName.getBytes().length);
         pos=Bytes.putBytes(this.data,pos,tabName.getBytes(),0,tabName.getBytes().length);
 
+    }
+
+    public Table(byte[] data) {
+        this.data = data;
     }
 }

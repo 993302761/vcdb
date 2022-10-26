@@ -339,6 +339,8 @@ public class EX {
         for (Map.Entry<String, Object> cfs : actionEntity.getRegularAttribute().entrySet()) {
             if ("explainValue".equalsIgnoreCase(cfs.getKey())) {
                 useTransaction.setExplainValue((String) cfs.getValue());
+            }else if ("newExplainValue".equalsIgnoreCase(cfs.getKey())) {
+                useTransaction.setNewExplainValue((String) cfs.getValue());
             } else {
                 System.err.println("出现未知属性，打印key");
             }

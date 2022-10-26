@@ -22,4 +22,12 @@ public class DataBase {
         pos= Bytes.putInt(this.data,pos,dbName.getBytes().length);
         pos=Bytes.putBytes(this.data,pos,dbName.getBytes(),0,dbName.getBytes().length);
     }
+
+    public byte[] getData() {
+        return data;
+    }
+
+    public DataBase(byte[] data) {
+        this.data = data;
+    }
 }
