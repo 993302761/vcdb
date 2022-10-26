@@ -58,12 +58,20 @@ public class RegionServer  {
         regionServerMeta = new RegionServerMeta(VCFileReader.readAll(fileName));
         inboundMemStore=new ConcurrentHashMap<>();
         outboundMemStore=new ConcurrentHashMap<>();
+        transactionMap=new ConcurrentHashMap<>();
+        dbMap=new ConcurrentHashMap<>();
+        tableMap=new ConcurrentHashMap<>();
+        tableAlterMap=new ConcurrentHashMap<>();
     }
 
     public RegionServer(String fileName) {
         regionServerMeta = new RegionServerMeta(VCFileReader.readAll(fileName));
         inboundMemStore=new ConcurrentHashMap<>();
         outboundMemStore=new ConcurrentHashMap<>();
+        transactionMap=new ConcurrentHashMap<>();
+        dbMap=new ConcurrentHashMap<>();
+        tableMap=new ConcurrentHashMap<>();
+        tableAlterMap=new ConcurrentHashMap<>();
     }
 
     public RegionServer() {
