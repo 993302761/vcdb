@@ -10,9 +10,6 @@ import org.example.vcdb.entity.Delete.DeleteTransaction;
 import org.example.vcdb.entity.Post.*;
 import org.example.vcdb.entity.Put.CreateDB;
 import org.example.vcdb.entity.Put.CreateTable;
-import org.example.vcdb.proto.DB;
-import org.example.vcdb.proto.Version;
-import org.example.vcdb.proto.dbServiceGrpc;
 import org.example.vcdb.store.wal.WalBuffer;
 
 
@@ -28,21 +25,21 @@ public class VCDBAdmin {
 
     //return int(返回改动KV的数量)
     public String createDB(String dBName, CreateDB createDB) {
-        //建立一个传输文本的通道
-        ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
-        try {
-
-            //使用同步的方式进行消息传递
-            dbServiceGrpc.dbServiceBlockingStub blockingStub = dbServiceGrpc.newBlockingStub(build);
-            DB.createRequest request = DB.createRequest.newBuilder()
-                    .setDBName("123")
-                    .build();
-            Version.intReply db = blockingStub.createDB(request);
-            int reply = db.getReply();
-            System.out.println(reply);
-        } finally {
-            build.shutdown();
-        }
+//        //建立一个传输文本的通道
+//        ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
+//        try {
+//
+//            //使用同步的方式进行消息传递
+//            dbServiceGrpc.dbServiceBlockingStub blockingStub = dbServiceGrpc.newBlockingStub(build);
+//            DB.createRequest request = DB.createRequest.newBuilder()
+//                    .setDBName("123")
+//                    .build();
+//            Version.intReply db = blockingStub.createDB(request);
+//            int reply = db.getReply();
+//            System.out.println(reply);
+//        } finally {
+//            build.shutdown();
+//        }
         return "xxxx";
     }
 

@@ -25,24 +25,24 @@ public class protoTest {
 
     @Test
     public void testSingleSearch(){
-        //建立一个传输文本的通道
-        ManagedChannel build = ManagedChannelBuilder.forAddress("localhost", 9999).usePlaintext().build();
-        try {
-            //使用同步的方式进行消息传递
-            searchServiceGrpc.searchServiceBlockingStub blockingStub = searchServiceGrpc.newBlockingStub(build);
-            Search.SingleSearch.Builder s=Search.SingleSearch.newBuilder();
-            ByteString a=ByteString.copyFrom("999".getBytes());
-            s.setAggregate(a);
-            Search.singleSearchRequest request = Search.singleSearchRequest.newBuilder()
-                    .setDBName("123")
-                    .setTabName("123")
-                    .setSingleSearch(s)
-                    .build();
-            Version.bytesReply db = blockingStub.singleSearch(request);
-            ByteString reply = db.getReply();
-            System.out.println(reply.toString());
-        }finally {
-            build.shutdown();
-        }
+//        //建立一个传输文本的通道
+//        ManagedChannel build = ManagedChannelBuilder.forAddress("localhost", 9999).usePlaintext().build();
+//        try {
+//            //使用同步的方式进行消息传递
+//            searchServiceGrpc.searchServiceBlockingStub blockingStub = searchServiceGrpc.newBlockingStub(build);
+//            Search.SingleSearch.Builder s=Search.SingleSearch.newBuilder();
+//            ByteString a=ByteString.copyFrom("999".getBytes());
+//            s.setAggregate(a);
+//            Search.singleSearchRequest request = Search.singleSearchRequest.newBuilder()
+//                    .setDBName("123")
+//                    .setTabName("123")
+//                    .setSingleSearch(s)
+//                    .build();
+//            Version.bytesReply db = blockingStub.singleSearch(request);
+//            ByteString reply = db.getReply();
+//            System.out.println(reply.toString());
+//        }finally {
+//            build.shutdown();
+//        }
     }
 }
