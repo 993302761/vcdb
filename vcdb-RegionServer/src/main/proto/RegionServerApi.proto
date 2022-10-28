@@ -1,0 +1,195 @@
+//使用proto3语法
+syntax = "proto3";
+
+//不要拆分成多个类
+option java_multiple_files = false;
+//生成java类所在的包
+option java_package = "org.example.vcdb.store.proto";
+//生成外层类的类名
+option java_outer_classname = "Region";
+
+package Region;
+
+import "google/protobuf/empty.proto";
+
+
+// 对外提供的接口
+service RegionServer {
+
+  rpc createDB (dbNameRequest) returns (boolReply) {}
+
+  rpc deleteDB (dbNameRequest) returns (boolReply) {}
+
+  rpc showDataBases (google.protobuf.Empty) returns (bytesReply) {}
+
+
+  //---------------------------------------------------------------------------
+
+  rpc putCells (putCellsRequest) returns (intReply) {}
+
+  rpc deleteCells (deleteCellsRequest) returns (intReply) {}
+
+  rpc updateCells (updateCellsRequest) returns (intReply) {}
+
+
+  //---------------------------------------------------------------------------
+
+
+  rpc multiSearch (multiSearchRequest) returns (bytesReply) {}
+
+  rpc singleSearch (singleSearchRequest) returns (bytesReply) {}
+
+
+  //---------------------------------------------------------------------------
+
+
+  rpc createTable (tableRequest) returns (boolReply) {}
+
+  rpc alterTable (tableRequest) returns (boolReply) {}
+
+  rpc deleteTable (tableNameRequest) returns (boolReply) {}
+
+  rpc showTables (dbNameRequest) returns (bytesReply) {}
+
+  rpc forCreateTable (tableRequest) returns (boolReply) {}
+
+
+  //---------------------------------------------------------------------------
+
+
+  rpc openTransaction (transactionRequest) returns (boolReply) {}
+
+  rpc closeTransaction (transactionRequest) returns (boolReply) {}
+
+  rpc showTransaction (google.protobuf.Empty) returns (bytesReply) {}
+
+  rpc deleteTransaction (transactionRequest) returns (boolReply) {}
+
+  rpc useTransaction (useTransactionRequest) returns (boolReply) {}
+
+  //---------------------------------------------------------------------------
+
+
+  rpc deleteVersion (versionRequest) returns (boolReply) {}
+
+  rpc mergeVersion (mergeVersionRequest) returns (intReply) {}
+
+  rpc useVersion (versionRequest) returns (boolReply) {}
+
+  rpc showVersion (showVersionRequest) returns (bytesReply) {}
+
+
+}
+
+message intReply{
+  int32 Reply=1;
+}
+
+message bytesReply{
+  bytes Reply=1;
+}
+
+message boolReply{
+  bool Reply=1;
+}
+
+
+message dbNameRequest {
+  string dBName=10;
+}
+
+
+message putCellsRequest{
+  string dBName=10;
+  string tabName=20;
+  string rowKey=30;
+  bytes requestEntity=40;
+}
+
+
+
+message deleteCellsRequest{
+  string dBName=10;
+  string tabName=20;
+  bytes cf_names=30;
+  bytes terms=40;
+}
+
+
+message updateCellsRequest{
+  string dBName=10;
+  string tabName=20;
+  bytes terms=30;
+  bytes values=40;
+}
+
+
+
+message multiSearchRequest{
+  string dBName=1;
+  string tabName=2;
+  string limit=10;
+  string orderCfName=20;
+  bool sort=30;
+  bytes jTables =40;
+  bytes cfNames=50;
+  bytes terms=60;
+}
+
+
+message singleSearchRequest{
+  string dBName=1;
+  string tabName=2;
+  string limit=10;
+  string orderCfName=20;
+  bool sort=30;
+  bytes cfNames=50;
+  bytes terms=60;
+}
+
+
+message tableRequest{
+  string dBName=10;
+  string tabName=20;
+  bytes requestEntity=30;
+}
+
+
+message tableNameRequest{
+  string tabName=10;
+}
+
+
+message transactionRequest{
+  string explainValue=10;
+}
+
+message useTransactionRequest{
+  string explainValue=10;
+  string newExplainValue=20;
+}
+
+
+
+message versionRequest{
+  string dBName=10;
+  string tabName=20;
+  string rowKey=30;
+  string cfName=35;
+  int32 version=40;
+}
+
+
+
+message showVersionRequest{
+  string dBName=10;
+  string tabName=20;
+  string rowKey=30;
+  string cfName=35;
+}
+
+message mergeVersionRequest{
+  string dBName=10;
+  string tabName=20;
+  bytes requestEntity=30;
+}

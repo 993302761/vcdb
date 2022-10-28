@@ -2,9 +2,7 @@ package org.example.vcdb.store;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
-import org.example.vcdb.store.region.RegionServer;
-import org.example.vcdb.store.service.dbService;
-import org.example.vcdb.store.service.searchService;
+import org.example.vcdb.store.service.RegionService;
 
 
 import java.io.IOException;
@@ -17,8 +15,8 @@ public class testGrpcServer {
 
     public static void dbServiceStart() throws InterruptedException, IOException {
         // new dbService()  代表dbService服务 可以切换别的服务
-        Server server=ServerBuilder.forPort(port).addService(new searchService()).build().start();
-        System.out.println("开启dbService服务");
+        Server server=ServerBuilder.forPort(port).addService(new RegionService()).build().start();
+        System.out.println("开启服务");
         //等待服务关闭
         server.awaitTermination();
     }
