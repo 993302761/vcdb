@@ -250,7 +250,7 @@ public class RegionServer  {
         }
     }
 
-    public int putCells(String dbName,String tabName,String rowKey,byte[] requestEntity){
+    public static int putCells(String dbName,String tabName,String rowKey,byte[] requestEntity){
         int pos=0;
         int count=Bytes.toInt(requestEntity,pos,4);
         pos+=4;
@@ -414,7 +414,7 @@ public class RegionServer  {
         }
     }
 
-    public int mergeVersion(String dBName,String tabName,byte[] requestEntity){
+    public static int mergeVersion(String dBName,String tabName,byte[] requestEntity){
         int pos=0;
         int count=Bytes.toInt(requestEntity,pos,4);
         pos+=4;
@@ -464,7 +464,7 @@ public class RegionServer  {
         return  count;
     }
 
-    private int findPageIndex(String dBName, String tabName, String rowKey, String cfName) {
+    private static int findPageIndex(String dBName, String tabName, String rowKey, String cfName) {
         List<KVRange> pageTrailer = getPageTrailer(dBName + "." + tabName, cfName);
         for (int i = 0; i < pageTrailer.size(); i++) {
             try {
@@ -480,7 +480,7 @@ public class RegionServer  {
         return 0;
     }
 
-    public  boolean  useVersion(String dBName,String tabName,String rowKey, String cfName,int version){
+    public static boolean  useVersion(String dBName,String tabName,String rowKey, String cfName,int version){
         //找到修改的KVs在哪一页
         String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
         FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
@@ -504,14 +504,14 @@ public class RegionServer  {
     }
 
 
-    public byte[] showDataBases(){
+    public static byte[] showDataBases(){
         DataBaseFile dataBaseFile=new DataBaseFile(VCFileReader.readAll("/x2/vcdb/common/dbFileStore"));
         List<DataBase> dataBases = dataBaseFile.getDataBases();
         dataBases.removeIf(dataBase -> dataBase.getType() == 0);
         return dataBases.toString().getBytes();
     }
 
-    public byte[] showTables(String dbName){
+    public static byte[] showTables(String dbName){
         TableFile tableFile=new TableFile(VCFileReader.readAll("/x2/vcdb/common/tableFileStore"));
         List<Table> tables = tableFile.getTables();
         for (Table table:tables){
@@ -527,7 +527,7 @@ public class RegionServer  {
         return tables.toString().getBytes();
     }
 
-    public byte[] showVersion(String dBName,String tabName,String rowKey,String cfName){
+    public static byte[] showVersion(String dBName,String tabName,String rowKey,String cfName){
         //找到修改的KVs在哪一页
         String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
         FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
@@ -541,7 +541,7 @@ public class RegionServer  {
     }
 
 
-    public boolean deleteVersion(String dBName,String tabName,String rowKey,String cfName,int version){
+    public static boolean deleteVersion(String dBName,String tabName,String rowKey,String cfName,int version){
         //找到修改的KVs在哪一页
         String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
         FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
@@ -563,7 +563,7 @@ public class RegionServer  {
     }
 
 
-    public byte[] singleSearch(String dBName,String tabName,String limit,
+    public static byte[] singleSearch(String dBName,String tabName,String limit,
                                String orderCfName,boolean sort,
                                byte[] cfNames,byte[] terms){
         //加载terms
@@ -695,7 +695,7 @@ public class RegionServer  {
     }
 
 
-    public int updateCells (String dBName,String tabName,
+    public static int updateCells (String dBName,String tabName,
                            byte[] terms,byte[] values){
         //结合term找到符合条件的几行
         Set<String> rowKeys = findRowKeysByTerms(dBName, tabName, terms);
@@ -743,7 +743,7 @@ public class RegionServer  {
     }
 
 
-    public int deleteCells(String dBName, String tabName,
+    public static int deleteCells(String dBName, String tabName,
                            byte[] cfNames, byte[] terms) {
         //结合term找到符合条件的几行
         Set<String> rowKeys = findRowKeysByTerms(dBName, tabName, terms);
@@ -778,7 +778,7 @@ public class RegionServer  {
     }
 
 
-    public String showTransaction(){
+    public static byte[] showTransaction(){
         StringBuilder result= new StringBuilder();
         if (!transactionMap.isEmpty()){
             for (Map.Entry<String,Transaction> entry : transactionMap.entrySet()) {
@@ -789,12 +789,12 @@ public class RegionServer  {
         for (Transaction transaction:transactionFile.getTransactions()){
             result.append(transaction.toString());
         }
-        return result.toString();
+        return result.toString().getBytes();
     }
 
 
     //删除条目（表结构操作和数据）
-    public boolean deleteTransaction(String explainValue){
+    public static boolean deleteTransaction(String explainValue){
         Transaction transaction = null;
         TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
         List<Transaction> transactions = transactionFile.getTransactions();
@@ -850,7 +850,7 @@ public class RegionServer  {
     }
 
     //添加新的条目（表结构操作和数据）
-    public boolean useTransaction(String explainValue,String newExplainValue){
+    public static boolean useTransaction(String explainValue,String newExplainValue){
         Transaction transaction=null;
         TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
         List<Transaction> transactions = transactionFile.getTransactions();
@@ -911,7 +911,7 @@ public class RegionServer  {
         }
     }
 
-    public Set<String> findRowKeysByTerms(String dBName,
+    public static Set<String> findRowKeysByTerms(String dBName,
                                           String tabName,
                                           byte[] terms){
         //加载terms
@@ -990,7 +990,6 @@ public class RegionServer  {
                 //结合Term筛选valueNode
                 String value = valueNode.getValue();
                 CFTerm term = entry.getValue();
-                Object o = transferType(value, type);
                 String like=term.getLike();
                 //判断cfName,cName是否是rowKey
                 if (term.getCf_name().equals("rowKey")){
@@ -1148,7 +1147,7 @@ public class RegionServer  {
             memStore.kvSet.add(kv);
     }
 
-    public Object transferType(String value,byte type){
+    public static Object transferType(String value,byte type){
         switch (type){
             case 42:
                 return Byte.parseByte(value);
