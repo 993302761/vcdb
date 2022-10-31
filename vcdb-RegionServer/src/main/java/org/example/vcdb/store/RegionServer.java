@@ -2,12 +2,13 @@ package org.example.vcdb.store;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import org.example.vcdb.store.region.RegionServerAPI;
 import org.example.vcdb.store.service.RegionService;
 
 
 import java.io.IOException;
 
-public class testGrpcServer {
+public class RegionServer {
 
     private static final int port=9999;
 
@@ -22,6 +23,7 @@ public class testGrpcServer {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
+        RegionServerAPI.readConfig("regionServerMeta");
         dbServiceStart();
     }
 }

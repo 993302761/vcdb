@@ -22,7 +22,7 @@ import static org.example.vcdb.store.mem.KV.byteToType;
 import static org.example.vcdb.store.region.fileStore.ColumnFamilyMeta.byteToCFType;
 import static org.example.vcdb.store.region.fileStore.FileStore.*;
 
-public class RegionServer  {
+public class RegionServerAPI {
     //cache for fileStores
 
     //操作缓存部分
@@ -64,7 +64,7 @@ public class RegionServer  {
         tableAlterMap=new ConcurrentHashMap<>();
     }
 
-    public RegionServer(String fileName) {
+    public RegionServerAPI(String fileName) {
         regionServerMeta = new RegionServerMeta(VCFileReader.readAll(fileName));
         inboundMemStore=new ConcurrentHashMap<>();
         outboundMemStore=new ConcurrentHashMap<>();
@@ -74,7 +74,7 @@ public class RegionServer  {
         tableAlterMap=new ConcurrentHashMap<>();
     }
 
-    public RegionServer() {
+    public RegionServerAPI() {
 
     }
 
@@ -376,7 +376,7 @@ public class RegionServer  {
                 boolean isNil=requestEntity[pos]==1;
                 pos+=1;
 
-                RegionMeta regionMeta = RegionServer.getRegionMeta(dBName+"."+tabName);
+                RegionMeta regionMeta = RegionServerAPI.getRegionMeta(dBName+"."+tabName);
                 Map<String, String> fileStoreMap = regionMeta.getFileStoreMap();
 
                 //主要在于修改ColumnFamilyMeta
@@ -568,7 +568,9 @@ public class RegionServer  {
                                byte[] cfNames,byte[] terms){
         //加载terms
         Set<String> rowKeysRes= findRowKeysByTerms(dBName, tabName, terms);
-
+        if (rowKeysRes==null){
+            rowKeysRes=new HashSet<>();
+        }
         //加载cfNames
         /*rowKey.cfName----kvs*/
         Map<String,KeyValueSkipListSet> result=new HashMap<>();
@@ -699,7 +701,9 @@ public class RegionServer  {
                            byte[] terms,byte[] values){
         //结合term找到符合条件的几行
         Set<String> rowKeys = findRowKeysByTerms(dBName, tabName, terms);
-
+        if (rowKeys==null){
+            rowKeys=new HashSet<>();
+        }
         //根据values,添加多个kv中的kvNode到memStore
         int pos2=0;
         int cfNameCount=Bytes.toInt(values,pos2,4);
@@ -723,6 +727,7 @@ public class RegionServer  {
             pos2+=valueLength;
 
             MemStore memStore = inboundMemStore.get(dBName+"."+tabName+ ":" +cfName);
+
             for (String row:rowKeys){
                 /*添加KVNode到memStore*/
                 KV kv = memStore.kvSet.get(row);
@@ -747,6 +752,11 @@ public class RegionServer  {
                            byte[] cfNames, byte[] terms) {
         //结合term找到符合条件的几行
         Set<String> rowKeys = findRowKeysByTerms(dBName, tabName, terms);
+
+        if (rowKeys==null){
+            rowKeys=new HashSet<>();
+        }
+
         int pos2 = 0;
         int cfNameCount = Bytes.toInt(cfNames, pos2, 4);
         pos2 += 4;
@@ -1182,13 +1192,13 @@ public class RegionServer  {
     }
 
     public static void addKVsToDisk(String fullTabName,String cfName,KeyValueSkipListSet kvs ){
-        RegionServer.readConfig("regionServerMeta");
-        RegionMeta regionMeta = RegionServer.getRegionMeta(fullTabName);
-        FileStoreMeta fileStoreMeta = RegionServer.getFileStoreMeta(regionMeta, cfName);
-        Map<Integer, List<KV>> integerListMap = RegionServer.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
+        RegionServerAPI.readConfig("regionServerMeta");
+        RegionMeta regionMeta = RegionServerAPI.getRegionMeta(fullTabName);
+        FileStoreMeta fileStoreMeta = RegionServerAPI.getFileStoreMeta(regionMeta, cfName);
+        Map<Integer, List<KV>> integerListMap = RegionServerAPI.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
         for (Map.Entry<Integer,List<KV>> entry : integerListMap.entrySet()) {
             if (!entry.getValue().isEmpty()){
-                RegionServer.insertPageWithSplit(fullTabName,cfName,entry.getKey(),entry.getValue());
+                RegionServerAPI.insertPageWithSplit(fullTabName,cfName,entry.getKey(),entry.getValue());
             }
         }
     }

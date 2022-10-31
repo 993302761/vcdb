@@ -29,12 +29,12 @@ import static org.example.vcdb.store.region.fileStore.FileStore.*;
  * @Version 1.0
  */
 
-public class TestRegionServer {
+public class TestRegionServerAPI {
     @Test
     public void testRegionServer(){
-        RegionServer.readConfig("regionServerMeta");
-        RegionMeta regionMeta = RegionServer.getRegionMeta("db.table1");
-        FileStoreMeta cf1 = RegionServer.getFileStoreMeta(regionMeta, "cf1");
+        RegionServerAPI.readConfig("regionServerMeta");
+        RegionMeta regionMeta = RegionServerAPI.getRegionMeta("db.table1");
+        FileStoreMeta cf1 = RegionServerAPI.getFileStoreMeta(regionMeta, "cf1");
         cf1.dis();
 //        List<KVRange> pageTrailer = RegionServer.getPageTrailer("db.table1:cf1");
 //        System.out.println(pageTrailer);
@@ -99,10 +99,10 @@ public class TestRegionServer {
         String cfName="cf2";
         int pageIndex=1;
 
-        RegionServer.readConfig("regionServerMeta");
-        RegionServer.regionServerMeta.dis();
-        RegionMeta regionMeta = RegionServer.getRegionMeta(dbName+"."+tabName);
-        FileStoreMeta fileStoreMeta = RegionServer.getFileStoreMeta(regionMeta, cfName);
+        RegionServerAPI.readConfig("regionServerMeta");
+        RegionServerAPI.regionServerMeta.dis();
+        RegionMeta regionMeta = RegionServerAPI.getRegionMeta(dbName+"."+tabName);
+        FileStoreMeta fileStoreMeta = RegionServerAPI.getFileStoreMeta(regionMeta, cfName);
         System.out.println(fileStoreMeta.getEncodedName());
 
         //创建一个kvs
@@ -127,7 +127,7 @@ public class TestRegionServer {
             FileStore fileStore2=new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName()));
             disDataSet(fileStore2.getDataSet(pageIndex));
             fileStore2.dis();
-            RegionServer.updatePageTrailer(kvs,fileStoreMeta.getPageTrailer(),pageIndex);
+            RegionServerAPI.updatePageTrailer(kvs,fileStoreMeta.getPageTrailer(),pageIndex);
         }catch (Exception e){
             List<KVRange> pageTrailer = new ArrayList<>();
             VCFIleWriter.appendDataSetToFileStorePage(0,Bytes.toBytes((int)1),pageIndex,fileStoreMeta.getEncodedName());
@@ -210,12 +210,12 @@ public class TestRegionServer {
             kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length,  values));
         }
 
-        RegionServer.readConfig("regionServerMeta");
-        RegionMeta regionMeta = RegionServer.getRegionMeta(dbName+"."+tabName);
-        FileStoreMeta fileStoreMeta = RegionServer.getFileStoreMeta(regionMeta, cfName);
-        Map<Integer, List<KV>> integerListMap = RegionServer.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
+        RegionServerAPI.readConfig("regionServerMeta");
+        RegionMeta regionMeta = RegionServerAPI.getRegionMeta(dbName+"."+tabName);
+        FileStoreMeta fileStoreMeta = RegionServerAPI.getFileStoreMeta(regionMeta, cfName);
+        Map<Integer, List<KV>> integerListMap = RegionServerAPI.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
         for (Map.Entry<Integer,List<KV>> entry : integerListMap.entrySet()) {
-            RegionServer.insertPageWithSplit(dbName+"."+tabName,cfName,entry.getKey(),entry.getValue());
+            RegionServerAPI.insertPageWithSplit(dbName+"."+tabName,cfName,entry.getKey(),entry.getValue());
         }
         ttt();
     }
@@ -239,13 +239,13 @@ public class TestRegionServer {
         for (int i = 40 ; i < 140; i++) {
             kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length, values));
         }
-        RegionServer.readConfig("regionServerMeta");
-        RegionMeta regionMeta = RegionServer.getRegionMeta(dbName+"."+tabName);
-        FileStoreMeta fileStoreMeta = RegionServer.getFileStoreMeta(regionMeta, cfName);
-        Map<Integer, List<KV>> integerListMap = RegionServer.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
+        RegionServerAPI.readConfig("regionServerMeta");
+        RegionMeta regionMeta = RegionServerAPI.getRegionMeta(dbName+"."+tabName);
+        FileStoreMeta fileStoreMeta = RegionServerAPI.getFileStoreMeta(regionMeta, cfName);
+        Map<Integer, List<KV>> integerListMap = RegionServerAPI.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
         for (Map.Entry<Integer,List<KV>> entry : integerListMap.entrySet()) {
             if (!entry.getValue().isEmpty()){
-                RegionServer.insertPageWithSplit(dbName+"."+tabName,cfName,entry.getKey(),entry.getValue());
+                RegionServerAPI.insertPageWithSplit(dbName+"."+tabName,cfName,entry.getKey(),entry.getValue());
             }
         }
         ttt();

@@ -14,7 +14,7 @@ public class testAction {
 
     @Test
     public void  initRegionServer(){
-        RegionServer.readConfig("regionServerMeta");
+        RegionServerAPI.readConfig("regionServerMeta");
     }
 
     @Test
