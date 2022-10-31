@@ -27,21 +27,6 @@ public class VCDBAdmin {
 
     //return int(返回改动KV的数量)
     public String createDB(String dBName, CreateDB createDB) {
-//        //建立一个传输文本的通道
-//        ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
-//        try {
-//
-//            //使用同步的方式进行消息传递
-//            dbServiceGrpc.dbServiceBlockingStub blockingStub = dbServiceGrpc.newBlockingStub(build);
-//            DB.createRequest request = DB.createRequest.newBuilder()
-//                    .setDBName("123")
-//                    .build();
-//            Version.intReply db = blockingStub.createDB(request);
-//            int reply = db.getReply();
-//            System.out.println(reply);
-//        } finally {
-//            build.shutdown();
-//        }
         return "xxxx";
     }
 

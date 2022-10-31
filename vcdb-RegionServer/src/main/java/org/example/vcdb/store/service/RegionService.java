@@ -9,8 +9,6 @@ import org.example.vcdb.store.region.RegionServer;
 
 public class RegionService extends RegionServerGrpc.RegionServerImplBase{
 
-
-
     @Override
     public void createDB(Region.dbNameRequest request, StreamObserver<Region.boolReply> responseObserver) {
         //生成返回对象
@@ -102,9 +100,6 @@ public class RegionService extends RegionServerGrpc.RegionServerImplBase{
 
     @Override
     public void multiSearch(Region.multiSearchRequest request, StreamObserver<Region.bytesReply> responseObserver) {
-        //获取传入的dbName
-        String dbName = request.getDBName();
-        System.out.println(dbName);
         //生成返回对象
         Region.bytesReply.Builder builder = Region.bytesReply.newBuilder();
         builder.setReply(ByteString.copyFromUtf8("multiSearch 现在不支持"));
