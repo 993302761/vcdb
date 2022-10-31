@@ -17,8 +17,10 @@ public class VCDBAdmin {
     ClientConfig clientConfig;
     WalBuffer walBuffer;
 
+    static String ExplainValue=null;
 
     private final static String host="localhost";
+
     //服务端口号
     private final static int serverPort=9999;
 
@@ -61,12 +63,20 @@ public class VCDBAdmin {
 
     //return bool(是否成功)
     public String openTransaction(OpenTransaction openTransaction) {
-        return "openTransaction "+openTransaction.getExplainValue()+"\n";
+        if (ExplainValue==null){
+            ExplainValue=openTransaction.getExplainValue();
+            return "openTransaction "+openTransaction.getExplainValue()+"\n";
+        }else {
+            return "上一个事务"+ExplainValue+"未关闭";
+        }
+
     }
 
     //return bool(是否成功)
     public String closeTransaction(CloseTransaction closeTransaction) {
-        return "closeTransaction success\n";
+        String temp=ExplainValue;
+        ExplainValue=null;
+        return "closeTransaction "+temp+ " success\n";
     }
 
     //return int(返回改动KV的数量)
