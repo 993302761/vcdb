@@ -2,6 +2,8 @@ package org.example.vcdb.store.region.version;
 
 import org.example.vcdb.util.Bytes;
 
+import java.util.Arrays;
+
 /**
  * @ClassName Table
  * @Description TODO
@@ -29,7 +31,33 @@ public class Table {
 
     }
 
+    public long getTime(){
+        return Bytes.toLong(this.data,0,8);
+    }
+
+    public byte getType(){
+        return this.data[8];
+    }
+
+    public int getTabNameLength(){
+        return Bytes.toInt(this.data,9,4);
+    }
+
+
+    public String getTabName(){
+        return Bytes.toString(this.data,13,getTabNameLength());
+    }
+
     public Table(byte[] data) {
         this.data = data;
+    }
+
+    @Override
+    public String toString() {
+        return "Table{" +
+                " time=" + getTime() +
+                " type=" + getType() +
+                " tabName=" + getTabName() +
+                '}';
     }
 }

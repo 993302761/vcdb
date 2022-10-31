@@ -2,6 +2,8 @@ package org.example.vcdb.store.region.version;
 
 import org.example.vcdb.util.Bytes;
 
+import java.util.Arrays;
+
 /**
  * @ClassName DB
  * @Description TODO
@@ -29,5 +31,32 @@ public class DataBase {
 
     public DataBase(byte[] data) {
         this.data = data;
+    }
+
+    public long getTime(){
+        return Bytes.toLong(this.data,0,8);
+    }
+
+    public byte getType(){
+        return this.data[8];
+    }
+
+    public int getDbNameLength(){
+        return Bytes.toInt(this.data,9,4);
+    }
+
+
+    public String getDbName(){
+        return Bytes.toString(this.data,13,getDbNameLength());
+    }
+
+
+    @Override
+    public String toString() {
+        return "DataBase{" +
+                " time=" + getTime() +
+                " type=" + getType() +
+                " dbName=" + getDbName() +
+                '}';
     }
 }

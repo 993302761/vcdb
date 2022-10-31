@@ -504,6 +504,29 @@ public class RegionServer  {
     }
 
 
+    public byte[] showDataBases(){
+        DataBaseFile dataBaseFile=new DataBaseFile(VCFileReader.readAll("/x2/vcdb/common/dbFileStore"));
+        List<DataBase> dataBases = dataBaseFile.getDataBases();
+        dataBases.removeIf(dataBase -> dataBase.getType() == 0);
+        return dataBases.toString().getBytes();
+    }
+
+    public byte[] showTables(String dbName){
+        TableFile tableFile=new TableFile(VCFileReader.readAll("/x2/vcdb/common/tableFileStore"));
+        List<Table> tables = tableFile.getTables();
+        for (Table table:tables){
+            if (table.getType()==0){
+                tables.remove(table);
+                continue;
+            }
+            if (!like(dbName+".*",table.getTabName())){
+                tables.remove(table);
+            }
+        }
+        tables.removeIf(table->table.getType()==0);
+        return tables.toString().getBytes();
+    }
+
     public byte[] showVersion(String dBName,String tabName,String rowKey,String cfName){
         //找到修改的KVs在哪一页
         String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
