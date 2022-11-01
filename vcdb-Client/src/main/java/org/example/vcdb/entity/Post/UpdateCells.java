@@ -34,7 +34,7 @@ public class UpdateCells extends RequestEntity {
         return bytes;
     }
 
-    private byte[] getTermsByteArray(){
+    public byte[] getTermsByteArray(){
         int termsLength=0;
         for (TermCell termCell:terms){
             termsLength+=termCell.toByteArray().length;

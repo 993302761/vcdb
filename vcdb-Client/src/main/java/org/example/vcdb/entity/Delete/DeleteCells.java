@@ -19,7 +19,7 @@ public class DeleteCells extends RequestEntity {
     //为了筛选行
     private List<TermCell> terms;
 
-    private byte[] getTermsByteArray(){
+    public byte[] getTermsByteArray(){
         int termsLength=0;
         for (TermCell termCell:terms){
             termsLength+=termCell.toByteArray().length;
