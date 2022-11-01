@@ -1,5 +1,6 @@
 package org.example.vcdb.executor;
 
+import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.example.vcdb.config.ClientConfig;
@@ -10,6 +11,8 @@ import org.example.vcdb.entity.Delete.DeleteTransaction;
 import org.example.vcdb.entity.Post.*;
 import org.example.vcdb.entity.Put.CreateDB;
 import org.example.vcdb.entity.Put.CreateTable;
+import org.example.vcdb.proto.Region;
+import org.example.vcdb.proto.RegionServerGrpc;
 import org.example.vcdb.store.wal.WalBuffer;
 
 
@@ -27,30 +30,102 @@ public class VCDBAdmin {
 
     //return int(返回改动KV的数量)
     public String createDB(String dBName, CreateDB createDB) {
-        return "xxxx";
+        ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
+        //使用同步的方式进行消息传递
+        RegionServerGrpc.RegionServerBlockingStub blockingStub = RegionServerGrpc.newBlockingStub(build);
+        Region.dbNameRequest request = Region.dbNameRequest.newBuilder()
+                .setDBName(dBName)
+                .build();
+        Region.boolReply db = blockingStub.createDB(request);
+        boolean reply = db.getReply();
+        System.out.println(reply);
+        build.shutdown();
+        if (reply){
+            return "create dataBase "+dBName+" success\n";
+        }else {
+            return "err\n";
+        }
     }
 
 
     //return bool(是否成功)
     public String createTable(String dBName,String tabName,CreateTable createTable) {
-        return "create table "+tabName+" success\n";
+        ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
+        //使用同步的方式进行消息传递
+        RegionServerGrpc.RegionServerBlockingStub blockingStub = RegionServerGrpc.newBlockingStub(build);
+        Region.tableRequest request = Region.tableRequest.newBuilder()
+                .setDBName(dBName)
+                .setTabName(tabName)
+                .setRequestEntity(ByteString.copyFrom(createTable.toByteArray()))
+                .build();
+        Region.boolReply table = blockingStub.createTable(request);
+        boolean reply = table.getReply();
+        System.out.println(reply);
+        build.shutdown();
+        if (reply){
+            return "create table "+tabName+" success\n";
+        }else {
+            return "err\n";
+        }
     }
 
     //return bool(是否成功)
     public String deleteDB(String dBName, DeleteDB deleteDB) {
-        return "delete database "+dBName+" success\n";
+        ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
+        //使用同步的方式进行消息传递
+        RegionServerGrpc.RegionServerBlockingStub blockingStub = RegionServerGrpc.newBlockingStub(build);
+        Region.dbNameRequest request = Region.dbNameRequest.newBuilder()
+                .setDBName(dBName)
+                .build();
+        Region.boolReply table = blockingStub.deleteDB(request);
+        boolean reply = table.getReply();
+        System.out.println(reply);
+        build.shutdown();
+        if (reply){
+            return "delete database "+dBName+" success\n";
+        }else {
+            return "err\n";
+        }
     }
 
     //return bool(是否成功)
     public String deleteTable(String dBName,String tabName,DeleteTable deleteTable) {
-        return "delete table "+tabName +" success\n";
+        ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
+        //使用同步的方式进行消息传递
+        RegionServerGrpc.RegionServerBlockingStub blockingStub = RegionServerGrpc.newBlockingStub(build);
+        Region.tableNameRequest request = Region.tableNameRequest.newBuilder()
+                .setTabName(dBName+"."+tabName)
+                .build();
+        Region.boolReply table = blockingStub.deleteTable(request);
+        boolean reply = table.getReply();
+        System.out.println(reply);
+        build.shutdown();
+        if (reply){
+            return "delete table "+dBName+"."+tabName+" success\n";
+        }else {
+            return "err\n";
+        }
     }
 
     //return bool(是否成功)
     public String openTransaction(OpenTransaction openTransaction) {
         if (ExplainValue==null){
             ExplainValue=openTransaction.getExplainValue();
-            return "openTransaction "+openTransaction.getExplainValue()+"\n";
+            ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
+            //使用同步的方式进行消息传递
+            RegionServerGrpc.RegionServerBlockingStub blockingStub = RegionServerGrpc.newBlockingStub(build);
+            Region.transactionRequest request = Region.transactionRequest.newBuilder()
+                    .setExplainValue(openTransaction.getExplainValue())
+                    .build();
+            Region.boolReply table = blockingStub.openTransaction(request);
+            boolean reply = table.getReply();
+            System.out.println(reply);
+            build.shutdown();
+            if (reply){
+                return "openTransaction "+openTransaction.getExplainValue()+"success\n";
+            }else {
+                return "err\n";
+            }
         }else {
             return "上一个事务"+ExplainValue+"未关闭";
         }
@@ -61,43 +136,143 @@ public class VCDBAdmin {
     public String closeTransaction(CloseTransaction closeTransaction) {
         String temp=ExplainValue;
         ExplainValue=null;
-        return "closeTransaction "+temp+ " success\n";
+        ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
+        //使用同步的方式进行消息传递
+        RegionServerGrpc.RegionServerBlockingStub blockingStub = RegionServerGrpc.newBlockingStub(build);
+        Region.transactionRequest request = Region.transactionRequest.newBuilder()
+                .setExplainValue(temp)
+                .build();
+        Region.boolReply table = blockingStub.closeTransaction(request);
+        boolean reply = table.getReply();
+        System.out.println(reply);
+        build.shutdown();
+        if (reply){
+            return "closeTransaction "+temp+"success\n";
+        }else {
+            return "err\n";
+        }
     }
 
     //return int(返回改动KV的数量)
     public String putCells(String dBName,String tabName,PutCells putCells) {
-        return "update "+putCells.getCount()+" cells success\n";
+        ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
+        //使用同步的方式进行消息传递
+        RegionServerGrpc.RegionServerBlockingStub blockingStub = RegionServerGrpc.newBlockingStub(build);
+        Region.putCellsRequest request = Region.putCellsRequest.newBuilder()
+                .setDBName(dBName)
+                .setTabName(tabName)
+                .setRowKey(putCells.getRowKey())
+                .setRequestEntity(ByteString.copyFrom(putCells.valuesToByteArray()))
+                .build();
+        Region.intReply table = blockingStub.putCells(request);
+        int reply = table.getReply();
+        System.out.println(reply);
+        build.shutdown();
+        return "update "+reply+" cells success\n";
     }
 
     //return bool(是否成功)
     public String alterTable(String dBName,String tabName,AlterTable alterTable) {
-        return "alterTable "+tabName +"success\n";
+        ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
+        //使用同步的方式进行消息传递
+        RegionServerGrpc.RegionServerBlockingStub blockingStub = RegionServerGrpc.newBlockingStub(build);
+        Region.tableRequest request = Region.tableRequest.newBuilder()
+                .setDBName(dBName)
+                .setTabName(tabName)
+                .setRequestEntity(ByteString.copyFrom(alterTable.alterCellsToByteArray()))
+                .build();
+        Region.boolReply table = blockingStub.alterTable(request);
+        boolean reply = table.getReply();
+        System.out.println(reply);
+        build.shutdown();
+        if (reply){
+            return "alterTable "+dBName+"."+tabName+" success\n";
+        }else {
+            return "err\n";
+        }
     }
 
     //return int(查询的返回KV的数量)
     public String mergeVersion(String dBName,String tabName,MergeVersion mergeVersion) {
-        return "mergeVersion "+mergeVersion.getCount()+" cells\n";
+        ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
+        //使用同步的方式进行消息传递
+        RegionServerGrpc.RegionServerBlockingStub blockingStub = RegionServerGrpc.newBlockingStub(build);
+        Region.mergeVersionRequest request = Region.mergeVersionRequest.newBuilder()
+                .setDBName(dBName)
+                .setTabName(tabName)
+                .setRequestEntity(ByteString.copyFrom(mergeVersion.toByteArray()))
+                .build();
+        Region.intReply table = blockingStub.mergeVersion(request);
+        int reply = table.getReply();
+        System.out.println(reply);
+        build.shutdown();
+        return "mergeVersion "+reply+" cells\n";
     }
 
     //return int(返回改动KV的数量)
     public String useVersion(String dBName,String tabName,UseVersion useVersion) {
-        return "use "+useVersion.getRowKey()+" version "+useVersion.getVersion()+" success\n";
+        ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
+        //使用同步的方式进行消息传递
+        RegionServerGrpc.RegionServerBlockingStub blockingStub = RegionServerGrpc.newBlockingStub(build);
+        Region.versionRequest request = Region.versionRequest.newBuilder()
+                .setDBName(dBName)
+                .setTabName(tabName)
+                .setRowKey(useVersion.getRowKey())
+                .setCfName(useVersion.getCfName())
+                .build();
+        Region.boolReply table = blockingStub.useVersion(request);
+        boolean reply = table.getReply();
+        System.out.println(reply);
+        build.shutdown();
+        if (reply){
+            return "use "+useVersion.getRowKey()+" version "+useVersion.getVersion()+" success\n";
+        }else {
+            return "err\n";
+        }
     }
 
     //return byte[](查询的返回KV)
     public String showVersion(String dBName,String tabName,ShowVersion showVersion) {
-        return "=====>0---row1---info:myName----n1\n" +
-                "=====>1---row1---info:myName----n2\n" +
-                "=====>2---row1---info:myName----n3\n";
+        ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
+        //使用同步的方式进行消息传递
+        RegionServerGrpc.RegionServerBlockingStub blockingStub = RegionServerGrpc.newBlockingStub(build);
+        Region.showVersionRequest request = Region.showVersionRequest.newBuilder()
+                .setDBName(dBName)
+                .setTabName(tabName)
+                .setRowKey(showVersion.getRowKey())
+                .setCfName(showVersion.getCfName())
+                .build();
+        Region.bytesReply table = blockingStub.showVersion(request);
+        ByteString reply = table.getReply();
+        System.out.println(reply);
+        build.shutdown();
+        return reply.toString();
     }
 
     //return byte[](查询的返回KV)
     public String singleSearch(String dBName,String tabName,SingleSearch singleSearch) {
-        return "---row1---info:myName----n3\n";
+        ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
+        //使用同步的方式进行消息传递
+        RegionServerGrpc.RegionServerBlockingStub blockingStub = RegionServerGrpc.newBlockingStub(build);
+        Region.singleSearchRequest request = Region.singleSearchRequest.newBuilder()
+                .setDBName(dBName)
+                .setTabName(tabName)
+                .setLimit(singleSearch.getLimit())
+                .setOrderCfName(singleSearch.getOrderCfName())
+                .setSort(singleSearch.isSort())
+                .setCfNames(ByteString.copyFrom(singleSearch.getCfNameByteArray()))
+                .setTerms(ByteString.copyFrom(singleSearch.getTermsByteArray()))
+                .build();
+        Region.bytesReply table = blockingStub.singleSearch(request);
+        ByteString reply = table.getReply();
+        System.out.println(reply);
+        build.shutdown();
+        return reply.toString();
     }
 
     //return int(返回改动KV的数量)
     public String deleteCells(String dBName,String tabName,DeleteCells deleteCells) {
+
         return "update "+deleteCells.getCount()+" cells success\n";
     }
 

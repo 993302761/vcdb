@@ -24,7 +24,8 @@ public class RegionService extends RegionServerGrpc.RegionServerImplBase{
     }
 
     @Override
-    public void deleteDB(Region.dbNameRequest request, StreamObserver<Region.boolReply> responseObserver) {
+    public void deleteDB(Region.dbNameRequest request,
+                         StreamObserver<Region.boolReply> responseObserver) {
         //生成返回对象
         Region.boolReply.Builder builder = Region.boolReply.newBuilder();
         builder.setReply(RegionServerAPI.deleteDB(request.getDBName()));
@@ -38,7 +39,8 @@ public class RegionService extends RegionServerGrpc.RegionServerImplBase{
     }
 
     @Override
-    public void showDataBases(Empty request, StreamObserver<Region.bytesReply> responseObserver) {
+    public void showDataBases(Empty request,
+                              StreamObserver<Region.bytesReply> responseObserver) {
         //生成返回对象
         Region.bytesReply.Builder builder = Region.bytesReply.newBuilder();
         builder.setReply(ByteString.copyFrom(RegionServerAPI.showDataBases()));

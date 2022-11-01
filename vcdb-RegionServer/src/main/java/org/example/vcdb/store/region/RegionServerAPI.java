@@ -133,6 +133,7 @@ public class RegionServerAPI {
         }
     }
 
+
     public static boolean forCreateTable(String dbName, String tabName, byte[] requestEntity){
         try {
             commonSet(dbName+"."+tabName,"Table","Table",(byte) 4);
@@ -436,7 +437,6 @@ public class RegionServerAPI {
             pos+=4;
 
             //找到合并的KVs在哪一页
-
             String fileStoreMetaName = getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
             FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
             int pageIndex = findPageIndex(dBName, tabName, rowKey ,cfName);
@@ -504,6 +504,7 @@ public class RegionServerAPI {
     }
 
 
+    /*disk*/
     public static byte[] showDataBases(){
         DataBaseFile dataBaseFile=new DataBaseFile(VCFileReader.readAll("/x2/vcdb/common/dbFileStore"));
         List<DataBase> dataBases = dataBaseFile.getDataBases();
@@ -511,6 +512,7 @@ public class RegionServerAPI {
         return dataBases.toString().getBytes();
     }
 
+    /*disk*/
     public static byte[] showTables(String dbName){
         TableFile tableFile=new TableFile(VCFileReader.readAll("/x2/vcdb/common/tableFileStore"));
         List<Table> tables = tableFile.getTables();
@@ -527,6 +529,8 @@ public class RegionServerAPI {
         return tables.toString().getBytes();
     }
 
+
+    /*disk*/
     public static byte[] showVersion(String dBName,String tabName,String rowKey,String cfName){
         //找到修改的KVs在哪一页
         String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
@@ -541,6 +545,7 @@ public class RegionServerAPI {
     }
 
 
+    /*disk*/
     public static boolean deleteVersion(String dBName,String tabName,String rowKey,String cfName,int version){
         //找到修改的KVs在哪一页
         String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
@@ -563,7 +568,7 @@ public class RegionServerAPI {
     }
 
 
-    public static byte[] singleSearch(String dBName,String tabName,String limit,
+    public static byte[] singleSearch(String dBName,String tabName,int limit,
                                String orderCfName,boolean sort,
                                byte[] cfNames,byte[] terms){
         //加载terms

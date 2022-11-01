@@ -128,7 +128,7 @@ message updateCellsRequest{
 message multiSearchRequest{
   string dBName=1;
   string tabName=2;
-  string limit=10;
+  int32 limit=10;
   string orderCfName=20;
   bool sort=30;
   bytes jTables =40;
@@ -140,7 +140,7 @@ message multiSearchRequest{
 message singleSearchRequest{
   string dBName=1;
   string tabName=2;
-  string limit=10;
+  int32 limit=10;
   string orderCfName=20;
   bool sort=30;
   bytes cfNames=50;

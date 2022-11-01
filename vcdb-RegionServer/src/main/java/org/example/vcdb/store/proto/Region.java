@@ -85,6 +85,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -574,6 +576,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -1065,6 +1069,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -1562,6 +1568,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -1635,7 +1643,7 @@ public final class Region {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 10, dBName_);
       }
       unknownFields.writeTo(output);
@@ -1647,7 +1655,7 @@ public final class Region {
       if (size != -1) return size;
 
       size = 0;
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, dBName_);
       }
       size += unknownFields.getSerializedSize();
@@ -2180,6 +2188,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -2340,13 +2350,13 @@ public final class Region {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 10, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 20, tabName_);
       }
-      if (!getRowKeyBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(rowKey_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 30, rowKey_);
       }
       if (!requestEntity_.isEmpty()) {
@@ -2361,13 +2371,13 @@ public final class Region {
       if (size != -1) return size;
 
       size = 0;
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(20, tabName_);
       }
-      if (!getRowKeyBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(rowKey_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(30, rowKey_);
       }
       if (!requestEntity_.isEmpty()) {
@@ -3115,6 +3125,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -3248,10 +3260,10 @@ public final class Region {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 10, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 20, tabName_);
       }
       if (!cfNames_.isEmpty()) {
@@ -3269,10 +3281,10 @@ public final class Region {
       if (size != -1) return size;
 
       size = 0;
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(20, tabName_);
       }
       if (!cfNames_.isEmpty()) {
@@ -3981,6 +3993,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -4114,10 +4128,10 @@ public final class Region {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 10, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 20, tabName_);
       }
       if (!terms_.isEmpty()) {
@@ -4135,10 +4149,10 @@ public final class Region {
       if (size != -1) return size;
 
       size = 0;
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(20, tabName_);
       }
       if (!terms_.isEmpty()) {
@@ -4754,16 +4768,10 @@ public final class Region {
         getTabNameBytes();
 
     /**
-     * <code>string limit = 10;</code>
+     * <code>int32 limit = 10;</code>
      * @return The limit.
      */
-    java.lang.String getLimit();
-    /**
-     * <code>string limit = 10;</code>
-     * @return The bytes for limit.
-     */
-    com.google.protobuf.ByteString
-        getLimitBytes();
+    int getLimit();
 
     /**
      * <code>string orderCfName = 20;</code>
@@ -4816,7 +4824,6 @@ public final class Region {
     private multiSearchRequest() {
       dBName_ = "";
       tabName_ = "";
-      limit_ = "";
       orderCfName_ = "";
       jTables_ = com.google.protobuf.ByteString.EMPTY;
       cfNames_ = com.google.protobuf.ByteString.EMPTY;
@@ -4865,10 +4872,9 @@ public final class Region {
               tabName_ = s;
               break;
             }
-            case 82: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 80: {
 
-              limit_ = s;
+              limit_ = input.readInt32();
               break;
             }
             case 162: {
@@ -4908,6 +4914,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -5006,41 +5014,14 @@ public final class Region {
     }
 
     public static final int LIMIT_FIELD_NUMBER = 10;
-    private volatile java.lang.Object limit_;
+    private int limit_;
     /**
-     * <code>string limit = 10;</code>
+     * <code>int32 limit = 10;</code>
      * @return The limit.
      */
     @java.lang.Override
-    public java.lang.String getLimit() {
-      java.lang.Object ref = limit_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        limit_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string limit = 10;</code>
-     * @return The bytes for limit.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getLimitBytes() {
-      java.lang.Object ref = limit_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        limit_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getLimit() {
+      return limit_;
     }
 
     public static final int ORDERCFNAME_FIELD_NUMBER = 20;
@@ -5139,16 +5120,16 @@ public final class Region {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, tabName_);
       }
-      if (!getLimitBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 10, limit_);
+      if (limit_ != 0) {
+        output.writeInt32(10, limit_);
       }
-      if (!getOrderCfNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(orderCfName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 20, orderCfName_);
       }
       if (sort_ != false) {
@@ -5172,16 +5153,17 @@ public final class Region {
       if (size != -1) return size;
 
       size = 0;
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, tabName_);
       }
-      if (!getLimitBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, limit_);
+      if (limit_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(10, limit_);
       }
-      if (!getOrderCfNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(orderCfName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(20, orderCfName_);
       }
       if (sort_ != false) {
@@ -5219,8 +5201,8 @@ public final class Region {
           .equals(other.getDBName())) return false;
       if (!getTabName()
           .equals(other.getTabName())) return false;
-      if (!getLimit()
-          .equals(other.getLimit())) return false;
+      if (getLimit()
+          != other.getLimit()) return false;
       if (!getOrderCfName()
           .equals(other.getOrderCfName())) return false;
       if (getSort()
@@ -5247,7 +5229,7 @@ public final class Region {
       hash = (37 * hash) + TABNAME_FIELD_NUMBER;
       hash = (53 * hash) + getTabName().hashCode();
       hash = (37 * hash) + LIMIT_FIELD_NUMBER;
-      hash = (53 * hash) + getLimit().hashCode();
+      hash = (53 * hash) + getLimit();
       hash = (37 * hash) + ORDERCFNAME_FIELD_NUMBER;
       hash = (53 * hash) + getOrderCfName().hashCode();
       hash = (37 * hash) + SORT_FIELD_NUMBER;
@@ -5396,7 +5378,7 @@ public final class Region {
 
         tabName_ = "";
 
-        limit_ = "";
+        limit_ = 0;
 
         orderCfName_ = "";
 
@@ -5498,9 +5480,8 @@ public final class Region {
           tabName_ = other.tabName_;
           onChanged();
         }
-        if (!other.getLimit().isEmpty()) {
-          limit_ = other.limit_;
-          onChanged();
+        if (other.getLimit() != 0) {
+          setLimit(other.getLimit());
         }
         if (!other.getOrderCfName().isEmpty()) {
           orderCfName_ = other.orderCfName_;
@@ -5699,78 +5680,33 @@ public final class Region {
         return this;
       }
 
-      private java.lang.Object limit_ = "";
+      private int limit_ ;
       /**
-       * <code>string limit = 10;</code>
+       * <code>int32 limit = 10;</code>
        * @return The limit.
        */
-      public java.lang.String getLimit() {
-        java.lang.Object ref = limit_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          limit_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getLimit() {
+        return limit_;
       }
       /**
-       * <code>string limit = 10;</code>
-       * @return The bytes for limit.
-       */
-      public com.google.protobuf.ByteString
-          getLimitBytes() {
-        java.lang.Object ref = limit_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          limit_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string limit = 10;</code>
+       * <code>int32 limit = 10;</code>
        * @param value The limit to set.
        * @return This builder for chaining.
        */
-      public Builder setLimit(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setLimit(int value) {
+        
         limit_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string limit = 10;</code>
+       * <code>int32 limit = 10;</code>
        * @return This builder for chaining.
        */
       public Builder clearLimit() {
         
-        limit_ = getDefaultInstance().getLimit();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string limit = 10;</code>
-       * @param value The bytes for limit to set.
-       * @return This builder for chaining.
-       */
-      public Builder setLimitBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        limit_ = value;
+        limit_ = 0;
         onChanged();
         return this;
       }
@@ -6065,16 +6001,10 @@ public final class Region {
         getTabNameBytes();
 
     /**
-     * <code>string limit = 10;</code>
+     * <code>int32 limit = 10;</code>
      * @return The limit.
      */
-    java.lang.String getLimit();
-    /**
-     * <code>string limit = 10;</code>
-     * @return The bytes for limit.
-     */
-    com.google.protobuf.ByteString
-        getLimitBytes();
+    int getLimit();
 
     /**
      * <code>string orderCfName = 20;</code>
@@ -6121,7 +6051,6 @@ public final class Region {
     private singleSearchRequest() {
       dBName_ = "";
       tabName_ = "";
-      limit_ = "";
       orderCfName_ = "";
       cfNames_ = com.google.protobuf.ByteString.EMPTY;
       terms_ = com.google.protobuf.ByteString.EMPTY;
@@ -6169,10 +6098,9 @@ public final class Region {
               tabName_ = s;
               break;
             }
-            case 82: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 80: {
 
-              limit_ = s;
+              limit_ = input.readInt32();
               break;
             }
             case 162: {
@@ -6207,6 +6135,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -6305,41 +6235,14 @@ public final class Region {
     }
 
     public static final int LIMIT_FIELD_NUMBER = 10;
-    private volatile java.lang.Object limit_;
+    private int limit_;
     /**
-     * <code>string limit = 10;</code>
+     * <code>int32 limit = 10;</code>
      * @return The limit.
      */
     @java.lang.Override
-    public java.lang.String getLimit() {
-      java.lang.Object ref = limit_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        limit_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string limit = 10;</code>
-     * @return The bytes for limit.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getLimitBytes() {
-      java.lang.Object ref = limit_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        limit_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getLimit() {
+      return limit_;
     }
 
     public static final int ORDERCFNAME_FIELD_NUMBER = 20;
@@ -6427,16 +6330,16 @@ public final class Region {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, tabName_);
       }
-      if (!getLimitBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 10, limit_);
+      if (limit_ != 0) {
+        output.writeInt32(10, limit_);
       }
-      if (!getOrderCfNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(orderCfName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 20, orderCfName_);
       }
       if (sort_ != false) {
@@ -6457,16 +6360,17 @@ public final class Region {
       if (size != -1) return size;
 
       size = 0;
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, tabName_);
       }
-      if (!getLimitBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, limit_);
+      if (limit_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(10, limit_);
       }
-      if (!getOrderCfNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(orderCfName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(20, orderCfName_);
       }
       if (sort_ != false) {
@@ -6500,8 +6404,8 @@ public final class Region {
           .equals(other.getDBName())) return false;
       if (!getTabName()
           .equals(other.getTabName())) return false;
-      if (!getLimit()
-          .equals(other.getLimit())) return false;
+      if (getLimit()
+          != other.getLimit()) return false;
       if (!getOrderCfName()
           .equals(other.getOrderCfName())) return false;
       if (getSort()
@@ -6526,7 +6430,7 @@ public final class Region {
       hash = (37 * hash) + TABNAME_FIELD_NUMBER;
       hash = (53 * hash) + getTabName().hashCode();
       hash = (37 * hash) + LIMIT_FIELD_NUMBER;
-      hash = (53 * hash) + getLimit().hashCode();
+      hash = (53 * hash) + getLimit();
       hash = (37 * hash) + ORDERCFNAME_FIELD_NUMBER;
       hash = (53 * hash) + getOrderCfName().hashCode();
       hash = (37 * hash) + SORT_FIELD_NUMBER;
@@ -6673,7 +6577,7 @@ public final class Region {
 
         tabName_ = "";
 
-        limit_ = "";
+        limit_ = 0;
 
         orderCfName_ = "";
 
@@ -6772,9 +6676,8 @@ public final class Region {
           tabName_ = other.tabName_;
           onChanged();
         }
-        if (!other.getLimit().isEmpty()) {
-          limit_ = other.limit_;
-          onChanged();
+        if (other.getLimit() != 0) {
+          setLimit(other.getLimit());
         }
         if (!other.getOrderCfName().isEmpty()) {
           orderCfName_ = other.orderCfName_;
@@ -6970,78 +6873,33 @@ public final class Region {
         return this;
       }
 
-      private java.lang.Object limit_ = "";
+      private int limit_ ;
       /**
-       * <code>string limit = 10;</code>
+       * <code>int32 limit = 10;</code>
        * @return The limit.
        */
-      public java.lang.String getLimit() {
-        java.lang.Object ref = limit_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          limit_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getLimit() {
+        return limit_;
       }
       /**
-       * <code>string limit = 10;</code>
-       * @return The bytes for limit.
-       */
-      public com.google.protobuf.ByteString
-          getLimitBytes() {
-        java.lang.Object ref = limit_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          limit_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string limit = 10;</code>
+       * <code>int32 limit = 10;</code>
        * @param value The limit to set.
        * @return This builder for chaining.
        */
-      public Builder setLimit(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setLimit(int value) {
+        
         limit_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string limit = 10;</code>
+       * <code>int32 limit = 10;</code>
        * @return This builder for chaining.
        */
       public Builder clearLimit() {
         
-        limit_ = getDefaultInstance().getLimit();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string limit = 10;</code>
-       * @param value The bytes for limit to set.
-       * @return This builder for chaining.
-       */
-      public Builder setLimitBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        limit_ = value;
+        limit_ = 0;
         onChanged();
         return this;
       }
@@ -7383,6 +7241,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -7505,10 +7365,10 @@ public final class Region {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 10, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 20, tabName_);
       }
       if (!requestEntity_.isEmpty()) {
@@ -7523,10 +7383,10 @@ public final class Region {
       if (size != -1) return size;
 
       size = 0;
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(20, tabName_);
       }
       if (!requestEntity_.isEmpty()) {
@@ -8144,6 +8004,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -8217,7 +8079,7 @@ public final class Region {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 10, tabName_);
       }
       unknownFields.writeTo(output);
@@ -8229,7 +8091,7 @@ public final class Region {
       if (size != -1) return size;
 
       size = 0;
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, tabName_);
       }
       size += unknownFields.getSerializedSize();
@@ -8712,6 +8574,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -8785,7 +8649,7 @@ public final class Region {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getExplainValueBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(explainValue_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 10, explainValue_);
       }
       unknownFields.writeTo(output);
@@ -8797,7 +8661,7 @@ public final class Region {
       if (size != -1) return size;
 
       size = 0;
-      if (!getExplainValueBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(explainValue_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, explainValue_);
       }
       size += unknownFields.getSerializedSize();
@@ -9299,6 +9163,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -9410,10 +9276,10 @@ public final class Region {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getExplainValueBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(explainValue_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 10, explainValue_);
       }
-      if (!getNewExplainValueBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(newExplainValue_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 20, newExplainValue_);
       }
       unknownFields.writeTo(output);
@@ -9425,10 +9291,10 @@ public final class Region {
       if (size != -1) return size;
 
       size = 0;
-      if (!getExplainValueBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(explainValue_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, explainValue_);
       }
-      if (!getNewExplainValueBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(newExplainValue_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(20, newExplainValue_);
       }
       size += unknownFields.getSerializedSize();
@@ -10066,6 +9932,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -10264,16 +10132,16 @@ public final class Region {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 10, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 20, tabName_);
       }
-      if (!getRowKeyBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(rowKey_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 30, rowKey_);
       }
-      if (!getCfNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(cfName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 35, cfName_);
       }
       if (version_ != 0) {
@@ -10288,16 +10156,16 @@ public final class Region {
       if (size != -1) return size;
 
       size = 0;
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(20, tabName_);
       }
-      if (!getRowKeyBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(rowKey_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(30, rowKey_);
       }
-      if (!getCfNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(cfName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(35, cfName_);
       }
       if (version_ != 0) {
@@ -11143,6 +11011,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -11330,16 +11200,16 @@ public final class Region {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 10, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 20, tabName_);
       }
-      if (!getRowKeyBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(rowKey_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 30, rowKey_);
       }
-      if (!getCfNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(cfName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 35, cfName_);
       }
       unknownFields.writeTo(output);
@@ -11351,16 +11221,16 @@ public final class Region {
       if (size != -1) return size;
 
       size = 0;
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(20, tabName_);
       }
-      if (!getRowKeyBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(rowKey_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(30, rowKey_);
       }
-      if (!getCfNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(cfName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(35, cfName_);
       }
       size += unknownFields.getSerializedSize();
@@ -12135,6 +12005,8 @@ public final class Region {
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
         throw e.setUnfinishedMessage(this);
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
@@ -12257,10 +12129,10 @@ public final class Region {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 10, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 20, tabName_);
       }
       if (!requestEntity_.isEmpty()) {
@@ -12275,10 +12147,10 @@ public final class Region {
       if (size != -1) return size;
 
       size = 0;
-      if (!getDBNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(dBName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, dBName_);
       }
-      if (!getTabNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tabName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(20, tabName_);
       }
       if (!requestEntity_.isEmpty()) {
@@ -12918,11 +12790,11 @@ public final class Region {
       "updateCellsRequest\022\016\n\006dBName\030\n \001(\t\022\017\n\007ta" +
       "bName\030\024 \001(\t\022\r\n\005terms\030\036 \001(\014\022\016\n\006values\030( \001" +
       "(\014\"\230\001\n\022multiSearchRequest\022\016\n\006dBName\030\001 \001(" +
-      "\t\022\017\n\007tabName\030\002 \001(\t\022\r\n\005limit\030\n \001(\t\022\023\n\013ord" +
+      "\t\022\017\n\007tabName\030\002 \001(\t\022\r\n\005limit\030\n \001(\005\022\023\n\013ord" +
       "erCfName\030\024 \001(\t\022\014\n\004sort\030\036 \001(\010\022\017\n\007jTables\030" +
       "( \001(\014\022\017\n\007cfNames\0302 \001(\014\022\r\n\005terms\030< \001(\014\"\210\001" +
       "\n\023singleSearchRequest\022\016\n\006dBName\030\001 \001(\t\022\017\n" +
-      "\007tabName\030\002 \001(\t\022\r\n\005limit\030\n \001(\t\022\023\n\013orderCf" +
+      "\007tabName\030\002 \001(\t\022\r\n\005limit\030\n \001(\005\022\023\n\013orderCf" +
       "Name\030\024 \001(\t\022\014\n\004sort\030\036 \001(\010\022\017\n\007cfNames\0302 \001(" +
       "\014\022\r\n\005terms\030< \001(\014\"F\n\014tableRequest\022\016\n\006dBNa" +
       "me\030\n \001(\t\022\017\n\007tabName\030\024 \001(\t\022\025\n\rrequestEnti" +

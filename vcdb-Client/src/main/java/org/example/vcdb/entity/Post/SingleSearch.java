@@ -42,7 +42,7 @@ public class SingleSearch extends RequestEntity {
         return bytes;
     }
 
-    private byte[] getTermsByteArray(){
+    public byte[] getTermsByteArray(){
         int termsLength=0;
         for (TermCell termCell:terms){
             termsLength+=termCell.toByteArray().length;
@@ -76,7 +76,19 @@ public class SingleSearch extends RequestEntity {
         this.orderCfName = orderCfName;
     }
 
-//    public void setAggregate(List<Aggregate> aggregate) {
+    public int getLimit() {
+        return limit;
+    }
+
+    public String getOrderCfName() {
+        return orderCfName;
+    }
+
+    public boolean isSort() {
+        return sort;
+    }
+
+    //    public void setAggregate(List<Aggregate> aggregate) {
 //        this.aggregate = aggregate;
 //    }
 }

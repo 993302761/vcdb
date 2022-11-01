@@ -140,7 +140,7 @@ message multiSearchRequest{
 message singleSearchRequest{
   string dBName=1;
   string tabName=2;
-  string limit=10;
+  int32 limit=10;
   string orderCfName=20;
   bool sort=30;
   bytes cfNames=50;
@@ -187,6 +187,7 @@ message showVersionRequest{
   string rowKey=30;
   string cfName=35;
 }
+
 
 message mergeVersionRequest{
   string dBName=10;

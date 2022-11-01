@@ -22,6 +22,10 @@ public class UseVersion extends RequestEntity {
         return rowKey;
     }
 
+    public String getCfName() {
+        return cfName;
+    }
+
     public int getVersion() {
         return version;
     }

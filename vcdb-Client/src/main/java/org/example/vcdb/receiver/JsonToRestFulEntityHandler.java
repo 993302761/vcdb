@@ -11,9 +11,6 @@ import io.netty.util.CharsetUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,6 +50,7 @@ public class JsonToRestFulEntityHandler extends SimpleChannelInboundHandler {
         System.out.println(content);
         return jsonToJavaOfRestfulEntity(content,actionEntity);
     }
+
     //解析json转换为实体
     public  ActionEntity jsonToJavaOfRestfulEntity(String content,ActionEntity actionEntity) throws JSONException {
         if ("".equals(content)){
@@ -92,7 +90,7 @@ public class JsonToRestFulEntityHandler extends SimpleChannelInboundHandler {
         if (actionEntity.containKey(key)){
             System.err.println("key重复");
         }
-        List<String> cfNames=new ArrayList<String>();
+        List<String> cfNames=new ArrayList<>();
         if ("cf_names".equalsIgnoreCase(key)){
             for(int i=0;i<array.length();i++) {
                 try{
@@ -104,11 +102,11 @@ public class JsonToRestFulEntityHandler extends SimpleChannelInboundHandler {
             }
             actionEntity.addRegularAttribute(key,cfNames);
         } else {
-            List<HashMap<String, String>> hashMapList=new ArrayList<HashMap<String, String>>();
+            List<HashMap<String, String>> hashMapList=new ArrayList<>();
             for(int i=0;i<array.length();i++) {
                 String key2;
                 try{
-                    HashMap<String, String> hashMap=new HashMap<String, String>();
+                    HashMap<String, String> hashMap=new HashMap<>();
                     JSONObject jo=array.getJSONObject(i);
                     Iterator iterator = jo.keys();
                     while(iterator.hasNext()){

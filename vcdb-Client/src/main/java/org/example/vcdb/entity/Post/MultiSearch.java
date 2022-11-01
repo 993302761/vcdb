@@ -17,7 +17,6 @@ import java.util.List;
  */
 public class MultiSearch extends RequestEntity {
     private int limit;
-
     String orderCfName;
     //0 desc
     //1 asc
@@ -94,5 +93,7 @@ public class MultiSearch extends RequestEntity {
         this.limit = limit;
     }
 
-
+    public int getLimit() {
+        return limit;
+    }
 }

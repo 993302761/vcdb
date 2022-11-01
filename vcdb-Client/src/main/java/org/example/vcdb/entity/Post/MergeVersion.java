@@ -13,7 +13,7 @@ import java.util.List;
 public class MergeVersion extends RequestEntity {
     private List<VersionTerm> terms;
 
-    private byte[] toByteArray(){
+    public byte[] toByteArray(){
         int termsLength=0;
         for (VersionTerm versionTerm:terms){
             termsLength+=versionTerm.toByteArray().length;

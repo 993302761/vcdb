@@ -38,6 +38,11 @@ public class PutCells extends RequestEntity {
         }
         return bytes;
     }
+
+    public String getRowKey() {
+        return rowKey;
+    }
+
     public int getCount(){
         return values.size();
     }

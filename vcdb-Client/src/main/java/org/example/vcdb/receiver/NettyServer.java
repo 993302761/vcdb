@@ -24,7 +24,7 @@ public class NettyServer {
                             ch.pipeline().addLast("http-aggregator",new HttpObjectAggregator(65536));
                             ch.pipeline().addLast("http-encoder", new HttpResponseEncoder());
                             ch.pipeline().addLast("http-chunked", new ChunkedWriteHandler());
-                            ch.pipeline().addLast("json转换成restfulentiy",new JsonToRestFulEntityHandler());
+                            ch.pipeline().addLast("json转换成RequestEntity",new JsonToRestFulEntityHandler());
                         }
                     });
             ChannelFuture channelFuture = serverBootstrap.bind(8080).sync();
