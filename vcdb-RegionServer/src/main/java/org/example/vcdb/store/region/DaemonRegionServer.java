@@ -1,5 +1,6 @@
 package org.example.vcdb.store.region;
 
+import org.example.vcdb.store.RegionServer;
 import org.example.vcdb.store.file.VCFIleWriter;
 import org.example.vcdb.store.file.VCFileReader;
 import org.example.vcdb.store.mem.KeyValueSkipListSet;
@@ -23,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DaemonRegionServer {
     public static void main(String[] args) {
-        RegionServerAPI regionServerAPI =new RegionServerAPI("regionServerMeta");
+        RegionServer.readConfig("regionServerMeta");
         AtomicInteger count=new AtomicInteger(5);
         //一秒检查一下size,count-1
         //当检查到满的时候调用落盘，或者检查到count==0时候落盘，落盘之后都会把count还原成5
@@ -34,7 +35,7 @@ public class DaemonRegionServer {
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             System.out.println("size dont 555");
             /*db.table:cf*/
-            if (RegionServerAPI.inboundMemStore.size()==5){
+            if (RegionServer.inboundMemStore.size()==5){
                 System.out.println("size=====5执行落盘");
                 addMemStoreToDisk(count);
             } else {
@@ -50,37 +51,37 @@ public class DaemonRegionServer {
 
         // 执行任务,里面写执行代码
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (!RegionServerAPI.transactionMap.isEmpty()){
+            if (!RegionServer.transactionMap.isEmpty()){
                 TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
                 List<Transaction> transactions = transactionFile.getTransactions();
-                for (Map.Entry<String,Transaction> entry : RegionServerAPI.transactionMap.entrySet()) {
+                for (Map.Entry<String,Transaction> entry : RegionServer.transactionMap.entrySet()) {
                     transactions.add(entry.getValue());
                 }
                 VCFIleWriter.writeAll(new TransactionFile(transactions).getData(),"/x2/vcdb/common/transaction");
             }
 
-            if (!RegionServerAPI.dbMap.isEmpty()){
+            if (!RegionServer.dbMap.isEmpty()){
                 DataBaseFile dataBaseFile=new DataBaseFile(VCFileReader.readAll("/x2/vcdb/common/dbFileStore"));
                 List<DataBase> dataBases = dataBaseFile.getDataBases();
-                for (Map.Entry<String,DataBase> entry : RegionServerAPI.dbMap.entrySet()) {
+                for (Map.Entry<String,DataBase> entry : RegionServer.dbMap.entrySet()) {
                     dataBases.add(entry.getValue());
                 }
                 VCFIleWriter.writeAll(new DataBaseFile(dataBases).getData(),"/x2/vcdb/common/dbFileStore");
             }
 
-            if (!RegionServerAPI.tableMap.isEmpty()){
+            if (!RegionServer.tableMap.isEmpty()){
                 TableFile tableFile=new TableFile(VCFileReader.readAll("/x2/vcdb/common/tableFileStore"));
                 List<Table> tables = tableFile.getTables();
-                for (Map.Entry<String,Table> entry : RegionServerAPI.tableMap.entrySet()) {
+                for (Map.Entry<String,Table> entry : RegionServer.tableMap.entrySet()) {
                     tables.add(entry.getValue());
                 }
                 VCFIleWriter.writeAll(new TableFile(tables).getData(),"/x2/vcdb/common/tableFileStore");
             }
 
-            if (!RegionServerAPI.tableAlterMap.isEmpty()){
+            if (!RegionServer.tableAlterMap.isEmpty()){
                 TableAlterFile tableAlterFile=new TableAlterFile(VCFileReader.readAll("/x2/vcdb/common/tableAlterFileStore"));
                 List<TableAlter> tableAlters = tableAlterFile.getTableAlters();
-                for (Map.Entry<String,TableAlter> entry : RegionServerAPI.tableAlterMap.entrySet()) {
+                for (Map.Entry<String,TableAlter> entry : RegionServer.tableAlterMap.entrySet()) {
                     tableAlters.add(entry.getValue());
                 }
                 VCFIleWriter.writeAll(new TableAlterFile(tableAlters).getData(),"/x2/vcdb/common/tableAlterFileStore");
@@ -91,7 +92,7 @@ public class DaemonRegionServer {
     }
 
     private static void addMemStoreToDisk(AtomicInteger count) {
-        Map<String, MemStore> inboundMemStore= RegionServerAPI.inboundMemStore;
+        Map<String, MemStore> inboundMemStore= RegionServer.inboundMemStore;
         for (Map.Entry<String,MemStore> entry : inboundMemStore.entrySet()) {
             String[] keys = entry.getKey().split(":");
             KeyValueSkipListSet kvSet = entry.getValue().getKVSet();

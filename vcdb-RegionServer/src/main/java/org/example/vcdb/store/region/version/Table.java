@@ -20,7 +20,7 @@ public class Table {
     }
 
     public Table(long timeStamp, byte type, String tabName){
-        data=new byte[8+1+tabName.getBytes().length];
+        data=new byte[8+1+4+tabName.getBytes().length];
         int pos=0;
         pos= Bytes.putLong(this.data,pos,timeStamp);
 

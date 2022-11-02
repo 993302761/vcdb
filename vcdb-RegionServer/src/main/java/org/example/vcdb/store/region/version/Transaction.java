@@ -18,13 +18,14 @@ public class Transaction {
     }
 
     public Transaction(long startTime, long endTime, String explainValue){
-        data=new byte[8+8+explainValue.getBytes().length];
+        data=new byte[8+8+4+explainValue.getBytes().length];
         int pos=0;
         pos= Bytes.putLong(this.data,pos,startTime);
 
         pos= Bytes.putLong(this.data,pos,endTime);
 
         pos= Bytes.putInt(this.data,pos,explainValue.getBytes().length);
+
         pos=Bytes.putBytes(this.data,pos,explainValue.getBytes(),0,explainValue.getBytes().length);
 
     }

@@ -97,9 +97,10 @@ POST http://ip:端口/dbname/tab_name/_merge
    ]
 }
 
+//disk
 
 curl -H "Content-Type: application/json" -X POST -d\
- '{"Version_terms":[{"rowKey":"row1","version-from":0,"version-to":2}]}'\
+ '{"Version_terms":[{"rowKey":"row1","cfName":"cf1","version-from":0,"version-to":2}]}'\
  "localhost:8080/myDataBase/myTable/_merge"
 
 
@@ -112,8 +113,9 @@ POST http://ip:端口/dbname/tab_name/_useVersion
     "version":"版本"(必要)
 }
 
+//disk
 curl -H "Content-Type: application/json" -X POST -d\
- '{"rowKey":"row1","version":0}}'\
+ '{"rowKey":"row1","cfName":"cf1","version":0}}'\
  "localhost:8080/myDataBase/myTable/_useVersion"
 
 
@@ -126,8 +128,9 @@ POST http://ip:端口/dbname/tab_name/delete_version
     "version":"版本"(必要)
 }
 
+//disk
 curl -H "Content-Type: application/json" -X POST -d\
- '{"rowKey":"row1","version":0}}'\
+ '{"rowKey":"row1","cfName":"cf1","version":0}}'\
  "localhost:8080/myDataBase/myTable/delete_version"
 
 3.6.查看全部版本
@@ -136,6 +139,7 @@ post http://ip:端口/dbname/tab_name/_showVersion
     "rowKey":"行建名"(必要)
 }
 
+//disk
 curl -H "Content-Type: application/json" -X POST -d\
  '{"rowKey":"row1"}}'\
  "localhost:8080/myDataBase/myTable/_showVersion"
@@ -145,6 +149,7 @@ curl -H "Content-Type: application/json" -X POST -d\
 4.1 查看所有事务
 post http://ip:端口/_showTransaction
 
+//disk
 curl -X POST "localhost:8080/_showTransaction"
 
 4.2 删除某个事务
@@ -153,6 +158,7 @@ delete http://ip:端口/_deleteTransaction
     "explainValue":"value"(必要)
 }
 
+//disk
 curl -H "Content-Type: application/json" -X DELETE -d\
  '{"explainValue":  "I want update some Info"}'\
  "localhost:8080/_deleteTransaction"
@@ -163,6 +169,7 @@ POST http://ip:端口/_useTransaction
     "explainValue":"value"(必要)
 }
 
+//disk
 curl -H "Content-Type: application/json" -X POST -d\
  '{"explainValue":  "I want update some Info"}'\
  "localhost:8080/_useTransaction"
@@ -171,11 +178,13 @@ curl -H "Content-Type: application/json" -X POST -d\
 
 POST http://ip:端口/_showDataBases
 
+//disk
 curl -X POST "localhost:8080/_showDataBases"
 
 6.查看所有表
 POST http://ip:端口/dbname/_showTables
 
+//disk
 curl -X POST "localhost:8080/dbname/_showTables"
 
 
@@ -253,7 +262,7 @@ post http://ip:端口/dbname/tab_name /_delete
            ......
         ]
 }
-
+//disk
 
 11.基本跟新流程
 POST  http://ip:端口/dbname/tab_name /_update
@@ -283,7 +292,7 @@ POST  http://ip:端口/dbname/tab_name /_update
          .....
     ]
 }
-
+//disk
 
 
 
@@ -315,3 +324,4 @@ post http://ip:端口/dbname/tab_name /_mget
                 ......
         ]
 }
+//disk

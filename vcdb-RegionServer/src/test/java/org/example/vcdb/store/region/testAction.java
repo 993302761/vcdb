@@ -1,5 +1,6 @@
 package org.example.vcdb.store.region;
 
+import org.example.vcdb.store.RegionServer;
 import org.junit.Test;
 
 /**
@@ -14,7 +15,7 @@ public class testAction {
 
     @Test
     public void  initRegionServer(){
-        RegionServerAPI.readConfig("regionServerMeta");
+        RegionServer.readConfig("regionServerMeta");
     }
 
     @Test

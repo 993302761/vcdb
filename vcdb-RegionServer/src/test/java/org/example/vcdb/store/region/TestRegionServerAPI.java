@@ -1,5 +1,6 @@
 package org.example.vcdb.store.region;
 
+import org.example.vcdb.store.RegionServer;
 import org.example.vcdb.store.file.VCFIleWriter;
 import org.example.vcdb.store.file.VCFileReader;
 import org.example.vcdb.store.mem.KV;
@@ -32,7 +33,7 @@ import static org.example.vcdb.store.region.fileStore.FileStore.*;
 public class TestRegionServerAPI {
     @Test
     public void testRegionServer(){
-        RegionServerAPI.readConfig("regionServerMeta");
+        RegionServer.readConfig("regionServerMeta");
         RegionMeta regionMeta = RegionServerAPI.getRegionMeta("db.table1");
         FileStoreMeta cf1 = RegionServerAPI.getFileStoreMeta(regionMeta, "cf1");
         cf1.dis();
@@ -99,8 +100,8 @@ public class TestRegionServerAPI {
         String cfName="cf2";
         int pageIndex=1;
 
-        RegionServerAPI.readConfig("regionServerMeta");
-        RegionServerAPI.regionServerMeta.dis();
+        RegionServer.readConfig("regionServerMeta");
+        RegionServer.regionServerMeta.dis();
         RegionMeta regionMeta = RegionServerAPI.getRegionMeta(dbName+"."+tabName);
         FileStoreMeta fileStoreMeta = RegionServerAPI.getFileStoreMeta(regionMeta, cfName);
         System.out.println(fileStoreMeta.getEncodedName());
@@ -210,7 +211,7 @@ public class TestRegionServerAPI {
             kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length,  values));
         }
 
-        RegionServerAPI.readConfig("regionServerMeta");
+        RegionServer.readConfig("regionServerMeta");
         RegionMeta regionMeta = RegionServerAPI.getRegionMeta(dbName+"."+tabName);
         FileStoreMeta fileStoreMeta = RegionServerAPI.getFileStoreMeta(regionMeta, cfName);
         Map<Integer, List<KV>> integerListMap = RegionServerAPI.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
@@ -239,7 +240,7 @@ public class TestRegionServerAPI {
         for (int i = 40 ; i < 140; i++) {
             kvs.add(new KV(("row"+i).getBytes(), 0, ("row"+i).getBytes().length, values));
         }
-        RegionServerAPI.readConfig("regionServerMeta");
+        RegionServer.readConfig("regionServerMeta");
         RegionMeta regionMeta = RegionServerAPI.getRegionMeta(dbName+"."+tabName);
         FileStoreMeta fileStoreMeta = RegionServerAPI.getFileStoreMeta(regionMeta, cfName);
         Map<Integer, List<KV>> integerListMap = RegionServerAPI.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);

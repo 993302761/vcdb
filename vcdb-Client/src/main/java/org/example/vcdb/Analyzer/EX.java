@@ -155,7 +155,7 @@ public class EX {
                         System.err.println("报错重复设置isNull属性");
                     }
                 } else if ("unique".equalsIgnoreCase(cell.getKey())) {
-                    if (columnFamilyCell.isUnique() == null) {
+                    if (columnFamilyCell.isUnique()==null) {
                         columnFamilyCell.setUnique(Boolean.parseBoolean(cell.getValue()));
                     } else {
                         System.err.println("报错重复设置unique属性");
@@ -191,16 +191,16 @@ public class EX {
         String[] deleteUrl = actionEntity.getUrl().split("/");
         switch (deleteUrl.length) {
             case 2:
-                if ("deleteDB".equalsIgnoreCase(deleteUrl[1])) {
-                    requestEntity = getDeleteDB(actionEntity);
-                    //项任务池里投放任务
-                    //putCell(Node);
-                    System.out.println("deleteDB------------");
-                    result = vcdbAdmin.deleteDB(deleteUrl[1], (DeleteDB) requestEntity);
-                } else if ("_deleteTransaction".equalsIgnoreCase(deleteUrl[1])) {
+                if ("_deleteTransaction".equalsIgnoreCase(deleteUrl[1])) {
                     requestEntity = getDeleteTransaction(actionEntity);
                     System.out.println("_deleteTransaction------------");
                     result = vcdbAdmin.deleteTransaction((DeleteTransaction) requestEntity);
+                }else {
+                requestEntity = getDeleteDB(actionEntity);
+                //项任务池里投放任务
+                //putCell(Node);
+                System.out.println("deleteDB------------");
+                result = vcdbAdmin.deleteDB(deleteUrl[1], (DeleteDB) requestEntity);
                 }
 
                 break;
@@ -406,7 +406,9 @@ public class EX {
         for (Map.Entry<String, Object> cfs : actionEntity.getRegularAttribute().entrySet()) {
             if ("rowKey".equalsIgnoreCase(cfs.getKey())) {
                 deleteVersion.setRowKey((String) cfs.getValue());
-            } else if ("version".equalsIgnoreCase(cfs.getKey())) {
+            } else if ("cfName".equalsIgnoreCase(cfs.getKey())) {
+                deleteVersion.setCfName((String) cfs.getValue());
+            }  else if ("version".equalsIgnoreCase(cfs.getKey())) {
                 deleteVersion.setVersion((Integer.parseInt((String) cfs.getValue())));
             } else {
                 System.err.println("出现未知属性，打印key");
@@ -784,6 +786,7 @@ public class EX {
         if (actionEntity.getRegularAttribute() != null) {
             System.err.println("出现未知属性，打印key");
         }
+
         for (HashMap.Entry<String, List<HashMap<String, String>>> entry : actionEntity.getCompoundAttribute().entrySet()) {
             if ("Version_terms".equalsIgnoreCase(entry.getKey())) {
                 mergeVersion.setTerms(selectVersionTerms(entry.getValue()));
@@ -805,6 +808,12 @@ public class EX {
                     } else {
                         System.err.println("报错重复设置rowKey属性");
                     }
+                }else if ("cfName".equalsIgnoreCase(cell.getKey())) {
+                    if (termCell.getCfName() == null) {
+                        termCell.setCfName(cell.getValue());
+                    } else {
+                        System.err.println("报错重复设置cfName属性");
+                    }
                 } else if ("version-from".equalsIgnoreCase(cell.getKey())) {
                     if (termCell.getVersionFrom() == -1) {
                         termCell.setVersionFrom(Integer.parseInt(cell.getValue()));
@@ -819,10 +828,11 @@ public class EX {
                     }
                 } else {
                     System.err.println("出现未知属性，打印key");
+                    System.out.println(cell.getKey());
                 }
             }
             //TODO检查termCell必要属性是否为空
-            if (!isNull(termCell.getRowKey(), termCell.getVersionFrom(), termCell.getVersionTo())) {
+            if (!isNull(termCell.getRowKey(), termCell.getVersionFrom(), termCell.getCfName(), termCell.getVersionTo())) {
                 terms.add(termCell);
             } else {
                 System.err.println("term缺少必要属性");
@@ -903,17 +913,17 @@ public class EX {
                         System.err.println("报错重复设置type属性");
                     }
                 } else if ("method".equalsIgnoreCase(cell.getKey())) {
-                    if (alterCell.getType() == 0) {
+                    if (alterCell.getMethod() == 0) {
                         if ("put".equalsIgnoreCase(cell.getValue())) {
-                            alterCell.setType((byte) 1);
+                            alterCell.setMethod((byte) 1);
                         } else if ("delete".equalsIgnoreCase(cell.getValue())) {
-                            alterCell.setType((byte) 2);
+                            alterCell.setMethod((byte) 2);
                         } else if ("update".equalsIgnoreCase(cell.getValue())) {
-                            alterCell.setType((byte) 3);
+                            alterCell.setMethod((byte) 3);
                         }
-                        alterCell.setType(Byte.parseByte(cell.getValue()));
+                        alterCell.setMethod(Byte.parseByte(cell.getValue()));
                     } else {
-                        System.err.println("报错重复设置type属性");
+                        System.err.println("报错重复设置method属性");
                     }
                 } else if ("unique".equalsIgnoreCase(cell.getKey())) {
                     if (alterCell.isNull() == null) {

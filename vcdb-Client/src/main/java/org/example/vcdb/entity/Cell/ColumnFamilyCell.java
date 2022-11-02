@@ -73,10 +73,12 @@ public class ColumnFamilyCell{
         byte[] bytes=new byte[4+cf_name.getBytes().length+1+8+8+1+1];
         byte uni=0;
         byte isNil=0;
-        if (unique){
+        if (unique==null){
+        }else if (unique){
             uni=1;
         }
-        if (isNull){
+        if (isNull==null){
+        }else if (isNull){
             isNil=1;
         }
         int pos=0;

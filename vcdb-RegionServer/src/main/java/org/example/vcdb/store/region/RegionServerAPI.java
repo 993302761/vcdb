@@ -1,12 +1,12 @@
 package org.example.vcdb.store.region;
 
+import org.example.vcdb.store.RegionServer;
 import org.example.vcdb.store.file.VCFIleWriter;
 import org.example.vcdb.store.file.VCFileReader;
 import org.example.vcdb.store.mem.KV;
 import org.example.vcdb.store.mem.KeyValueSkipListSet;
 import org.example.vcdb.store.mem.MemStore;
 import org.example.vcdb.store.region.Region.RegionMeta;
-import org.example.vcdb.store.region.Region.VCRegion;
 import org.example.vcdb.store.region.fileStore.ColumnFamilyMeta;
 import org.example.vcdb.store.region.fileStore.FileStore;
 import org.example.vcdb.store.region.fileStore.FileStoreMeta;
@@ -23,56 +23,25 @@ import static org.example.vcdb.store.region.fileStore.ColumnFamilyMeta.byteToCFT
 import static org.example.vcdb.store.region.fileStore.FileStore.*;
 
 public class RegionServerAPI {
-    //cache for fileStores
-
-    //操作缓存部分
-    //事务记录
-    /*IP4host:explainValue----startTime----endTime*/
-    static Map<String, Transaction> transactionMap;
-
-    //库表结构操作记录
-    /*dbName-------timeStamp*/
-    static Map<String, DataBase> dbMap;
-
-    /*tableName------timeStamp*/
-    static Map<String, Table> tableMap;
-
-    /*tableName:cfName-------timeStamp*/
-    static Map<String, TableAlter> tableAlterMap;
-
-
-    //数据缓存部分
-    //负责接收sql请求的KV
-    static Map<String,MemStore> inboundMemStore;
-
-    //负责接收从文件加载过来的的KV
-    static Map<String,MemStore> outboundMemStore;
-
-
-    static RegionServerMeta regionServerMeta;
-
-    //cache for region
-    List<VCRegion> loadOnRegion;
-
-    public static void readConfig(String fileName) {
-        regionServerMeta = new RegionServerMeta(VCFileReader.readAll(fileName));
-        inboundMemStore=new ConcurrentHashMap<>();
-        outboundMemStore=new ConcurrentHashMap<>();
-        transactionMap=new ConcurrentHashMap<>();
-        dbMap=new ConcurrentHashMap<>();
-        tableMap=new ConcurrentHashMap<>();
-        tableAlterMap=new ConcurrentHashMap<>();
-    }
-
-    public RegionServerAPI(String fileName) {
-        regionServerMeta = new RegionServerMeta(VCFileReader.readAll(fileName));
-        inboundMemStore=new ConcurrentHashMap<>();
-        outboundMemStore=new ConcurrentHashMap<>();
-        transactionMap=new ConcurrentHashMap<>();
-        dbMap=new ConcurrentHashMap<>();
-        tableMap=new ConcurrentHashMap<>();
-        tableAlterMap=new ConcurrentHashMap<>();
-    }
+//    public static void readConfig(String fileName) {
+//        RegionServer.regionServerMeta = new RegionServerMeta(VCFileReader.readAll(fileName));
+//        RegionServer.inboundMemStore=new ConcurrentHashMap<>();
+//        RegionServer.outboundMemStore=new ConcurrentHashMap<>();
+//        RegionServer.transactionMap=new ConcurrentHashMap<>();
+//        RegionServer.dbMap=new ConcurrentHashMap<>();
+//        RegionServer.tableMap=new ConcurrentHashMap<>();
+//        RegionServer.tableAlterMap=new ConcurrentHashMap<>();
+//    }
+//
+//    public RegionServerAPI(String fileName) {
+//        RegionServer.regionServerMeta = new RegionServerMeta(VCFileReader.readAll(fileName));
+//        RegionServer.inboundMemStore=new ConcurrentHashMap<>();
+//        RegionServer.outboundMemStore=new ConcurrentHashMap<>();
+//        RegionServer.transactionMap=new ConcurrentHashMap<>();
+//        RegionServer.dbMap=new ConcurrentHashMap<>();
+//        RegionServer.tableMap=new ConcurrentHashMap<>();
+//        RegionServer.tableAlterMap=new ConcurrentHashMap<>();
+//    }
 
     public RegionServerAPI() {
 
@@ -85,7 +54,7 @@ public class RegionServerAPI {
     //用dbName当做rowKey
     public static boolean createDB(String dbName){
         try {
-            dbMap.put(dbName,new DataBase(new Date().getTime(), (byte) 1,dbName));
+            RegionServer.dbMap.put(dbName,new DataBase(new Date().getTime(), (byte) 1,dbName));
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -94,8 +63,9 @@ public class RegionServerAPI {
     }
 
     public static boolean createTable(String dbName, String tabName, byte[] requestEntity){
+        System.out.println("chakan"+RegionServer.tableMap+RegionServer.tableAlterMap);
         try {
-            tableMap.put(dbName+"."+tabName,new Table(new Date().getTime(), (byte) 1,tabName));
+            RegionServer.tableMap.put(dbName+"."+tabName,new Table(new Date().getTime(), (byte) 1,tabName));
             int pos=0;
             int count=Bytes.toInt(requestEntity,pos,4);
             pos+=4;
@@ -104,28 +74,36 @@ public class RegionServerAPI {
                 pos += 4;
                 String cfName = Bytes.toString(requestEntity, pos, cfNameLength);
                 pos += cfNameLength;
+                System.out.println("cfName:"+cfName);
 
                 int minLength = Bytes.toInt(requestEntity, pos, 4);
                 pos += 4;
                 String min = Bytes.toString(requestEntity, pos, minLength);
                 pos += minLength;
+                System.out.println("min:"+min);
 
                 int maxLength = Bytes.toInt(requestEntity, pos, 4);
                 pos += 4;
                 String max = Bytes.toString(requestEntity, pos, maxLength);
                 pos += maxLength;
+                System.out.println("max:"+max);
 
                 byte type = requestEntity[pos];
                 pos += 1;
+                System.out.println("type:"+type);
 
                 boolean unique = requestEntity[pos] == 1;
                 pos += 1;
+                System.out.println("unique:"+unique);
 
                 boolean isNil = requestEntity[pos] == 1;
                 pos += 1;
-                tableAlterMap.put(tabName,new TableAlter(new Date().getTime(), (byte) 1,type,
+                System.out.println("nil:"+isNil);
+
+                RegionServer.tableAlterMap.put(tabName,new TableAlter(new Date().getTime(), (byte) 1,type,
                         unique,isNil, min,max,tabName,cfName," "));
             }
+            System.out.println("创建成功"+RegionServer.tableMap+RegionServer.tableAlterMap);
             return true;
         } catch (Exception e){
             e.printStackTrace();
@@ -211,7 +189,7 @@ public class RegionServerAPI {
 
     public static boolean deleteDB(String dbName){
         try {
-            dbMap.put(dbName,new DataBase(new Date().getTime(), (byte) 0,dbName));
+            RegionServer.dbMap.put(dbName,new DataBase(new Date().getTime(), (byte) 0,dbName));
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -221,7 +199,7 @@ public class RegionServerAPI {
 
     public static boolean deleteTable(String tabName){
         try {
-            tableMap.put(tabName,new Table(new Date().getTime(), (byte) 0,tabName));
+            RegionServer.tableMap.put(tabName,new Table(new Date().getTime(), (byte) 0,tabName));
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -231,7 +209,7 @@ public class RegionServerAPI {
 
     public static boolean openTransaction(String explainValue){
         try {
-            transactionMap.put(explainValue,new Transaction(new Date().getTime(),0,explainValue));
+            RegionServer.transactionMap.put(explainValue,new Transaction(new Date().getTime(),0,explainValue));
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -241,9 +219,9 @@ public class RegionServerAPI {
 
     public static boolean closeTransaction(String explainValue){
         try {
-            Transaction transaction = transactionMap.get(explainValue);
+            Transaction transaction = RegionServer.transactionMap.get(explainValue);
             transaction.setEndTime(new Date().getTime());
-            transactionMap.put(explainValue,transaction);
+            RegionServer.transactionMap.put(explainValue,transaction);
             return true;
         } catch (Exception e){
             e.printStackTrace();
@@ -260,19 +238,26 @@ public class RegionServerAPI {
             pos+=4;
             String cfName=Bytes.toString(requestEntity,pos,cfNameLength);
             pos+=cfNameLength;
+            System.out.println("cfname:"+cfName);
 
             int cnameLength=Bytes.toInt(requestEntity,pos,4);
             pos+=4;
-            String cname=Bytes.toString(requestEntity,pos,cfNameLength);
+            String cname=Bytes.toString(requestEntity,pos,cnameLength);
             pos+=cnameLength;
+            System.out.println("cname:"+cname);
 
             int valueLength=Bytes.toInt(requestEntity,pos,4);
             pos+=4;
-            String value=Bytes.toString(requestEntity,pos,cfNameLength);
+            String value=Bytes.toString(requestEntity,pos,valueLength);
             pos+=valueLength;
+            System.out.println("value:"+value);
 
             /*添加KV到memStore*/
-            MemStore memStore = inboundMemStore.get(dbName+"."+tabName+ ":" +cfName);
+            MemStore memStore = RegionServer.inboundMemStore.get(dbName+"."+tabName+ ":" +cfName);
+            if (memStore==null){
+                memStore=new MemStore();
+                RegionServer.inboundMemStore.put(dbName + "." + tabName + ":" + cfName,memStore);
+            }
             KV kv = memStore.kvSet.get(rowKey);
             if (kv==null){
                 kv=new KV(rowKey.getBytes(),0,rowKey.getBytes().length,null);
@@ -327,7 +312,7 @@ public class RegionServerAPI {
                 boolean isNil=requestEntity[pos]==1;
                 pos+=1;
 
-                tableAlterMap.put(tabName,new TableAlter(new Date().getTime(), method,type,
+                RegionServer.tableAlterMap.put(tabName,new TableAlter(new Date().getTime(), method,type,
                         unique,isNil, min,max,tabName,cfName,old_cfName));
             }
             return true;
@@ -589,7 +574,7 @@ public class RegionServerAPI {
             pos2+=4;
             String cfName=Bytes.toString(cfNames,pos2,cfNameLength);
             pos2+=cfNameLength;
-            MemStore memStore = outboundMemStore.get(dBName + "." + tabName + ":" + cfName);
+            MemStore memStore = RegionServer.outboundMemStore.get(dBName + "." + tabName + ":" + cfName);
             if (memStore==null){
                 //从磁盘里读出来
                 RegionMeta regionMeta = getRegionMeta(dBName + "." + tabName);
@@ -605,7 +590,7 @@ public class RegionServerAPI {
                 // 加载到memStore
                 memStore=new MemStore();
                 memStore.kvSet=kvs;
-                outboundMemStore.put(dBName + "." + tabName + ":" + cfName,memStore);
+                RegionServer.outboundMemStore.put(dBName + "." + tabName + ":" + cfName,memStore);
             }
 
             // 在读出来的memStore里面筛选
@@ -731,7 +716,11 @@ public class RegionServerAPI {
             String value=Bytes.toString(values,pos2,cNameLength);
             pos2+=valueLength;
 
-            MemStore memStore = inboundMemStore.get(dBName+"."+tabName+ ":" +cfName);
+            MemStore memStore = RegionServer.inboundMemStore.get(dBName+"."+tabName+ ":" +cfName);
+            if (memStore==null){
+                memStore=new MemStore();
+                RegionServer.inboundMemStore.put(dBName + "." + tabName + ":" + cfName,memStore);
+            }
 
             for (String row:rowKeys){
                 /*添加KVNode到memStore*/
@@ -775,7 +764,11 @@ public class RegionServerAPI {
             //添加多个kv中的kvNode(表示删除)到memStore,类似于putKVs
             for (String row : rowKeys) {
                 /*添加KV到memStore*/
-                MemStore memStore = inboundMemStore.get(dBName + "." + tabName + ":" + cfName);
+                MemStore memStore = RegionServer.inboundMemStore.get(dBName + "." + tabName + ":" + cfName);
+                if (memStore==null){
+                    memStore=new MemStore();
+                    RegionServer.inboundMemStore.put(dBName + "." + tabName + ":" + cfName,memStore);
+                }
                 KV kv = memStore.kvSet.get(row);
                 if (kv == null) {
                     kv = new KV(row.getBytes(), 0, row.getBytes().length, null);
@@ -795,8 +788,8 @@ public class RegionServerAPI {
 
     public static byte[] showTransaction(){
         StringBuilder result= new StringBuilder();
-        if (!transactionMap.isEmpty()){
-            for (Map.Entry<String,Transaction> entry : transactionMap.entrySet()) {
+        if (!RegionServer.transactionMap.isEmpty()){
+            for (Map.Entry<String,Transaction> entry : RegionServer.transactionMap.entrySet()) {
                 result.append(entry.getValue().toString());
             }
         }
@@ -814,9 +807,9 @@ public class RegionServerAPI {
         TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
         List<Transaction> transactions = transactionFile.getTransactions();
         try{
-            if (!transactionMap.isEmpty()){
-                transaction=transactionMap.get(explainValue);
-                transactionMap.remove(explainValue);
+            if (!RegionServer.transactionMap.isEmpty()){
+                transaction=RegionServer.transactionMap.get(explainValue);
+                RegionServer.transactionMap.remove(explainValue);
             } else {
                 for (Transaction transaction1:transactions){
                     if(explainValue.equalsIgnoreCase(transaction1.getExplainValue())){
@@ -870,8 +863,8 @@ public class RegionServerAPI {
         TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
         List<Transaction> transactions = transactionFile.getTransactions();
         try{
-            if (!transactionMap.isEmpty()){
-                transaction = transactionMap.get(explainValue);
+            if (!RegionServer.transactionMap.isEmpty()){
+                transaction = RegionServer.transactionMap.get(explainValue);
             } else {
 
                 for (Transaction transaction1:transactions){
@@ -918,7 +911,7 @@ public class RegionServerAPI {
             }
             transactionFile=new TransactionFile(transactions);
             VCFIleWriter.writeAll(transactionFile.getData(),"/x2/vcdb/common/transaction");
-            transactionMap.put(newExplainValue,new Transaction(transaction.getStartTime(),transaction.getEndTime(),newExplainValue));
+            RegionServer.transactionMap.put(newExplainValue,new Transaction(transaction.getStartTime(),transaction.getEndTime(),newExplainValue));
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -974,7 +967,7 @@ public class RegionServerAPI {
         Set<String> rowKeysRes=new HashSet<>();
         //结合term筛选出来rowKeys
         for (Map.Entry<String,CFTerm> entry : cfTermMap.entrySet()) {
-            MemStore memStore = outboundMemStore.get(dBName + "." + tabName + ":" + entry.getKey());
+            MemStore memStore = RegionServer.outboundMemStore.get(dBName + "." + tabName + ":" + entry.getKey());
             byte type=99;
             if (memStore==null){
                 //从磁盘里读出来
@@ -991,7 +984,7 @@ public class RegionServerAPI {
                 memStore=new MemStore();
                 memStore.kvSet=kvs;
                 // 加载到memStore
-                outboundMemStore.put(dBName + "." + tabName + ":" + entry.getKey(),memStore);
+                RegionServer.outboundMemStore.put(dBName + "." + tabName + ":" + entry.getKey(),memStore);
             }
 
             type= memStore.getType();
@@ -1145,9 +1138,10 @@ public class RegionServerAPI {
 
     private static void commonSet(String rowKey,String fullTableName,
                                   String cfName, byte actionType) {
-            MemStore memStore = inboundMemStore.get(fullTableName+ ":" +cfName);
+            MemStore memStore = RegionServer.inboundMemStore.get(fullTableName+ ":" +cfName);
             if (memStore==null){
                 memStore=new MemStore();
+                RegionServer.inboundMemStore.put(fullTableName+ ":" +cfName,memStore);
             }
             KV  kv=memStore.kvSet.get(rowKey);
             if (kv==null){
@@ -1188,16 +1182,16 @@ public class RegionServerAPI {
     }
 
     public static void addKVToMemStore(String fullCfName,KV kv){
-        if (inboundMemStore.get(fullCfName)==null){
-            inboundMemStore.put(fullCfName,new MemStore());
+        if (RegionServer.inboundMemStore.get(fullCfName)==null){
+            RegionServer.inboundMemStore.put(fullCfName,new MemStore());
         }
-        MemStore toMemStore = inboundMemStore.get(fullCfName);
+        MemStore toMemStore = RegionServer.inboundMemStore.get(fullCfName);
         toMemStore.add(kv);
-        inboundMemStore.put(fullCfName,toMemStore);
+        RegionServer.inboundMemStore.put(fullCfName,toMemStore);
     }
 
     public static void addKVsToDisk(String fullTabName,String cfName,KeyValueSkipListSet kvs ){
-        RegionServerAPI.readConfig("regionServerMeta");
+        RegionServer.readConfig("regionServerMeta");
         RegionMeta regionMeta = RegionServerAPI.getRegionMeta(fullTabName);
         FileStoreMeta fileStoreMeta = RegionServerAPI.getFileStoreMeta(regionMeta, cfName);
         Map<Integer, List<KV>> integerListMap = RegionServerAPI.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
@@ -1209,8 +1203,8 @@ public class RegionServerAPI {
     }
 
     public static void removeKVsFromMemStore(String fullCfName){
-        if (!inboundMemStore.containsKey(fullCfName)){
-            inboundMemStore.remove(fullCfName);
+        if (!RegionServer.inboundMemStore.containsKey(fullCfName)){
+            RegionServer.inboundMemStore.remove(fullCfName);
         }
     }
 
@@ -1413,7 +1407,7 @@ public class RegionServerAPI {
 
     public static RegionMeta getRegionMeta(String tableName) {
         //取出的应该缓存
-        Map<String, TableTrailer> regionMap = regionServerMeta.getRegionMap();
+        Map<String, TableTrailer> regionMap = RegionServer.regionServerMeta.getRegionMap();
         return new RegionMeta(VCFileReader.readAll(regionMap.get(tableName).getRegionMetaName()));
     }
 
@@ -1436,9 +1430,9 @@ public class RegionServerAPI {
         return 1;
     }
 
-//    public static void main(String[] args) {
-//        System.out.println(like("jioo", "ji.*"));
-//        System.out.println(like( "jioo","jio_"));
-//    }
+    public static void testMem(){
+        System.out.println("fdasfdsa");
+    }
+
 }
 

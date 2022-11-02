@@ -95,7 +95,7 @@ public class AlterCell {
 
     public byte[] toByteArray(){
         byte[] bytes=new byte[4+cfName.getBytes().length+4 +old_cfName.getBytes().length+
-                4+min.getBytes().length+4+max.getBytes().length+1+1+1];
+                4+min.getBytes().length+4+max.getBytes().length+1+1+1+1];
         int pos=0;
         byte uni=0;
         byte isNil=0;

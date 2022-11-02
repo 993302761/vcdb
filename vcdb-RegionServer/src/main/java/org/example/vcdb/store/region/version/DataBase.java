@@ -15,7 +15,7 @@ import java.util.Arrays;
 public class DataBase {
     byte[] data;
     public DataBase(long timeStamp, byte type, String dbName){
-        data=new byte[8+1+dbName.getBytes().length];
+        data=new byte[8+1+4+dbName.getBytes().length];
         int pos=0;
         pos= Bytes.putLong(this.data,pos,timeStamp);
 

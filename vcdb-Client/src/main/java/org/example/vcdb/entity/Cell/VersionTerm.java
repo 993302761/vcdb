@@ -13,7 +13,7 @@ public class VersionTerm {
     int versionTo=-1;
 
     public byte[] toByteArray(){
-        byte[] bytes=new byte[4+rowKey.getBytes().length+4+4];
+        byte[] bytes=new byte[4+rowKey.getBytes().length+4+cfName.getBytes().length+4+4];
         int pos=0;
         pos= Bytes.putInt(bytes,pos,rowKey.getBytes().length);
         pos=Bytes.putBytes(bytes,pos,rowKey.getBytes(),0,rowKey.getBytes().length);
@@ -26,6 +26,7 @@ public class VersionTerm {
         pos= Bytes.putInt(bytes,pos,versionTo);
         return bytes;
     }
+
     public void setVersionFrom(int versionFrom) {
         this.versionFrom = versionFrom;
     }
@@ -37,6 +38,7 @@ public class VersionTerm {
     public void setVersionTo(int versionTo) {
         this.versionTo = versionTo;
     }
+
     public void setCfName(String cfName){
         this.cfName=cfName;
     }
@@ -44,12 +46,15 @@ public class VersionTerm {
     public int getVersionFrom() {
         return versionFrom;
     }
+
     public String getRowKey() {
         return rowKey;
     }
+
     public int getVersionTo() {
         return this.versionTo;
     }
+
     public String getCfName(){
         return this.cfName;
     }

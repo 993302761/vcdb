@@ -2,6 +2,8 @@ package org.example.vcdb.store.region.version;
 
 import org.example.vcdb.util.Bytes;
 
+import java.util.Arrays;
+
 /**
  * @ClassName TableAlter
  * @Description TODO
@@ -59,4 +61,5 @@ public class TableAlter {
     public byte[] getData() {
         return data;
     }
+
 }

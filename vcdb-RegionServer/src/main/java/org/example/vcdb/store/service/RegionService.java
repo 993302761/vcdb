@@ -252,7 +252,7 @@ public class RegionService extends RegionServerGrpc.RegionServerImplBase{
     public void deleteTransaction(Region.transactionRequest request, StreamObserver<Region.boolReply> responseObserver) {
         //生成返回对象
         Region.boolReply.Builder builder = Region.boolReply.newBuilder();
-        builder.setReply(RegionServerAPI.deleteTable(request.getExplainValue()));
+        builder.setReply(RegionServerAPI.deleteTransaction(request.getExplainValue()));
         Region.boolReply reply=builder.build();
 
         //返回
