@@ -4,6 +4,7 @@ package org.example.vcdb.entity.Post;
  * @author : wyy
  * @Date : 2022.7.11
  */
+
 public class UseVersion extends RequestEntity {
     private String rowKey;
     private String cfName;
@@ -24,6 +25,10 @@ public class UseVersion extends RequestEntity {
 
     public String getCfName() {
         return cfName;
+    }
+
+    public void setCfName(String cfName) {
+        this.cfName = cfName;
     }
 
     public int getVersion() {

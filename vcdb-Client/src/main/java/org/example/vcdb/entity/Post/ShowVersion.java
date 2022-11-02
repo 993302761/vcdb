@@ -21,4 +21,8 @@ public class ShowVersion extends RequestEntity {
     public String getCfName() {
         return cfName;
     }
+
+    public void setCfName(String cfName) {
+        this.cfName = cfName;
+    }
 }

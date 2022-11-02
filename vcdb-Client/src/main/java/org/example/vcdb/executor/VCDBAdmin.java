@@ -382,7 +382,6 @@ public class VCDBAdmin {
         }else {
             return "err\n";
         }
-
     }
 
     public String showDataBases(ShowDataBases showDataBases){

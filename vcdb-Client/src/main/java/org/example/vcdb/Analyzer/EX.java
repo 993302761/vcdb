@@ -746,6 +746,8 @@ public class EX {
         for (Map.Entry<String, Object> cfs : actionEntity.getRegularAttribute().entrySet()) {
             if ("rowKey".equalsIgnoreCase(cfs.getKey())) {
                 showVersion.setRowKey((String) cfs.getValue());
+            } else if ("cfName".equalsIgnoreCase(cfs.getKey())) {
+                showVersion.setCfName((String) cfs.getValue());
             } else {
                 System.err.println("出现未知属性，打印key");
             }
@@ -762,6 +764,8 @@ public class EX {
         for (Map.Entry<String, Object> cfs : actionEntity.getRegularAttribute().entrySet()) {
             if ("rowKey".equalsIgnoreCase(cfs.getKey())) {
                 useVersion.setRowKey((String) cfs.getValue());
+            }  else if ("cfName".equalsIgnoreCase(cfs.getKey())) {
+                useVersion.setCfName((String) cfs.getValue());
             } else if ("version".equalsIgnoreCase(cfs.getKey())) {
                 useVersion.setVersion((Integer.parseInt((String) cfs.getValue())));
             } else {
