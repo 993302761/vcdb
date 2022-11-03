@@ -155,6 +155,16 @@ public class KeyValueSkipListSet implements NavigableSet<KV> {
         return this.concurrentNavigableMap.containsKey(o);
     }
 
+    public boolean contains(String key) {
+        boolean is=false;
+        for (KV kv:this){
+            if (key.equals(kv.getRowKey())) {
+                is=true;
+            }
+        }
+        return is;
+    }
+
     public boolean isEmpty() {
         return this.concurrentNavigableMap.isEmpty();
     }

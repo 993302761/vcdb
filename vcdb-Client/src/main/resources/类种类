@@ -2,6 +2,7 @@ curl文档
 一.ddl命令
 1.创建数据库
 curl -X PUT "localhost:8080/myDataBase"
+
 2.删除数据库
 curl -X DELETE "localhost:8080/myDataBase"
 
@@ -21,6 +22,7 @@ PUT    http://ip:端口/dbname/tab_name
    ]
 }
 
+//disk
 curl -H "Content-Type: application/json" -X PUT -d\
  '{"column_family":[{"cf_name": "info ","type": 56,"min": 1,"max": 34,"unique":"true"}]}'\
  "localhost:8080/myDataBase/myTable"
@@ -262,8 +264,9 @@ post http://ip:端口/dbname/tab_name /_delete
            ......
         ]
 }
-//disk
 
+
+//disk
 11.基本跟新流程
 POST  http://ip:端口/dbname/tab_name /_update
 {
@@ -292,10 +295,10 @@ POST  http://ip:端口/dbname/tab_name /_update
          .....
     ]
 }
+
+
+
 //disk
-
-
-
 12.多表查询
 post http://ip:端口/dbname/tab_name /_mget
 {

@@ -63,12 +63,37 @@ public class RegionServerAPI {
     }
 
     public static boolean createTable(String dbName, String tabName, byte[] requestEntity){
-        System.out.println("chakan"+RegionServer.tableMap+RegionServer.tableAlterMap);
+        System.out.println("cat:"+RegionServer.tableMap+RegionServer.tableAlterMap);
         try {
             RegionServer.tableMap.put(dbName+"."+tabName,new Table(new Date().getTime(), (byte) 1,tabName));
             int pos=0;
             int count=Bytes.toInt(requestEntity,pos,4);
             pos+=4;
+
+            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMddHHmmss");
+            String fileName1=sdf1.format(new Date());
+            String regionMetaFileName="region/"+fileName1;
+
+            /*createTable*/
+            /*注册该表到RegionServerMeta*/
+            /*先读出RegionServerMeta*/
+            RegionServerMeta serverMeta = new RegionServerMeta(VCFileReader.readAll("regionServerMeta"));
+            Map<String, TableTrailer> regionMap = serverMeta.getRegionMap();
+
+            /*应该查重*/
+            regionMap.put(dbName +"."+tabName,new TableTrailer(new Date().getTime(),regionMetaFileName) );
+
+            /*替换新map*/
+            serverMeta.setRegionMap(regionMap);
+
+            /*写入文件*/
+            VCFIleWriter.writeAll(serverMeta.getData(), "regionServerMeta");
+
+            /*创建regionMetaMap*/
+            Map<String, String> fileStoreMap = new ConcurrentHashMap<>();
+
+
+
             for (int i = 0; i < count; i++) {
                 int cfNameLength = Bytes.toInt(requestEntity, pos, 4);
                 pos += 4;
@@ -100,75 +125,12 @@ public class RegionServerAPI {
                 pos += 1;
                 System.out.println("nil:"+isNil);
 
-                RegionServer.tableAlterMap.put(tabName,new TableAlter(new Date().getTime(), (byte) 1,type,
-                        unique,isNil, min,max,tabName,cfName," "));
-            }
-            System.out.println("创建成功"+RegionServer.tableMap+RegionServer.tableAlterMap);
-            return true;
-        } catch (Exception e){
-            e.printStackTrace();
-            return false;
-        }
-    }
+                SimpleDateFormat sdf2 = new SimpleDateFormat("yyyyMMddHHmmss");
+                String fileName2=sdf2.format(new Date());
 
-
-    public static boolean forCreateTable(String dbName, String tabName, byte[] requestEntity){
-        try {
-            commonSet(dbName+"."+tabName,"Table","Table",(byte) 4);
-            int pos=0;
-            int count=Bytes.toInt(requestEntity,pos,4);
-            pos+=4;
-
-            for (int i = 0; i < count; i++) {
-                int cfNameLength=Bytes.toInt(requestEntity,pos,4);
-                pos+=4;
-                String cfName=Bytes.toString(requestEntity,pos,cfNameLength);
-                pos+=cfNameLength;
-
-                int minLength=Bytes.toInt(requestEntity,pos,4);
-                pos+=4;
-                String min=Bytes.toString(requestEntity,pos,minLength);
-                pos+=minLength;
-
-                int maxLength=Bytes.toInt(requestEntity,pos,4);
-                pos+=4;
-                String max=Bytes.toString(requestEntity,pos,maxLength);
-                pos+=maxLength;
-
-                byte type=requestEntity[pos];
-                pos+=1;
-
-                boolean unique=requestEntity[pos]==1;
-                pos+=1;
-
-                boolean isNil=requestEntity[pos]==1;
-                pos+=1;
-
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-                String fileName=sdf.format(new Date());
-                String regionMetaFileName="region/"+fileName;
-                String fileStoreName="fileStore/"+fileName;
-                String fileStoreMetaName="fileStoreMeta/"+fileName;
-                /*createTable*/
-                /*注册该表到RegionServerMeta*/
-                /*先读出RegionServerMeta*/
-                RegionServerMeta serverMeta = new RegionServerMeta(VCFileReader.readAll("regionServerMeta"));
-                Map<String, TableTrailer> regionMap = serverMeta.getRegionMap();
-
-                /*应该查重*/
-                regionMap.put(dbName +"."+tabName,new TableTrailer(new Date().getTime(),regionMetaFileName) );
-
-                /*替换新map*/
-                serverMeta.setRegionMap(regionMap);
-
-                /*写入文件*/
-                VCFIleWriter.writeAll(serverMeta.getData(), "regionServerMeta");
-
-                /*创建regionMetaMap*/
-                Map<String, String> fileStoreMap = new ConcurrentHashMap<>();
+                String fileStoreName="fileStore/"+fileName2;
+                String fileStoreMetaName="fileStoreMeta/"+fileName2;
                 fileStoreMap.put(cfName, fileStoreMetaName);
-                RegionMeta regionMeta = new RegionMeta(regionMetaFileName, fileStoreMap);
-                VCFIleWriter.writeAll(regionMeta.getData(), regionMetaFileName);
 
                 /*创建fileStoreMeta*/
                 FileStoreMeta fileStoreMeta = new FileStoreMeta((new Date()).getTime(), false,
@@ -179,13 +141,95 @@ public class RegionServerAPI {
                 ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(min,max,unique,isNil,byteToCFType(type));
                 FileStore fileStore=new FileStore(cfMeta);
                 VCFIleWriter.writeAll(fileStore.getData(), fileStoreName);
+
+                RegionServer.tableAlterMap.put(tabName+":"+cfName,new TableAlter(new Date().getTime(), (byte) 1,type,
+                        unique,isNil, min,max,tabName,cfName," "));
             }
+            RegionMeta regionMeta = new RegionMeta(regionMetaFileName, fileStoreMap);
+            VCFIleWriter.writeAll(regionMeta.getData(), regionMetaFileName);
+            System.out.println("创建表成功"+RegionServer.tableMap+RegionServer.tableAlterMap);
             return true;
-        }catch (Exception e){
+        } catch (Exception e){
             e.printStackTrace();
             return false;
         }
     }
+
+
+//    public static boolean forCreateTable(String dbName, String tabName, byte[] requestEntity){
+//        try {
+//            commonSet(dbName+"."+tabName,"Table","Table",(byte) 4);
+//            int pos=0;
+//            int count=Bytes.toInt(requestEntity,pos,4);
+//            pos+=4;
+//
+//            for (int i = 0; i < count; i++) {
+//                int cfNameLength=Bytes.toInt(requestEntity,pos,4);
+//                pos+=4;
+//                String cfName=Bytes.toString(requestEntity,pos,cfNameLength);
+//                pos+=cfNameLength;
+//
+//                int minLength=Bytes.toInt(requestEntity,pos,4);
+//                pos+=4;
+//                String min=Bytes.toString(requestEntity,pos,minLength);
+//                pos+=minLength;
+//
+//                int maxLength=Bytes.toInt(requestEntity,pos,4);
+//                pos+=4;
+//                String max=Bytes.toString(requestEntity,pos,maxLength);
+//                pos+=maxLength;
+//
+//                byte type=requestEntity[pos];
+//                pos+=1;
+//
+//                boolean unique=requestEntity[pos]==1;
+//                pos+=1;
+//
+//                boolean isNil=requestEntity[pos]==1;
+//                pos+=1;
+//
+//                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+//                String fileName=sdf.format(new Date());
+//                String regionMetaFileName="region/"+fileName;
+//                String fileStoreName="fileStore/"+fileName;
+//                String fileStoreMetaName="fileStoreMeta/"+fileName;
+//                /*createTable*/
+//                /*注册该表到RegionServerMeta*/
+//                /*先读出RegionServerMeta*/
+//                RegionServerMeta serverMeta = new RegionServerMeta(VCFileReader.readAll("regionServerMeta"));
+//                Map<String, TableTrailer> regionMap = serverMeta.getRegionMap();
+//
+//                /*应该查重*/
+//                regionMap.put(dbName +"."+tabName,new TableTrailer(new Date().getTime(),regionMetaFileName) );
+//
+//                /*替换新map*/
+//                serverMeta.setRegionMap(regionMap);
+//
+//                /*写入文件*/
+//                VCFIleWriter.writeAll(serverMeta.getData(), "regionServerMeta");
+//
+//                /*创建regionMetaMap*/
+//                Map<String, String> fileStoreMap = new ConcurrentHashMap<>();
+//                fileStoreMap.put(cfName, fileStoreMetaName);
+//                RegionMeta regionMeta = new RegionMeta(regionMetaFileName, fileStoreMap);
+//                VCFIleWriter.writeAll(regionMeta.getData(), regionMetaFileName);
+//
+//                /*创建fileStoreMeta*/
+//                FileStoreMeta fileStoreMeta = new FileStoreMeta((new Date()).getTime(), false,
+//                        fileStoreName, "".getBytes(), "".getBytes());
+//                VCFIleWriter.writeAll(fileStoreMeta.getData(), fileStoreMetaName);
+//
+//                /*创建fileStore*/
+//                ColumnFamilyMeta cfMeta = new ColumnFamilyMeta(min,max,unique,isNil,byteToCFType(type));
+//                FileStore fileStore=new FileStore(cfMeta);
+//                VCFIleWriter.writeAll(fileStore.getData(), fileStoreName);
+//            }
+//            return true;
+//        }catch (Exception e){
+//            e.printStackTrace();
+//            return false;
+//        }
+//    }
 
     public static boolean deleteDB(String dbName){
         try {
@@ -312,7 +356,7 @@ public class RegionServerAPI {
                 boolean isNil=requestEntity[pos]==1;
                 pos+=1;
 
-                RegionServer.tableAlterMap.put(tabName,new TableAlter(new Date().getTime(), method,type,
+                RegionServer.tableAlterMap.put(tabName+":"+cfName,new TableAlter(new Date().getTime(), method,type,
                         unique,isNil, min,max,tabName,cfName,old_cfName));
             }
             return true;
@@ -432,8 +476,6 @@ public class RegionServerAPI {
             KV kv = kvs.get(rowKey);
             List<KV.ValueNode> values = kv.getValues();
             //看是否存在versionTo和versionFrom的valueNode
-//            values.get(versionFrom);
-//            values.get(versionTo);
             int vCount=versionTo-versionFrom;
             if (vCount-1>0){
                 for (int j = 0; j < vCount-1; j++) {
@@ -444,6 +486,12 @@ public class RegionServerAPI {
             kvs.add(kv);
             //进行落盘
             byte[] bytes1 = kvsToByteArray(kvs);
+
+            //更改fileStoreMeta
+            fileStoreMeta.updatePageLength(pageIndex,bytes1.length);
+            VCFIleWriter.writeAll(fileStoreMeta.getData(),fileStoreMetaName);
+
+            //更改fileStore
             VCFIleWriter.writeAll(bytes1,pageIndex*1024,fileStoreMeta.getEncodedName());
         }
         return  count;
@@ -484,6 +532,11 @@ public class RegionServerAPI {
         kvs.add(kv);
         //进行落盘
         byte[] bytes1 = kvsToByteArray(kvs);
+
+        //更改fileStoreMeta
+        fileStoreMeta.updatePageLength(pageIndex,bytes1.length);
+        VCFIleWriter.writeAll(fileStoreMeta.getData(),fileStoreMetaName);
+
         VCFIleWriter.writeAll(bytes1,pageIndex*1024,fileStoreMeta.getEncodedName());
         return true;
     }
@@ -493,6 +546,7 @@ public class RegionServerAPI {
     public static byte[] showDataBases(){
         DataBaseFile dataBaseFile=new DataBaseFile(VCFileReader.readAll("/x2/vcdb/common/dbFileStore"));
         List<DataBase> dataBases = dataBaseFile.getDataBases();
+        dataBases.addAll(RegionServer.dbMap.values());
         dataBases.removeIf(dataBase -> dataBase.getType() == 0);
         return dataBases.toString().getBytes();
     }
@@ -501,6 +555,7 @@ public class RegionServerAPI {
     public static byte[] showTables(String dbName){
         TableFile tableFile=new TableFile(VCFileReader.readAll("/x2/vcdb/common/tableFileStore"));
         List<Table> tables = tableFile.getTables();
+        tables.addAll(RegionServer.tableMap.values());
         for (Table table:tables){
             if (table.getType()==0){
                 tables.remove(table);
@@ -526,6 +581,7 @@ public class RegionServerAPI {
         byte[] bytes = VCFileReader.openFileStorePage(pageIndex, fileStoreMeta.getEncodedName());
         KeyValueSkipListSet kvs = byteArrayToKvs(bytes);
         KV kv = kvs.get(rowKey);
+
         return kv.getData();
     }
 
@@ -548,6 +604,11 @@ public class RegionServerAPI {
         kvs.add(kv);
         //进行落盘
         byte[] bytes1 = kvsToByteArray(kvs);
+
+        //更改fileStoreMeta
+        fileStoreMeta.updatePageLength(pageIndex,bytes1.length);
+        VCFIleWriter.writeAll(fileStoreMeta.getData(),fileStoreMetaName);
+
         VCFIleWriter.writeAll(bytes1,pageIndex*1024,fileStoreMeta.getEncodedName());
         return true;
     }
@@ -611,7 +672,7 @@ public class RegionServerAPI {
         for (Map.Entry<String,KeyValueSkipListSet> entry : result.entrySet()) {
             ss.append(entry.getKey());
             for (KV kv: entry.getValue()){
-                ss.append(kv.getValues()).append("\t");
+                ss.append(kv.getValues().toString()).append("\t");
             }
             ss.append("\n");
         }
@@ -691,6 +752,7 @@ public class RegionServerAPI {
                            byte[] terms,byte[] values){
         //结合term找到符合条件的几行
         Set<String> rowKeys = findRowKeysByTerms(dBName, tabName, terms);
+
         if (rowKeys==null){
             rowKeys=new HashSet<>();
         }
@@ -794,7 +856,9 @@ public class RegionServerAPI {
             }
         }
         TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
-        for (Transaction transaction:transactionFile.getTransactions()){
+        List<Transaction> transactions = transactionFile.getTransactions();
+        transactionFile.getTransactions();
+        for (Transaction transaction:transactions){
             result.append(transaction.toString());
         }
         return result.toString().getBytes();
@@ -806,6 +870,7 @@ public class RegionServerAPI {
         Transaction transaction = null;
         TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
         List<Transaction> transactions = transactionFile.getTransactions();
+        transactions.addAll(RegionServer.transactionMap.values());
         try{
             if (!RegionServer.transactionMap.isEmpty()){
                 transaction=RegionServer.transactionMap.get(explainValue);
@@ -849,6 +914,7 @@ public class RegionServerAPI {
                 }
             }
             transactionFile=new TransactionFile(transactions);
+            RegionServer.transactionMap.clear();
             VCFIleWriter.writeAll(transactionFile.getData(),"/x2/vcdb/common/transaction");
             return true;
         }catch (Exception e){
@@ -862,6 +928,7 @@ public class RegionServerAPI {
         Transaction transaction=null;
         TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
         List<Transaction> transactions = transactionFile.getTransactions();
+        transactions.addAll(RegionServer.transactionMap.values());
         try{
             if (!RegionServer.transactionMap.isEmpty()){
                 transaction = RegionServer.transactionMap.get(explainValue);
@@ -910,6 +977,7 @@ public class RegionServerAPI {
                 }
             }
             transactionFile=new TransactionFile(transactions);
+            RegionServer.transactionMap.clear();
             VCFIleWriter.writeAll(transactionFile.getData(),"/x2/vcdb/common/transaction");
             RegionServer.transactionMap.put(newExplainValue,new Transaction(transaction.getStartTime(),transaction.getEndTime(),newExplainValue));
             return true;
@@ -1424,6 +1492,8 @@ public class RegionServerAPI {
 //        //告知本次处理完毕
 //        responseObserver.onCompleted();
 //    }
+
+
 
     //合并KV里的ValueNode
     public int MergeKV(String dbName, String tableName, String cfName, String rowKey, int versionFrom, int versionTo) {

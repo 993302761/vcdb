@@ -49,12 +49,15 @@ public class RegionServerMeta {
     public String getName(){
         return Bytes.toString(this.metaByte,4,getNameLength());
     }
+
     public byte[] getIp4(){
         return Bytes.subByte(this.metaByte,4+getNameLength(),4);
     }
+
     public int getRSPort(){
         return Bytes.toInt(this.metaByte,8+getNameLength(),4);
     }
+
     public int getMapCount(){
         return Bytes.toInt(this.metaByte,12+getNameLength(),4);
     }

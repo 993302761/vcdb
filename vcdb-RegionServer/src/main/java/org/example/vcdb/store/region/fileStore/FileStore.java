@@ -123,6 +123,7 @@ public class FileStore {
         System.out.println("++++++++++"+pos);
         return bytes;
     }
+
     public static KeyValueSkipListSet byteArrayToKvs(byte[] byteArray){
         KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
         int pos=0;
@@ -132,7 +133,17 @@ public class FileStore {
             for (int i = 0; i < kvCount; i++) {
                 int kvLength = Bytes.toInt(byteArray, pos, 4);
                 pos += 4;
-                kvs.add(new KV(Bytes.subByte(byteArray, pos, kvLength)));
+                KV kv = new KV(Bytes.subByte(byteArray, pos, kvLength));
+                if (kvs.contains(kv.getRowKey())){
+                    KV kv1 = kvs.get(kv.getRowKey());
+                    List<KV.ValueNode> values1 = kv1.getValues();
+                    List<KV.ValueNode> values2 = kv.getValues();
+                    values1.addAll(values2);
+                    kv1.setValues(values1);
+                    kvs.add(kv1);
+                }else {
+                    kvs.add(kv);
+                }
                 pos += kvLength;
             }
         }

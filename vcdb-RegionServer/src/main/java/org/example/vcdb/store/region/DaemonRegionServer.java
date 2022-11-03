@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 
 public class DaemonRegionServer {
-    public static void main(String[] args) {
+    public static void async() {
         RegionServer.readConfig("regionServerMeta");
         AtomicInteger count=new AtomicInteger(5);
         //一秒检查一下size,count-1

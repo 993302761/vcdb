@@ -70,6 +70,7 @@ public class RegionServer {
     public static void main(String[] args) throws IOException, InterruptedException {
 //        testMem.tet();
         dbServiceStart();
+
     }
 
     public static void readConfig(String regionServerMeta) {

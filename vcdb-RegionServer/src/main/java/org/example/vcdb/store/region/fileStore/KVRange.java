@@ -65,6 +65,9 @@ public class KVRange {
         return bytes.length;
     }
 
+    public void setPageLength(int length){
+        Bytes.putInt(this.bytes,8,length);
+    }
     public void dis(){
         System.out.println(getPageLength());
         System.out.println(getStartKeyLength());

@@ -7,6 +7,7 @@ import org.example.vcdb.util.RawComparator;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class KV {
@@ -326,6 +327,15 @@ public class KV {
             System.out.println(getValue());
         }
 
+        @Override
+        public String toString() {
+            return "ValueNode{" +
+                    "time=" + getTime() +
+                    ", type=" + getType() +
+                    ", qualifier=" + getQualifier() +
+                    ", value=" + getValue() +
+                    '}';
+        }
     }
 
 

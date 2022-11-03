@@ -189,6 +189,13 @@ public class FileStoreMeta {
         }
     }
 
+    public void updatePageLength(int pageIndex,int length){
+        List<KVRange> pageTrailer = getPageTrailer();
+        KVRange kvRange= pageTrailer.get(pageIndex-1);
+        kvRange.setPageLength(length);
+        pageTrailer.set(pageIndex-1,kvRange);
+        setPageTrailer(pageTrailer);
+    }
 //    public void initSetPageTrailer(KeyValueSkipListSet kvs) {
 //        byte[] bytes = kvsToByteArray(kvs);
 //
