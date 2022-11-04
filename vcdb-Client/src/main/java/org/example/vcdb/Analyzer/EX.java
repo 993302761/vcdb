@@ -595,37 +595,37 @@ public class EX {
             TermCell termCell = new TermCell();
             for (Map.Entry<String, String> cell : kv.entrySet()) {
                 if ("cf_name".equalsIgnoreCase(cell.getKey())) {
-                    if (termCell.getCf_name() == null) {
+                    if (termCell.getCf_name().equals(" ")) {
                         termCell.setCf_name(cell.getValue());
                     } else {
                         System.err.println("报错重复设置cf_name属性");
                     }
                 } else if ("c_name".equalsIgnoreCase(cell.getKey())) {
-                    if (termCell.getC_name() == null) {
+                    if (termCell.getC_name().equals(" ")) {
                         termCell.setC_name(cell.getValue());
                     } else {
                         System.err.println("报错重复设置c_name属性");
                     }
                 } else if ("max".equalsIgnoreCase(cell.getKey())) {
-                    if (termCell.getMax() == null) {
+                    if (termCell.getMax().equals(" ")) {
                         termCell.setMax(cell.getValue());
                     } else {
                         System.err.println("报错重复设置max属性");
                     }
                 } else if ("equivalence".equalsIgnoreCase(cell.getKey())) {
-                    if (termCell.getEquivalence() == null) {
+                    if (termCell.getEquivalence().equals(" ")) {
                         termCell.setEquivalence(cell.getValue());
                     } else {
                         System.err.println("报错重复设置equivalence属性");
                     }
                 } else if ("min".equalsIgnoreCase(cell.getKey())) {
-                    if (termCell.getMin() == null) {
+                    if (termCell.getMin().equals(" ")) {
                         termCell.setMin(cell.getValue());
                     } else {
                         System.err.println("报错重复设置min属性");
                     }
                 } else if ("like".equalsIgnoreCase(cell.getKey())) {
-                    if (termCell.getLike() == null) {
+                    if (termCell.getLike().equals(" ")) {
                         termCell.setLike(cell.getValue());
                     } else {
                         System.err.println("报错重复设置c_name属性");
@@ -700,6 +700,7 @@ public class EX {
 //            }
             else {
                 System.err.println("把key打印出来，说明它不属于关键字");
+                System.out.println(entry.getKey());
             }
         }
         return singleSearch;

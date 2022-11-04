@@ -54,6 +54,7 @@ public class RegionMeta {
     public int getNameLength(){
         return Bytes.toInt(this.metaByte,0,4);
     }
+
     public String getName(){
         return Bytes.toString(this.metaByte,4,getNameLength());
     }
@@ -98,8 +99,10 @@ public class RegionMeta {
         Map<String, String> fileStoreMap = getFileStoreMap();
         return new FileStoreMeta(VCFileReader.readAll(fileStoreMap.get(key)));
     }
-    public String getfileStoreMetaName(String key){
+    public String getFileStoreMetaName(String key){
         Map<String, String> fileStoreMap = getFileStoreMap();
+        System.out.println("key:"+key);
+        System.out.println(fileStoreMap.keySet());
         return fileStoreMap.get(key);
     }
 

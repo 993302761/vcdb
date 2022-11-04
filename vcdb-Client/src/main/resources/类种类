@@ -224,7 +224,7 @@ post http://ip:端口/dbname/tab_name/_search
 }
 
 curl -H "Content-Type: application/json" -X POST -d\
- '{"limit":9,"cf_names":["row1","info"],"terms":[{"cf_name":"info","min":1,"max": 99}],"orders":[{"cf_name":"info1","sort":"asc"}]}'\
+ '{"limit":9,"order_cf_name":"info1","sort":"true","cf_names":["row1","info"],"terms":[{"cf_name":"info","min":1,"max": 99}]}'\
  "localhost:8080/myDataBase/myTable/_search"
 
 9.基本添加流程

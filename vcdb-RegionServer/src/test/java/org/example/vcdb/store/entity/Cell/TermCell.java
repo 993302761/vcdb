@@ -1,4 +1,4 @@
-package org.example.vcdb.entity.Cell;
+package org.example.vcdb.store.entity.Cell;
 
 import org.example.vcdb.util.Bytes;
 

@@ -1,0 +1,28 @@
+package org.example.vcdb.store.entity.Post;
+
+
+
+/**
+ * @author : wyy
+ * @Date : 2022.7.11
+ */
+public class ShowVersion extends RequestEntity {
+    private String rowKey;
+    public String cfName;
+
+    public void setRowKey(String rowKey) {
+        this.rowKey = rowKey;
+    }
+
+    public String getRowKey() {
+        return rowKey;
+    }
+
+    public String getCfName() {
+        return cfName;
+    }
+
+    public void setCfName(String cfName) {
+        this.cfName = cfName;
+    }
+}

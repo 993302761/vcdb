@@ -92,8 +92,6 @@ public class RegionServerAPI {
             /*创建regionMetaMap*/
             Map<String, String> fileStoreMap = new ConcurrentHashMap<>();
 
-
-
             for (int i = 0; i < count; i++) {
                 int cfNameLength = Bytes.toInt(requestEntity, pos, 4);
                 pos += 4;
@@ -134,7 +132,7 @@ public class RegionServerAPI {
 
                 /*创建fileStoreMeta*/
                 FileStoreMeta fileStoreMeta = new FileStoreMeta((new Date()).getTime(), false,
-                        fileStoreName, "".getBytes(), "".getBytes());
+                        fileStoreName, " ".getBytes(), "zzzzzzzzzzzzzzzzz".getBytes());
                 VCFIleWriter.writeAll(fileStoreMeta.getData(), fileStoreMetaName);
 
                 /*创建fileStore*/
@@ -466,7 +464,7 @@ public class RegionServerAPI {
             pos+=4;
 
             //找到合并的KVs在哪一页
-            String fileStoreMetaName = getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
+            String fileStoreMetaName = getRegionMeta(dBName + "." + tabName).getFileStoreMetaName(cfName);
             FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
             int pageIndex = findPageIndex(dBName, tabName, rowKey ,cfName);
 
@@ -515,8 +513,18 @@ public class RegionServerAPI {
 
     public static boolean  useVersion(String dBName,String tabName,String rowKey, String cfName,int version){
         //找到修改的KVs在哪一页
-        String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
+        RegionMeta regionMeta = getRegionMeta(dBName + "." + tabName);
+        if (regionMeta==null){
+            System.out.println(dBName + "." + tabName+" not exist");
+            return false;
+        }
+        String fileStoreMetaName=regionMeta.getFileStoreMetaName(cfName);
+        if (fileStoreMetaName==null){
+            System.out.println(dBName + "." + tabName+":"+cfName+" not exist");
+            return false;
+        }
         FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
+
         int pageIndex = findPageIndex(dBName, tabName, rowKey ,cfName);
 
         //加载到内存进行修改
@@ -573,7 +581,7 @@ public class RegionServerAPI {
     /*disk*/
     public static byte[] showVersion(String dBName,String tabName,String rowKey,String cfName){
         //找到修改的KVs在哪一页
-        String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
+        String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getFileStoreMetaName(cfName);
         FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
         int pageIndex = findPageIndex(dBName, tabName, rowKey ,cfName);
 
@@ -589,7 +597,7 @@ public class RegionServerAPI {
     /*disk*/
     public static boolean deleteVersion(String dBName,String tabName,String rowKey,String cfName,int version){
         //找到修改的KVs在哪一页
-        String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getfileStoreMetaName(cfName);
+        String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getFileStoreMetaName(cfName);
         FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
         int pageIndex = findPageIndex(dBName, tabName, rowKey ,cfName);
 
@@ -639,7 +647,7 @@ public class RegionServerAPI {
             if (memStore==null){
                 //从磁盘里读出来
                 RegionMeta regionMeta = getRegionMeta(dBName + "." + tabName);
-                String fileStoreMetaName=regionMeta.getfileStoreMetaName(cfName);
+                String fileStoreMetaName=regionMeta.getFileStoreMetaName(cfName);
                 FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
                 List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
                 FileStore fileStore =new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName())) ;
@@ -1040,9 +1048,10 @@ public class RegionServerAPI {
             if (memStore==null){
                 //从磁盘里读出来
                 RegionMeta regionMeta = getRegionMeta(dBName + "." + tabName);
-                String fileStoreMetaName=regionMeta.getfileStoreMetaName(entry.getKey());
+                String fileStoreMetaName=regionMeta.getFileStoreMetaName(entry.getKey());
                 FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
                 List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
+                System.out.println(pageTrailer);
                 FileStore fileStore =new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName())) ;
                 //装了一个fileStore的东西
                 KeyValueSkipListSet kvs=new KeyValueSkipListSet(new KV.KVComparator());
@@ -1306,7 +1315,7 @@ public class RegionServerAPI {
                     if (flag) {
                         pageTrailer.remove(pageIndex);
                         insertOldPage(newKVs, pageTrailer, pageIndex,
-                                fileStoreName, fileStoreMeta, regionMeta.getfileStoreMetaName(cfName));
+                                fileStoreName, fileStoreMeta, regionMeta.getFileStoreMetaName(cfName));
                         System.out.println("insertOldPage=========================");
                         newKVs.clear();
                         tempLength = 0;
@@ -1314,11 +1323,11 @@ public class RegionServerAPI {
                         continue;
                     }
                     if (kv.getLength() > 3 * 1024) {
-                        insertNewPage(kv, pageTrailer, fileStoreName, fileStoreMeta, regionMeta.getfileStoreMetaName(cfName));
+                        insertNewPage(kv, pageTrailer, fileStoreName, fileStoreMeta, regionMeta.getFileStoreMetaName(cfName));
                         newKVs.remove(kv);
                     } else {
                         System.out.println("===========================");
-                        insertNewPage(newKVs, pageTrailer, fileStoreName, fileStoreMeta, regionMeta.getfileStoreMetaName(cfName));
+                        insertNewPage(newKVs, pageTrailer, fileStoreName, fileStoreMeta, regionMeta.getFileStoreMetaName(cfName));
                         System.out.println("insertNewPage+++++++++++++++++++");
                         newKVs.clear();
                         tempLength = 0;
@@ -1327,7 +1336,7 @@ public class RegionServerAPI {
             }
             if (!newKVs.isEmpty()){
                 System.out.println("===========================");
-                insertNewPage(newKVs, pageTrailer, fileStoreName, fileStoreMeta, regionMeta.getfileStoreMetaName(cfName));
+                insertNewPage(newKVs, pageTrailer, fileStoreName, fileStoreMeta, regionMeta.getFileStoreMetaName(cfName));
                 System.out.println("insertNewPage+++++++++++++++++++");
                 newKVs.clear();
             }
@@ -1337,7 +1346,7 @@ public class RegionServerAPI {
             //更新元数据
             List<KVRange> list = updatePageTrailer(kvs, pageTrailer, pageIndex);
             fileStoreMeta.setPageTrailer(list);
-            VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, regionMeta.getfileStoreMetaName(cfName));
+            VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, regionMeta.getFileStoreMetaName(cfName));
         }
     }
 
@@ -1459,7 +1468,8 @@ public class RegionServerAPI {
         return pageTrailer;
     }
 
-    public static List<KVRange> updatePageTrailer2(KeyValueSkipListSet newKVs, List<KVRange> pageTrailer, int pageIndex) {
+    public static List<KVRange> updatePageTrailer2(KeyValueSkipListSet newKVs,
+                                                   List<KVRange> pageTrailer, int pageIndex) {
         String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
         String maxKey = "\u0000";
         int pageLength = getKVsLength(newKVs);
@@ -1476,7 +1486,14 @@ public class RegionServerAPI {
     public static RegionMeta getRegionMeta(String tableName) {
         //取出的应该缓存
         Map<String, TableTrailer> regionMap = RegionServer.regionServerMeta.getRegionMap();
-        return new RegionMeta(VCFileReader.readAll(regionMap.get(tableName).getRegionMetaName()));
+        System.out.println(regionMap.keySet());
+        TableTrailer tableTrailer = regionMap.get(tableName);
+        if (tableTrailer==null){
+            return null;
+        }
+        String regionMetaName =
+                tableTrailer.getRegionMetaName();
+        return new RegionMeta(VCFileReader.readAll(regionMetaName));
     }
 
 //    //接受rpc调用

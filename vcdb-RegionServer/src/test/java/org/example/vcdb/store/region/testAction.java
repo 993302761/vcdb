@@ -1,7 +1,13 @@
 package org.example.vcdb.store.region;
 
 import org.example.vcdb.store.RegionServer;
+import org.example.vcdb.store.entity.Cell.ColumnFamilyCell;
+import org.example.vcdb.store.entity.Put.CreateTable;
+import org.example.vcdb.store.region.fileStore.ColumnFamilyMeta;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @ClassName testAction
@@ -36,7 +42,23 @@ public class testAction {
 
     @Test
     public void testCreateTable(){
-
+        initRegionServer();
+        ColumnFamilyCell columnFamilyCell=new ColumnFamilyCell();
+        columnFamilyCell.setCf_name("testCf");
+        columnFamilyCell.setMin("1");
+        columnFamilyCell.setMax("99");
+        columnFamilyCell.setType((byte) 46);
+        columnFamilyCell.setUnique(false);
+        CreateTable createTable=new CreateTable();
+        List<ColumnFamilyCell> columnFamilyCells=new ArrayList<>();
+        columnFamilyCells.add(columnFamilyCell);
+        createTable.setColumn_family(columnFamilyCells);
+        boolean table = RegionServerAPI.createTable("testDb", "testTable", createTable.toByteArray());
+        if (table){
+            System.out.println("创建成功");
+        }else {
+            System.out.println("创建失败");
+        }
     }
 
     @Test

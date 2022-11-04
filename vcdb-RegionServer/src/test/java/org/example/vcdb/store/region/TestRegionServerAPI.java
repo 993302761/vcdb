@@ -147,7 +147,7 @@ public class TestRegionServerAPI {
 //            List<KVRange> kvRanges = RegionServer.updatePageTrailer(kvs, pageTrailer, pageIndex);
             System.out.println(pageTrailer);
             fileStoreMeta.setPageTrailer(pageTrailer);
-            VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, regionMeta.getfileStoreMetaName(cfName));
+            VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, regionMeta.getFileStoreMetaName(cfName));
         }
     }
 
