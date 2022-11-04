@@ -27,7 +27,6 @@ public class testAction {
     @Test
     public void testOpenTransaction(){
         initRegionServer();
-
     }
 
     @Test
@@ -56,7 +55,7 @@ public class testAction {
         boolean table = RegionServerAPI.createTable("testDb", "testTable", createTable.toByteArray());
         if (table){
             System.out.println("创建成功");
-        }else {
+        } else {
             System.out.println("创建失败");
         }
     }

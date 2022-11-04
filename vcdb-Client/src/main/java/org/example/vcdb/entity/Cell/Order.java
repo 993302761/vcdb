@@ -1,7 +1,9 @@
 package org.example.vcdb.entity.Cell;
 
 public class Order {
+
     private String cf_name;
+
     private String sort;
 
     public String getCf_name() {
@@ -19,4 +21,5 @@ public class Order {
     public void setSort(String sort) {
         this.sort = sort;
     }
+
 }

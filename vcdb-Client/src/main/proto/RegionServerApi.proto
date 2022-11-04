@@ -42,7 +42,6 @@ service RegionServer {
 
   //---------------------------------------------------------------------------
 
-
   rpc createTable (tableRequest) returns (boolReply) {}
 
   rpc alterTable (tableRequest) returns (boolReply) {}
@@ -53,9 +52,7 @@ service RegionServer {
 
   rpc forCreateTable (tableRequest) returns (boolReply) {}
 
-
   //---------------------------------------------------------------------------
-
 
   rpc openTransaction (transactionRequest) returns (boolReply) {}
 
@@ -107,7 +104,6 @@ message putCellsRequest{
 }
 
 
-
 message deleteCellsRequest{
   string dBName=10;
   string tabName=20;
@@ -122,7 +118,6 @@ message updateCellsRequest{
   bytes terms=30;
   bytes values=40;
 }
-
 
 
 message multiSearchRequest{
@@ -164,11 +159,11 @@ message transactionRequest{
   string explainValue=10;
 }
 
+
 message useTransactionRequest{
   string explainValue=10;
   string newExplainValue=20;
 }
-
 
 
 message versionRequest{
@@ -178,7 +173,6 @@ message versionRequest{
   string cfName=35;
   int32 version=40;
 }
-
 
 
 message showVersionRequest{

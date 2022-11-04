@@ -80,6 +80,11 @@ public class RegionServerAPI {
             RegionServerMeta serverMeta = new RegionServerMeta(VCFileReader.readAll("regionServerMeta"));
             Map<String, TableTrailer> regionMap = serverMeta.getRegionMap();
 
+            if (regionMap.containsKey(dbName +"."+tabName)){
+                System.out.println("该表已经被创建");
+                return false;
+            }
+
             /*应该查重*/
             regionMap.put(dbName +"."+tabName,new TableTrailer(new Date().getTime(),regionMetaFileName) );
 
