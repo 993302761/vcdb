@@ -1,5 +1,6 @@
 package org.example.vcdb.store.region;
 
+import com.google.protobuf.MapEntry;
 import org.example.vcdb.store.RegionServer;
 import org.example.vcdb.store.file.VCFIleWriter;
 import org.example.vcdb.store.file.VCFileReader;
@@ -310,9 +311,9 @@ public class RegionServerAPI {
                 kv=new KV(rowKey.getBytes(),0,rowKey.getBytes().length,null);
             }
             List<KV.ValueNode> values = kv.getValues();
-            KV.ValueNode valueNode=new KV.ValueNode(new Date().getTime(),byteToType((byte) 10),
-                    cname.getBytes(),cnameLength,0,
-                    value.getBytes(),valueLength,0);
+            KV.ValueNode valueNode=new KV.ValueNode(new Date().getTime(),byteToType((byte) 16),
+                    cname.getBytes(),0,cnameLength,
+                    value.getBytes(),0,valueLength);
             values.add(valueNode);
             kv=new KV(rowKey.getBytes(),0,rowKey.getBytes().length,values);
             memStore.kvSet.add(kv);
@@ -648,7 +649,13 @@ public class RegionServerAPI {
             pos2+=4;
             String cfName=Bytes.toString(cfNames,pos2,cfNameLength);
             pos2+=cfNameLength;
+
             MemStore memStore = RegionServer.outboundMemStore.get(dBName + "." + tabName + ":" + cfName);
+            if (memStore.kvSet!=null){
+                for (KV kv:memStore.kvSet){
+                    System.out.println(kv);
+                }
+            }
             if (memStore==null){
                 //从磁盘里读出来
                 RegionMeta regionMeta = getRegionMeta(dBName + "." + tabName);
@@ -1042,6 +1049,12 @@ public class RegionServerAPI {
             String like=Bytes.toString(terms,pos1,likeLength);
             pos1+=equivalenceLength;
 
+            System.out.println("cfName:"+cfName+"\t"+
+                    "cName:"+cName+"\t"+
+                    "max:"+max+"\t"+
+                    "min:"+min+"\t"+
+                    "equivalence:"+equivalence+"\t"+
+                    "like:"+like+"\t");
             cfTermMap.put(cfName,new CFTerm(cfName,cName, max,equivalence,min,like));
         }
 
@@ -1065,6 +1078,7 @@ public class RegionServerAPI {
                 }
                 memStore=new MemStore();
                 memStore.kvSet=kvs;
+                memStore.type=fileStore.getColumnFamilyMeta().getType().getCode();
                 // 加载到memStore
                 RegionServer.outboundMemStore.put(dBName + "." + tabName + ":" + entry.getKey(),memStore);
             }
@@ -1074,6 +1088,7 @@ public class RegionServerAPI {
             // 在读出来的memStore里面筛选出来rowKeys,和rowKeysRes取交集
             Set<String> newRowKeys=new HashSet<>();
             for (KV kv:memStore.kvSet){
+                System.out.println(kv);
                 List<KV.ValueNode> values = kv.getValues();
                 int size = values.size();
                 KV.ValueNode valueNode = values.get(size-1);
@@ -1125,6 +1140,7 @@ public class RegionServerAPI {
                             }
                             break;
                         case 46:
+                            System.out.println();
                             int intValue = Integer.parseInt(value);
                             int intMax = Integer.parseInt(term.getMax());
                             int intMin = Integer.parseInt(term.getMin());
@@ -1277,6 +1293,10 @@ public class RegionServerAPI {
         RegionMeta regionMeta = RegionServerAPI.getRegionMeta(fullTabName);
         FileStoreMeta fileStoreMeta = RegionServerAPI.getFileStoreMeta(regionMeta, cfName);
         Map<Integer, List<KV>> integerListMap = RegionServerAPI.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
+        for (Map.Entry<Integer,List<KV>> mapEntry:integerListMap.entrySet()){
+            System.out.println("page:"+mapEntry.getKey());
+            System.out.println("kvs:"+mapEntry.getValue());
+        }
         for (Map.Entry<Integer,List<KV>> entry : integerListMap.entrySet()) {
             if (!entry.getValue().isEmpty()){
                 RegionServerAPI.insertPageWithSplit(fullTabName,cfName,entry.getKey(),entry.getValue());
@@ -1305,6 +1325,8 @@ public class RegionServerAPI {
         FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta, cfName);
         String fileStoreName = fileStoreMeta.getEncodedName();
         List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
+        System.out.println("fileStoreName:"+fileStoreName);
+        System.out.println("pageTrailer:"+pageTrailer);
         int pageLength = pageTrailer.get(pageIndex).getPageLength();
         if (pageLength + getKVsLength(kvs) > 4 * 1024) {
             byte[] bytes = VCFileReader.openFileStorePage(pageIndex+1,fileStoreName);

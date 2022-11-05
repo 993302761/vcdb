@@ -88,7 +88,6 @@ public class DaemonRegionServer {
             }
 
         }, 1, 5, TimeUnit.SECONDS);// 1s 后开始执行，每 1s 执行一次
-
     }
 
     private static void addMemStoreToDisk(AtomicInteger count) {
@@ -96,6 +95,7 @@ public class DaemonRegionServer {
         for (Map.Entry<String,MemStore> entry : inboundMemStore.entrySet()) {
             String[] keys = entry.getKey().split(":");
             KeyValueSkipListSet kvSet = entry.getValue().getKVSet();
+            System.out.println("table:"+keys[0]+" cf:"+keys[1]);
             RegionServerAPI.addKVsToDisk(keys[0],keys[1],kvSet);
             count.getAndSet(5);
             RegionServerAPI.removeKVsFromMemStore(entry.getKey());

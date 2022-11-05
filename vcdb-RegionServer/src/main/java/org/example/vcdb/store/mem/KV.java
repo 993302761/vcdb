@@ -352,7 +352,16 @@ public class KV {
         }
     }
 
-//    public static void main(String[] args) {
+
+    @Override
+    public String toString() {
+        return "KV{" +
+                "row=" + getRowKey() +
+                ", values=" + getValues().toString() +
+                '}';
+    }
+
+    //    public static void main(String[] args) {
 //        System.out.println(Type.Delete.code);
 //    }
 

@@ -2,11 +2,17 @@ package org.example.vcdb.store.region;
 
 import org.example.vcdb.store.RegionServer;
 import org.example.vcdb.store.entity.Cell.ColumnFamilyCell;
+import org.example.vcdb.store.entity.Cell.TermCell;
+import org.example.vcdb.store.entity.Cell.Value;
+import org.example.vcdb.store.entity.Post.PutCells;
+import org.example.vcdb.store.entity.Post.SingleSearch;
 import org.example.vcdb.store.entity.Put.CreateTable;
 import org.example.vcdb.store.region.fileStore.ColumnFamilyMeta;
+import org.example.vcdb.util.Bytes;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -22,6 +28,11 @@ public class testAction {
     @Test
     public void  initRegionServer(){
         RegionServer.readConfig("regionServerMeta");
+    }
+
+    @Test
+    public void startDaemonRegionServer(){
+        DaemonRegionServer.async();
     }
 
     @Test
@@ -52,7 +63,8 @@ public class testAction {
         List<ColumnFamilyCell> columnFamilyCells=new ArrayList<>();
         columnFamilyCells.add(columnFamilyCell);
         createTable.setColumn_family(columnFamilyCells);
-        boolean table = RegionServerAPI.createTable("testDb", "testTable", createTable.toByteArray());
+        boolean table =
+                RegionServerAPI.createTable("testDb3", "testTable3", createTable.toByteArray());
         if (table){
             System.out.println("创建成功");
         } else {
@@ -72,7 +84,21 @@ public class testAction {
 
     @Test
     public void testPutCells(){
+        PutCells putCells=new PutCells();
+        putCells.setRowKey("testRow");
+        List<Value> values=new ArrayList<>();
+        Value value=new Value();
+        value.setCf_name("testCf");
+        value.setC_name("testC");
+        value.setValue("99");
+        values.add(value);
+        putCells.setValues(values);
+        RegionServerAPI.putCells("testDb3","testTable3",putCells.getRowKey(),putCells.valuesToByteArray());
+        DaemonRegionServer.async();
+        while (true){
 
+        }
+//        System.out.println("end");
     }
 
     @Test
@@ -90,7 +116,6 @@ public class testAction {
 
     }
 
-
     @Test
     public void testShowVersion(){
 
@@ -103,7 +128,28 @@ public class testAction {
 
     @Test
     public void testSingleSearch(){
-
+        int limit = 10;
+        List<String> cfNames=new ArrayList<>();
+        cfNames.add("testCf");
+        List<TermCell> termCells=new ArrayList<>();
+        TermCell termCell = new TermCell();
+        termCell.setCf_name("testCf");
+        termCell.setMax("100");
+        termCell.setMin("1");
+        termCell.setEquivalence("");
+        termCells.add(termCell);
+        SingleSearch singleSearch=new SingleSearch();
+        singleSearch.setCf_names(cfNames);
+        singleSearch.setTerms(termCells);
+        singleSearch.setLimit(limit);
+        singleSearch.setOrderCfName("testCf");
+        singleSearch.setSort(true);
+        byte[] bytes = RegionServerAPI.singleSearch("testDb3", "testTable3",
+                singleSearch.getLimit(), singleSearch.getOrderCfName(),
+                singleSearch.isSort(), singleSearch.getCfNameByteArray(),
+                singleSearch.getTermsByteArray());
+        System.out.println("==================================");
+        System.out.println(Bytes.toString(bytes));
     }
 
     @Test

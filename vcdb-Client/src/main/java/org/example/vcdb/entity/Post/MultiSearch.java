@@ -41,16 +41,17 @@ public class MultiSearch extends RequestEntity {
         return bytes;
     }
 
-    public byte[] getCfNameByteArray() {
-        int cfNamesLength = 0;
-        for (String cfName : cf_names) {
-            cfNamesLength += cfName.getBytes().length;
+    public byte[] getCfNameByteArray(){
+        int cfNamesLength=0;
+        for (String cfName:cf_names){
+            cfNamesLength+=4+cfName.getBytes().length;
         }
-        byte[] bytes = new byte[4 + cfNamesLength];
-        int pos = 0;
-        pos = Bytes.putInt(bytes, pos, terms.size());
-        for (String cfName : cf_names) {
-            Bytes.putBytes(bytes, pos, cfName.getBytes(), 0, cfName.getBytes().length);
+        byte[] bytes=new byte[4+cfNamesLength];
+        int pos=0;
+        pos= Bytes.putInt(bytes,pos,terms.size());
+        for (String cfName:cf_names){
+            pos= Bytes.putInt(bytes,pos,cfName.getBytes().length);
+            pos= Bytes.putBytes(bytes,pos,cfName.getBytes(),0,cfName.getBytes().length);
         }
         return bytes;
     }
