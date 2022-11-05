@@ -89,13 +89,14 @@ public class KV {
         int rLength = getRLength();
         int pos = rLength  + 4;
         pos = Bytes.putInt(this.data, pos, valuesLength);
-
+        pos+=4;
         if (values!=null){
             // Add the tags after the value part
             if (valuesLength > 0) {
                 pos = Bytes.putInt(this.data, pos, values.size());
                 for (ValueNode valueNode : values) {
                     pos = Bytes.putBytes(this.data, pos, valueNode.getBytes(), 0, valueNode.getLength());
+                    pos+= valueNode.getLength();
                 }
             }
         }

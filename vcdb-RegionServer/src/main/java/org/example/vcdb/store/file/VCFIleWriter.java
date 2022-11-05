@@ -81,6 +81,7 @@ public class VCFIleWriter {
             }
         }
     }
+
     public static void setFileStorePage(byte[] content,int pageIndex,String fileName){
         if(content.length!=4*1024){
             System.out.println("这不是一个页");
@@ -109,10 +110,13 @@ public class VCFIleWriter {
             }
         }
     }
+
     //只有当页内空间够的时候，才可以调用这些方法
-    public static void appendDataSetToFileStorePage(int pageLength,byte[] kvs,int pageIndex,String fileName){
+    public static void appendDataSetToFileStorePage(int pageLength,byte[] kvs,int pageIndex,int count,String fileName){
         RandomAccessFile accessFile = null;
         try {
+
+            updateKvsCountFOrFileStorePage(count,pageIndex,fileName);
             //getFromMap
             accessFile = new RandomAccessFile("/x2/vcdb/"+fileName, "rw");
             FileChannel fileChannel = accessFile.getChannel();
@@ -134,6 +138,37 @@ public class VCFIleWriter {
             }
         }
     }
+
+    public static void  initFileStorePage(int pageLength,byte[] kvs,int pageIndex,int count,String fileName){
+        RandomAccessFile accessFile = null;
+        try {
+
+            updateKvsCountFOrFileStorePage(count,pageIndex,fileName);
+            //getFromMap
+            accessFile = new RandomAccessFile("/x2/vcdb/"+fileName, "rw");
+            FileChannel fileChannel = accessFile.getChannel();
+            ByteBuffer contentBuf = ByteBuffer.allocateDirect(kvs.length);
+            byte[] bytes=new byte[kvs.length+4];
+            Bytes.putInt(bytes,0,kvs.length);
+            Bytes.putBytes(bytes,0,kvs,0,kvs.length);
+            contentBuf.put(bytes);
+            contentBuf.limit(kvs.length);
+            contentBuf.flip();
+            while (contentBuf.hasRemaining()) fileChannel.write(contentBuf,pageIndex*4*1024+pageLength);
+            fileChannel.force(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (accessFile != null) {
+                    accessFile.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     //只有当页内空间够的时候，才可以调用这些方法
     public static void updateKvsCountFOrFileStorePage(int count,int pageIndex,String fileName){
         RandomAccessFile accessFile = null;

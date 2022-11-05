@@ -56,6 +56,7 @@ public class FileStore {
         int pos=0;
         pos=Bytes.putBytes(this.data, pos, columnFamilyMeta.getData(), 0, columnFamilyMeta.getData().length);
     }
+
     public FileStore(ColumnFamilyMeta columnFamilyMeta, KeyValueSkipListSet dataSet) {
         //fileStoreMeta也会随时更新
         this.data = new byte[4 * 1024 * 16];
@@ -63,6 +64,7 @@ public class FileStore {
         pos=Bytes.putBytes(this.data, pos, columnFamilyMeta.getData(), 0, columnFamilyMeta.getData().length);
         appendPage(1,dataSet);
     }
+
     public void appendPage(int pageIndex,KeyValueSkipListSet dataSet){
         int pos=pageIndex*(1024 * 4);
         int dataSetCount = dataSet.size();
@@ -82,6 +84,7 @@ public class FileStore {
         }
         return length;
     }
+
     public static int getKVsLength(List<KV> dataSet){
         int length=0;
         for (KV kv:dataSet){
@@ -89,9 +92,14 @@ public class FileStore {
         }
         return length;
     }
+
     public static byte[] kvsToByteArray(KeyValueSkipListSet dataSet){
-        byte[] bytes = new byte[4 * 1024];
         int pos=0;
+        int length=0;
+        for (KV kv:dataSet){
+            length+=4+kv.getLength();
+        }
+        byte[] bytes = new byte[length];
         for (KV kv : dataSet) {
             pos = Bytes.putInt(bytes, pos, kv.getLength());
             pos = Bytes.putBytes(bytes, pos, kv.getData(), 0, kv.getLength());
@@ -101,9 +109,11 @@ public class FileStore {
 
     public static byte[] kvsToByteArray(List<KV> dataSet){
         int pos=0;
-        byte[] bytes = new byte[4 * 1024];
-        int dataSetCount = dataSet.size();
-        pos = Bytes.putInt(bytes, pos, dataSetCount);
+        int length=0;
+        for (KV kv:dataSet){
+            length+=4+kv.getLength();
+        }
+        byte[] bytes = new byte[length];
         for (KV kv : dataSet) {
             pos = Bytes.putInt(bytes, pos, kv.getLength());
             pos = Bytes.putBytes(bytes, pos, kv.getData(), 0, kv.getLength());
@@ -112,6 +122,19 @@ public class FileStore {
     }
 
     public static byte[] kvsToPageByteArray(KeyValueSkipListSet dataSet){
+        byte[] bytes = new byte[4 * 1024];
+        int pos=0;
+        int dataSetCount = dataSet.size();
+        pos = Bytes.putInt(bytes, pos, dataSetCount);
+        for (KV kv : dataSet) {
+            pos = Bytes.putInt(bytes, pos, kv.getLength());
+            pos = Bytes.putBytes(bytes, pos, kv.getData(), 0, kv.getLength());
+        }
+        System.out.println("++++++++++"+pos);
+        return bytes;
+    }
+
+    public static byte[] kvsToPageByteArray(List<KV> dataSet){
         byte[] bytes = new byte[4 * 1024];
         int pos=0;
         int dataSetCount = dataSet.size();
@@ -232,11 +255,27 @@ public class FileStore {
         int pos=pageIndex*(1024 * 4);
         int kvCount = Bytes.toInt(this.data, pos, 4);
         pos += 4;
-        for (int i = 0; i < kvCount; i++) {
-            int kvLength = Bytes.toInt(this.data, pos, 4);
-            pos += 4;
-            kvs.add(new KV(Bytes.subByte(this.data, pos, kvLength)));
-            pos += kvLength;
+        if (kvCount!=0){
+            for (int i = 0; i < kvCount; i++) {
+                int kvLength = Bytes.toInt(this.data,pos, 4);
+                pos += 4;
+                KV kv1 = new KV(Bytes.subByte(this.data, pos, kvLength));
+                System.out.println("kv1:"+kv1);
+                if (kvs.contains(kv1.getRowKey())){
+                    KV kv2 = kvs.get(kv1.getRowKey());
+                    List<KV.ValueNode> values1 = kv1.getValues();
+                    System.out.println("values1:"+values1);
+                    List<KV.ValueNode> values2 = kv2.getValues();
+                    System.out.println("values2:"+values2);
+                    values1.addAll(values2);
+                    KV kv=new KV(kv1.getRowKey().getBytes(),0,kv1.getRowKey().getBytes().length,
+                            values1);
+                    kvs.add(kv);
+                } else {
+                    kvs.add(kv1);
+                }
+                pos += kvLength;
+            }
         }
         return kvs;
     }

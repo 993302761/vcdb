@@ -123,16 +123,16 @@ public class TestRegionServerAPI {
         kvs.add(kv);
         try {
             List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
-            VCFIleWriter.updateKvsCountFOrFileStorePage(kvs.size(),pageIndex,fileStoreMeta.getEncodedName());
-            VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(pageIndex).getPageLength(),kvsToByteArray(kvs),pageIndex,fileStoreMeta.getEncodedName());
+//            VCFIleWriter.updateKvsCountFOrFileStorePage(kvs.size(),pageIndex,fileStoreMeta.getEncodedName());
+            VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(pageIndex).getPageLength(),kvsToByteArray(kvs),pageIndex,kvs.size(),fileStoreMeta.getEncodedName());
             FileStore fileStore2=new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName()));
             disDataSet(fileStore2.getDataSet(pageIndex));
             fileStore2.dis();
             RegionServerAPI.updatePageTrailer(kvs,fileStoreMeta.getPageTrailer(),pageIndex);
         }catch (Exception e){
             List<KVRange> pageTrailer = new ArrayList<>();
-            VCFIleWriter.appendDataSetToFileStorePage(0,Bytes.toBytes((int)1),pageIndex,fileStoreMeta.getEncodedName());
-            VCFIleWriter.appendDataSetToFileStorePage(4,kvsToByteArray(kvs),pageIndex,fileStoreMeta.getEncodedName());
+            VCFIleWriter.appendDataSetToFileStorePage(0,Bytes.toBytes((int)1),pageIndex,kvs.size(),fileStoreMeta.getEncodedName());
+            VCFIleWriter.appendDataSetToFileStorePage(4,kvsToByteArray(kvs),pageIndex,kvs.size(),fileStoreMeta.getEncodedName());
             FileStore fileStore2=new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName()));
             disDataSet(fileStore2.getDataSet(pageIndex));
             fileStore2.dis();
@@ -191,8 +191,9 @@ public class TestRegionServerAPI {
     }
 
     @Test
-    public void addKVsWithoutSplit(){
+    public void addKVsWithoutSplit1(){
         testCreateDB();
+
         String dbName="db2";
         String tabName="table2";
         String cfName="cf2";
@@ -217,6 +218,48 @@ public class TestRegionServerAPI {
         Map<Integer, List<KV>> integerListMap = RegionServerAPI.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
         for (Map.Entry<Integer,List<KV>> entry : integerListMap.entrySet()) {
             RegionServerAPI.insertPageWithSplit(dbName+"."+tabName,cfName,entry.getKey(),entry.getValue());
+        }
+        ttt();
+    }
+
+    @Test
+    public void addKVsWithoutSplit2() {
+        testCreateDB();
+
+        String dbName = "db2";
+        String tabName = "table2";
+        String cfName = "cf2";
+        KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
+        List<KV.ValueNode> values = new ArrayList<>();
+        long time = (new Date()).getTime();
+        KV.Type type = KV.byteToType((byte) 4);
+        byte[] qualifier = ("qualifier" + 1).getBytes(StandardCharsets.UTF_8);
+        byte[] value = ("value" + 1).getBytes(StandardCharsets.UTF_8);
+        values.add(new KV.ValueNode(time, type, qualifier, 0, qualifier.length, value, 0, value.length));
+        kvs.add(new KV(("row" + 1).getBytes(), 0, ("row" + 1).getBytes().length, values));
+        RegionServer.readConfig("regionServerMeta");
+        RegionMeta regionMeta = RegionServerAPI.getRegionMeta(dbName + "." + tabName);
+        FileStoreMeta fileStoreMeta = RegionServerAPI.getFileStoreMeta(regionMeta, cfName);
+        Map<Integer, List<KV>> integerListMap = RegionServerAPI.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
+        for (Map.Entry<Integer, List<KV>> entry : integerListMap.entrySet()) {
+            RegionServerAPI.insertPageWithSplit(dbName + "." + tabName, cfName, entry.getKey(), entry.getValue());
+        }
+        ttt();
+        /*2*/
+        List<KV.ValueNode> values2 = new ArrayList<>();
+        long time2 = (new Date()).getTime();
+        KV.Type type2 = KV.byteToType((byte) 4);
+        byte[] qualifier2 = ("qualifier" + 2).getBytes(StandardCharsets.UTF_8);
+        byte[] value2 = ("value" + 2).getBytes(StandardCharsets.UTF_8);
+        values2.add(new KV.ValueNode(time2, type2, qualifier, 0, qualifier2.length, value2, 0, value2.length));
+        KeyValueSkipListSet kvs2 = new KeyValueSkipListSet(new KV.KVComparator());
+        kvs2.add(new KV(("row" + 1).getBytes(), 0, ("row" + 1).getBytes().length, values2));
+        RegionServer.readConfig("regionServerMeta");
+        RegionMeta regionMeta2 = RegionServerAPI.getRegionMeta(dbName + "." + tabName);
+        FileStoreMeta fileStoreMeta2 = RegionServerAPI.getFileStoreMeta(regionMeta2, cfName);
+        Map<Integer, List<KV>> integerListMap2 = RegionServerAPI.splitKVsByPage(fileStoreMeta2.getPageTrailer(), kvs2);
+        for (Map.Entry<Integer, List<KV>> entry : integerListMap2.entrySet()) {
+            RegionServerAPI.insertPageWithSplit(dbName + "." + tabName, cfName, entry.getKey(), entry.getValue());
         }
         ttt();
     }
@@ -253,16 +296,18 @@ public class TestRegionServerAPI {
     }
 
 
-
     @Test
     public void ttt(){
         FileStore fileStore2=new FileStore(VCFileReader.readAll("fileStore/fileStore2"));
+        System.out.println("fileStore");
         FileStore.disDataSet(fileStore2.getDataSet(1));
-        System.out.println("==========================================");
-        FileStore.disDataSet(fileStore2.getDataSet(2));
-        System.out.println("==========================================");
-        FileStore.disDataSet(fileStore2.getDataSet(3));
+//        System.out.println("==========================================");
+//        FileStore.disDataSet(fileStore2.getDataSet(2));
+//        System.out.println("==========================================");
+//        FileStore.disDataSet(fileStore2.getDataSet(3));
         FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll("fileStoreMeta/fileStoreMeta2"));
+        List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
+        System.out.println("page1Length:"+pageTrailer.get(0).getPageLength());
         fileStoreMeta.dis();
     }
 }

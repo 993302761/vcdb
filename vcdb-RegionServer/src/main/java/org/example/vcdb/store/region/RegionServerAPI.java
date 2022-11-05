@@ -1073,9 +1073,11 @@ public class RegionServerAPI {
                 FileStore fileStore =new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName())) ;
                 //装了一个fileStore的东西
                 KeyValueSkipListSet kvs=new KeyValueSkipListSet(new KV.KVComparator());
+
                 for (int j = 0; j < pageTrailer.size(); j++) {
                     kvs.addKVs(fileStore.getDataSet(1+j));
                 }
+
                 memStore=new MemStore();
                 memStore.kvSet=kvs;
                 memStore.type=fileStore.getColumnFamilyMeta().getType().getCode();
@@ -1088,12 +1090,14 @@ public class RegionServerAPI {
             // 在读出来的memStore里面筛选出来rowKeys,和rowKeysRes取交集
             Set<String> newRowKeys=new HashSet<>();
             for (KV kv:memStore.kvSet){
+                System.out.println("读到的KV:");
                 System.out.println(kv);
                 List<KV.ValueNode> values = kv.getValues();
                 int size = values.size();
                 KV.ValueNode valueNode = values.get(size-1);
                 //结合Term筛选valueNode
                 String value = valueNode.getValue();
+
                 CFTerm term = entry.getValue();
                 String like=term.getLike();
                 //判断cfName,cName是否是rowKey
@@ -1140,7 +1144,7 @@ public class RegionServerAPI {
                             }
                             break;
                         case 46:
-                            System.out.println();
+                            System.out.println(value);
                             int intValue = Integer.parseInt(value);
                             int intMax = Integer.parseInt(term.getMax());
                             int intMin = Integer.parseInt(term.getMin());
@@ -1368,10 +1372,35 @@ public class RegionServerAPI {
                 newKVs.clear();
             }
         } else {
-            //不分裂
-            VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(pageIndex).getPageLength(), kvsToByteArray(kvs), pageIndex+1, fileStoreMeta.getEncodedName());
+//            for (KV kv:kvs){
+//                System.out.println(kv);
+//            }
+            List<KVRange> list = null;
+            if (pageTrailer.size()==1){
+                //第一次
+                String start = Bytes.toString(pageTrailer.get(0).getStartKey());
+                String end = Bytes.toString(pageTrailer.get(0).getEndKey());
+                if (start.equals(" ") &&
+                        end.equals("zzzzzzzzzzzzzzzzz")){
+                    byte[] bytes = kvsToPageByteArray(kvs);
+                    VCFIleWriter.setFileStorePage(bytes,
+                            pageIndex+1,fileStoreMeta.getEncodedName());
+                   list = initPageTrailer(kvs, pageTrailer, pageIndex);
+
+                }else {
+                    //不分裂
+                    VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(pageIndex).getPageLength(),
+                            kvsToByteArray(kvs), pageIndex+1, kvs.size(),fileStoreMeta.getEncodedName());
+                    list = updatePageTrailer(kvs, pageTrailer, pageIndex);
+                }
+            }else {
+                //不分裂
+                VCFIleWriter.appendDataSetToFileStorePage(pageTrailer.get(pageIndex).getPageLength(),
+                        kvsToByteArray(kvs), pageIndex+1, kvs.size(),fileStoreMeta.getEncodedName());
+                list = updatePageTrailer(kvs, pageTrailer, pageIndex);
+            }
             //更新元数据
-            List<KVRange> list = updatePageTrailer(kvs, pageTrailer, pageIndex);
+
             fileStoreMeta.setPageTrailer(list);
             VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, regionMeta.getFileStoreMetaName(cfName));
         }
@@ -1386,7 +1415,7 @@ public class RegionServerAPI {
         VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, fileStoreMetaName);
         List<KV> kvs = new ArrayList<>();
         kvs.add(kv);
-        byte[] bytes = kvsToByteArray(kvs);
+        byte[] bytes = kvsToPageByteArray(kvs);
         VCFIleWriter.setFileStorePage(bytes, pageTrailerIndex+1, fileStoreName);
     }
 
@@ -1397,7 +1426,7 @@ public class RegionServerAPI {
         List<KVRange> list = updatePageTrailer2(newKVs, pageTrailer, pageTrailerIndex);
         fileStoreMeta.setPageTrailer(list);
         VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, fileStoreMetaName);
-        byte[] bytes = kvsToByteArray(newKVs);
+        byte[] bytes = kvsToPageByteArray(newKVs);
         VCFIleWriter.setFileStorePage(bytes, pageTrailerIndex+1, fileStoreName);
     }
 
@@ -1407,7 +1436,7 @@ public class RegionServerAPI {
         List<KVRange> list = updatePageTrailer2(newKVs, pageTrailer, pageIndex);
         fileStoreMeta.setPageTrailer(list);
         VCFIleWriter.writeAll(fileStoreMeta.getData(), 0, fileStoreMetaName);
-        byte[] bytes = kvsToByteArray(newKVs);
+        byte[] bytes = kvsToPageByteArray(newKVs);
         VCFIleWriter.setFileStorePage(bytes, pageIndex+1, fileStoreName);
     }
 
@@ -1456,7 +1485,11 @@ public class RegionServerAPI {
     public static List<KVRange> updatePageTrailer(List<KV> newKVs, List<KVRange> pageTrailer, int pageIndex) {
         String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzz";
         String maxKey = "\u0000";
-        int pageLength = getKVsLength(newKVs);
+
+        KVRange kvRange = pageTrailer.get(pageIndex);
+        int length = kvRange.getPageLength();
+        int pageLength = length + getKVsLength(newKVs);
+
         for (KV kv : newKVs) {
             if (minKey.compareTo(kv.getRowKey()) > 0) {
                 minKey = kv.getRowKey();
@@ -1465,10 +1498,29 @@ public class RegionServerAPI {
                 maxKey = kv.getRowKey();
             }
         }
-        pageTrailer.set(pageIndex , new KVRange(new Date().getTime(),pageLength, minKey, maxKey));
+        pageTrailer.set(pageIndex, new KVRange(new Date().getTime(), pageLength, minKey, maxKey));
         return pageTrailer;
     }
 
+    public static List<KVRange> initPageTrailer(List<KV> newKVs, List<KVRange> pageTrailer, int pageIndex) {
+        String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzz";
+        String maxKey = "\u0000";
+
+        KVRange kvRange = pageTrailer.get(pageIndex);
+        int length = kvRange.getPageLength();
+        int pageLength = 4+length + getKVsLength(newKVs);
+
+        for (KV kv : newKVs) {
+            if (minKey.compareTo(kv.getRowKey()) > 0) {
+                minKey = kv.getRowKey();
+            }
+            if (maxKey.compareTo(kv.getRowKey()) < 0) {
+                maxKey = kv.getRowKey();
+            }
+        }
+        pageTrailer.set(pageIndex, new KVRange(new Date().getTime(), pageLength, minKey, maxKey));
+        return pageTrailer;
+    }
     public static List<KVRange> updatePageTrailer(KeyValueSkipListSet newKVs, List<KVRange> pageTrailer, int pageIndex) {
         String minKey = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
         String maxKey = "\u0000";

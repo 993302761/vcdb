@@ -141,7 +141,7 @@ public class TestWriterAndReader {
         KeyValueSkipListSet kvs = new KeyValueSkipListSet(new KV.KVComparator());
         kvs.add(kv);
         VCFIleWriter.updateKvsCountFOrFileStorePage(kvs.size(),1,"fileStore/fileStore1");
-        VCFIleWriter.appendDataSetToFileStorePage(98,kvsToByteArray(kvs),1,"fileStore/fileStore1");
+        VCFIleWriter.appendDataSetToFileStorePage(98,kvsToByteArray(kvs),1,kvs.size(),"fileStore/fileStore1");
         FileStore fileStore2=new FileStore(VCFileReader.readAll("fileStore/fileStore1"));
         disDataSet(fileStore2.getDataSet(1));
         fileStore2.dis();

@@ -64,7 +64,7 @@ public class testAction {
         columnFamilyCells.add(columnFamilyCell);
         createTable.setColumn_family(columnFamilyCells);
         boolean table =
-                RegionServerAPI.createTable("testDb3", "testTable3", createTable.toByteArray());
+                RegionServerAPI.createTable("testDb16", "testTable16", createTable.toByteArray());
         if (table){
             System.out.println("创建成功");
         } else {
@@ -89,11 +89,11 @@ public class testAction {
         List<Value> values=new ArrayList<>();
         Value value=new Value();
         value.setCf_name("testCf");
-        value.setC_name("testC");
-        value.setValue("99");
+        value.setC_name("testC5");
+        value.setValue("55");
         values.add(value);
         putCells.setValues(values);
-        RegionServerAPI.putCells("testDb3","testTable3",putCells.getRowKey(),putCells.valuesToByteArray());
+        RegionServerAPI.putCells("testDb16","testTable16",putCells.getRowKey(),putCells.valuesToByteArray());
         DaemonRegionServer.async();
         while (true){
 
@@ -136,7 +136,7 @@ public class testAction {
         termCell.setCf_name("testCf");
         termCell.setMax("100");
         termCell.setMin("1");
-        termCell.setEquivalence("");
+        termCell.setEquivalence("5");
         termCells.add(termCell);
         SingleSearch singleSearch=new SingleSearch();
         singleSearch.setCf_names(cfNames);
@@ -144,7 +144,7 @@ public class testAction {
         singleSearch.setLimit(limit);
         singleSearch.setOrderCfName("testCf");
         singleSearch.setSort(true);
-        byte[] bytes = RegionServerAPI.singleSearch("testDb3", "testTable3",
+        byte[] bytes = RegionServerAPI.singleSearch("testDb16", "testTable16",
                 singleSearch.getLimit(), singleSearch.getOrderCfName(),
                 singleSearch.isSort(), singleSearch.getCfNameByteArray(),
                 singleSearch.getTermsByteArray());
