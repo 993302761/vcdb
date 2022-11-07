@@ -54,6 +54,66 @@ public class TableAlter {
         pos=Bytes.putBytes(this.data,pos,oldCfName.getBytes(),0,oldCfName.getBytes().length);
     }
 
+    public long getTime(){
+        return Bytes.toLong(this.data,0,8);
+    }
+
+    public byte getMethod(){
+        return this.data[8];
+    }
+
+    public byte getType(){
+        return this.data[9];
+    }
+
+    public boolean getUni(){
+        return this.data[10]==1;
+    }
+
+    public boolean getNil(){
+        return this.data[11]==1;
+    }
+
+    public int getMinLength(){
+        return Bytes.toInt(this.data,12,4);
+    }
+
+    public String getMin(){
+        return Bytes.toString(this.data,16,getMinLength());
+    }
+
+    public int getMaxLength(){
+        return Bytes.toInt(this.data,16+getMinLength(),4);
+    }
+
+    public String getMax(){
+        return Bytes.toString(this.data,20+getMinLength(),getMaxLength());
+    }
+
+    public int getTabLength(){
+        return Bytes.toInt(this.data,20+getMinLength()+getMaxLength(),4);
+    }
+
+    public String getTab(){
+        return Bytes.toString(this.data,24+getMinLength()+getMaxLength(),getTabLength());
+    }
+
+    public int getCfLength(){
+        return Bytes.toInt(this.data,28+getMinLength()+getMaxLength()+getTabLength(),4);
+    }
+
+    public String getCf(){
+        return Bytes.toString(this.data,32+getMinLength()+getMaxLength()+getTabLength(),getCfLength());
+    }
+
+    public int getOldCfLength(){
+        return Bytes.toInt(this.data,32+getMinLength()+getMaxLength()+getTabLength()+getCfLength(),4);
+    }
+
+    public String getOldCf(){
+        return Bytes.toString(this.data,36+getMinLength()+getMaxLength()+getTabLength()+getCfLength(),getOldCfLength());
+    }
+
     public TableAlter(byte[] data) {
         this.data = data;
     }

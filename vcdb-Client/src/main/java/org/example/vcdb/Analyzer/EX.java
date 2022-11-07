@@ -1,6 +1,5 @@
 package org.example.vcdb.Analyzer;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.example.vcdb.entity.Cell.*;
 import org.example.vcdb.entity.Cell.ColumnFamilyCell;
 import org.example.vcdb.entity.Delete.DeleteCells;
@@ -51,7 +50,7 @@ public class EX {
     }
 
     private static void MethodGetErr(ActionEntity actionEntity) {
-        System.err.println("方法错误");
+        System.err.println("该http请求方式不支持");
     }
 
     private static String handlePut(ActionEntity actionEntity) {

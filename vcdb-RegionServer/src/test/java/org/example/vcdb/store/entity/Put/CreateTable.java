@@ -29,6 +29,7 @@ public class CreateTable extends RequestEntity {
         }
         return bytes;
     }
+
     public void setColumn_family(List<ColumnFamilyCell> column_family) {
         this.column_family = column_family;
     }
