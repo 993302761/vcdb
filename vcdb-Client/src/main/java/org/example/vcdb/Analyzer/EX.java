@@ -109,8 +109,6 @@ public class EX {
                         System.err.println("报错重复设置cf_name属性");
                     }
                 } else if ("type".equalsIgnoreCase(cell.getKey())) {
-
-
                     if (columnFamilyCell.getType() == 100) {
                         if ("TINYINT".equalsIgnoreCase(cell.getValue())) {
                             columnFamilyCell.setType((byte) 42);
@@ -694,6 +692,7 @@ public class EX {
             if ("terms".equalsIgnoreCase(entry.getKey())) {
                 singleSearch.setTerms(selectTerms(entry.getValue()));
             }
+
 //            else if ("Aggregate".equalsIgnoreCase(entry.getKey())) {
 //                singleSearch.setAggregate(selectAggregate(entry.getValue()));
 //            }

@@ -17,8 +17,12 @@ public class TableAlter {
     public TableAlter(long timestamp, byte method, byte type,boolean unique, boolean isNull,
                       String min, String max, String tableName,
                       String cfName, String oldCfName){
-        data=new byte[8+1+1+1+1+4+min.getBytes().length+4+max.getBytes().length+
-                4+tableName.getBytes().length+4+cfName.getBytes().length+4+oldCfName.getBytes().length];
+        data=new byte[8+1+1+1+1+
+                4+min.getBytes().length+
+                4+max.getBytes().length+
+                4+tableName.getBytes().length+
+                4+cfName.getBytes().length+
+                4+oldCfName.getBytes().length];
         int pos=0;
         byte uni=0;
         byte isNil=0;
@@ -99,19 +103,20 @@ public class TableAlter {
     }
 
     public int getCfLength(){
-        return Bytes.toInt(this.data,28+getMinLength()+getMaxLength()+getTabLength(),4);
+        return Bytes.toInt(this.data,24+getMinLength()+getMaxLength()+getTabLength(),4);
     }
 
     public String getCf(){
-        return Bytes.toString(this.data,32+getMinLength()+getMaxLength()+getTabLength(),getCfLength());
+        return Bytes.toString(this.data,
+                28+getMinLength()+getMaxLength()+getTabLength(),getCfLength());
     }
 
     public int getOldCfLength(){
-        return Bytes.toInt(this.data,32+getMinLength()+getMaxLength()+getTabLength()+getCfLength(),4);
+        return Bytes.toInt(this.data,28+getMinLength()+getMaxLength()+getTabLength()+getCfLength(),4);
     }
 
     public String getOldCf(){
-        return Bytes.toString(this.data,36+getMinLength()+getMaxLength()+getTabLength()+getCfLength(),getOldCfLength());
+        return Bytes.toString(this.data,32+getMinLength()+getMaxLength()+getTabLength()+getCfLength(),getOldCfLength());
     }
 
     public TableAlter(byte[] data) {
@@ -122,4 +127,19 @@ public class TableAlter {
         return data;
     }
 
+    @Override
+    public String toString() {
+        return "TableAlter{" +
+                "time=" + getTime() +
+                "method=" + getMethod() +
+                "type=" + getType() +
+                "unique=" + getUni() +
+                "isNil=" + getNil() +
+                "min=" + getMin() +
+                "max=" + getMax() +
+                "tableName=" + getTab() +
+                "cfName=" + getCf() +
+                "oldCf=" + getOldCf() +
+                '}';
+    }
 }

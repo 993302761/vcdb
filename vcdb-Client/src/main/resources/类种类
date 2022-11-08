@@ -24,8 +24,8 @@ PUT    http://ip:端口/dbname/tab_name
 
 //disk
 curl -H "Content-Type: application/json" -X PUT -d\
- '{"column_family":[{"cf_name": "info ","type": 56,"min": 1,"max": 34,"unique":"true"}]}'\
- "localhost:8080/myDataBase/myTable"
+ '{"column_family":[{"cf_name": "info","type": 46,"min": 1,"max": 34,"unique":"true"}]}'\
+ "localhost:8080/myDataBase1/myTable32"
 
 
 3.修改表结构(更新)
@@ -53,8 +53,10 @@ POST http://ip:端口/dbname/tab_name/_alter
 
 
 curl -H "Content-Type: application/json" -X POST -d\
- '{"alter_cells":[{"cf_name":"info","old_cf_name":"myName","method":"3","type":"2","min":"11","max":"99","unique":"true","isNull":"true"}]}'\
- "localhost:8080/myDataBase/myTable/_alter"
+ '{"alter_cells":[{"cf_name":"info",
+ "old_cf_name":"myName","method":"3",
+ "type":"46","min":"11","max":"99","unique":"true","isNull":"true"}]}'\
+ "localhost:8080/myDataBase/myTable1/_alter"
 
 
 
@@ -117,7 +119,7 @@ POST http://ip:端口/dbname/tab_name/_useVersion
 
 //disk
 curl -H "Content-Type: application/json" -X POST -d\
- '{"rowKey":"row1","cfName":"cf1","version":0}}'\
+ '{"rowKey":"row1","cfName":"info","version":0}}'\
  "localhost:8080/myDataBase/myTable/_useVersion"
 
 
@@ -143,8 +145,8 @@ post http://ip:端口/dbname/tab_name/_showVersion
 
 //disk
 curl -H "Content-Type: application/json" -X POST -d\
- '{"rowKey":"row1"}}'\
- "localhost:8080/myDataBase/myTable/_showVersion"
+ '{"rowKey":"row1","cfName":"info"}}'\
+ "localhost:8080/myDataBase1/myTable1/_showVersion"
 
 4.事务版本操作
 
@@ -166,6 +168,7 @@ curl -H "Content-Type: application/json" -X DELETE -d\
  "localhost:8080/_deleteTransaction"
 
 4.3 提取某个事务到最新
+//disk
 POST http://ip:端口/_useTransaction
 {
     "explainValue":"value"(必要)
@@ -224,8 +227,9 @@ post http://ip:端口/dbname/tab_name/_search
 }
 
 curl -H "Content-Type: application/json" -X POST -d\
- '{"limit":9,"order_cf_name":"info1","sort":"true","cf_names":["row1","info"],"terms":[{"cf_name":"info","min":1,"max": 99}]}'\
- "localhost:8080/myDataBase/myTable/_search"
+ '{"limit":9,"order_cf_name":"info1","sort":"true",
+ "cf_names":["info"],"terms":[{"cf_name":"info","min":1,"max": 99}]}'\
+ "localhost:8080/myDataBase1/myTable32/_search"
 
 9.基本添加流程
 #语法
@@ -243,8 +247,8 @@ Post http://ip:端口/dbname/tab_name/_insert
 }
 
 curl -H "Content-Type: application/json" -X POST -d\
- '{"rowKey":"row1","values":[{"cf_name":"info","c_name":"myName","value":"n1"}]}'\
- "localhost:8080/myDataBase/myTable/_insert"
+ '{"rowKey":"row1","values":[{"cf_name":"info","c_name":"myName2","value":"42"}]}'\
+ "localhost:8080/myDataBase1/myTable32/_insert"
 
 
 10.基本删除流程

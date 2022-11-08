@@ -4,8 +4,8 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import org.example.vcdb.store.file.VCFileReader;
 import org.example.vcdb.store.mem.MemStore;
+import org.example.vcdb.store.region.DaemonRegionServer;
 import org.example.vcdb.store.region.Region.VCRegion;
-import org.example.vcdb.store.region.RegionServerAPI;
 import org.example.vcdb.store.region.RegionServerMeta;
 import org.example.vcdb.store.region.version.DataBase;
 import org.example.vcdb.store.region.version.Table;
@@ -68,7 +68,7 @@ public class RegionServer {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-//        testMem.tet();
+        DaemonRegionServer.async();
         dbServiceStart();
 
     }

@@ -247,7 +247,7 @@ public class VCDBAdmin {
         ByteString reply = table.getReply();
         System.out.println(reply);
         build.shutdown();
-        return reply.toString();
+        return new String(reply.toByteArray());
     }
 
     //return byte[](查询的返回KV)
@@ -269,7 +269,7 @@ public class VCDBAdmin {
         System.out.println(reply);
         build.shutdown();
 
-        return reply.toString();
+        return new String(reply.toByteArray());
     }
 
     //return int(返回改动KV的数量)
@@ -346,7 +346,7 @@ public class VCDBAdmin {
         ByteString reply = table.getReply();
         System.out.println(reply);
         build.shutdown();
-        return reply.toString();
+        return new String(reply.toByteArray());
     }
 
     public String deleteTransaction(DeleteTransaction requestEntity) {
@@ -392,7 +392,7 @@ public class VCDBAdmin {
         ByteString reply = table.getReply();
         System.out.println(reply);
         build.shutdown();
-        return reply.toString();
+        return new String(reply.toByteArray());
     }
 
     public String showTables(String dbName,ShowTables showTables){
@@ -406,6 +406,6 @@ public class VCDBAdmin {
         ByteString reply = table.getReply();
         System.out.println(reply);
         build.shutdown();
-        return reply.toString();
+        return new String(reply.toByteArray());
     }
 }

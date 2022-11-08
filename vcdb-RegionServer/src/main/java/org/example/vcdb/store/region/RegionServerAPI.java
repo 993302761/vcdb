@@ -144,12 +144,13 @@ public class RegionServerAPI {
                 FileStore fileStore=new FileStore(cfMeta);
                 VCFIleWriter.writeAll(fileStore.getData(), fileStoreName);
 
-                RegionServer.tableAlterMap.put(tabName+":"+cfName,new TableAlter(new Date().getTime(), (byte) 1,type,
-                        unique,isNil, min,max,tabName,cfName," "));
+                RegionServer.tableAlterMap.put(tabName+":"+cfName,new TableAlter(new Date().getTime(), (byte) 0,type,
+                        unique,isNil, min,max,dbName+"."+tabName,cfName," "));
             }
             RegionMeta regionMeta = new RegionMeta(regionMetaFileName, fileStoreMap);
             VCFIleWriter.writeAll(regionMeta.getData(), regionMetaFileName);
-            System.out.println("创建表成功"+RegionServer.tableMap+RegionServer.tableAlterMap);
+            System.out.println("创建表成功"+RegionServer.tableMap);
+            System.out.println(("------------\n" + RegionServer.tableAlterMap));
             return true;
         } catch (Exception e){
             e.printStackTrace();
@@ -358,8 +359,8 @@ public class RegionServerAPI {
                 boolean isNil=requestEntity[pos]==1;
                 pos+=1;
 
-                RegionServer.tableAlterMap.put(tabName+":"+cfName,new TableAlter(new Date().getTime(), method,type,
-                        unique,isNil, min,max,tabName,cfName,old_cfName));
+                RegionServer.tableAlterMap.put(cfName,new TableAlter(new Date().getTime(), method,type,
+                        unique,isNil, min,max,dBName+"."+tabName,cfName,old_cfName));
             }
             return true;
         } catch (Exception e) {
@@ -494,7 +495,7 @@ public class RegionServerAPI {
             VCFIleWriter.writeAll(fileStoreMeta.getData(),fileStoreMetaName);
 
             //更改fileStore
-            VCFIleWriter.writeAll(bytes1,pageIndex*1024,fileStoreMeta.getEncodedName());
+            VCFIleWriter.writeAll(bytes1,pageIndex*4*1024,fileStoreMeta.getEncodedName());
         }
         return  count;
     }
@@ -549,23 +550,28 @@ public class RegionServerAPI {
         fileStoreMeta.updatePageLength(pageIndex,bytes1.length);
         VCFIleWriter.writeAll(fileStoreMeta.getData(),fileStoreMetaName);
 
-        VCFIleWriter.writeAll(bytes1,pageIndex*1024,fileStoreMeta.getEncodedName());
+        VCFIleWriter.writeAll(bytes1,pageIndex*4*1024,fileStoreMeta.getEncodedName());
         return true;
     }
 
 
     /*disk*/
     public static byte[] showDataBases(){
-        DataBaseFile dataBaseFile=new DataBaseFile(VCFileReader.readAll("/x2/vcdb/common/dbFileStore"));
+        DataBaseFile dataBaseFile=new DataBaseFile(VCFileReader.readAll("common/dbFileStore"));
         List<DataBase> dataBases = dataBaseFile.getDataBases();
         dataBases.addAll(RegionServer.dbMap.values());
         dataBases.removeIf(dataBase -> dataBase.getType() == 0);
-        return dataBases.toString().getBytes();
+        StringBuilder ss= new StringBuilder();
+        //返回kvs的toByteArray
+        for (DataBase dataBase:dataBases) {
+            ss.append(dataBase.toString()).append("\n");
+        }
+        return ss.toString().getBytes();
     }
 
     /*disk*/
     public static byte[] showTables(String dbName){
-        TableFile tableFile=new TableFile(VCFileReader.readAll("/x2/vcdb/common/tableFileStore"));
+        TableFile tableFile=new TableFile(VCFileReader.readAll("common/tableFileStore"));
         List<Table> tables = tableFile.getTables();
         tables.addAll(RegionServer.tableMap.values());
         for (Table table:tables){
@@ -578,23 +584,36 @@ public class RegionServerAPI {
             }
         }
         tables.removeIf(table->table.getType()==0);
-        return tables.toString().getBytes();
+        StringBuilder ss= new StringBuilder();
+        //返回kvs的toByteArray
+        for (Table table:tables) {
+            ss.append(table.toString()).append("\n");
+        }
+        return ss.toString().getBytes();
     }
 
 
     /*disk*/
     public static byte[] showVersion(String dBName,String tabName,String rowKey,String cfName){
         //找到修改的KVs在哪一页
-        String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getFileStoreMetaName(cfName);
-        FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
-        int pageIndex = findPageIndex(dBName, tabName, rowKey ,cfName);
+        RegionMeta regionMeta = getRegionMeta(dBName + "." + tabName);
+        if (regionMeta==null){
+            return (dBName + "." + tabName+"不存在").getBytes();
+        }else {
+            String fileStoreMetaName=regionMeta.getFileStoreMetaName(cfName);
+            if (fileStoreMetaName==null){
+                return (cfName+"不存在").getBytes();
+            }else {
+                FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
+                int pageIndex = findPageIndex(dBName, tabName, rowKey ,cfName);
+                //加载到内存,找到KV,返回
+                byte[] bytes = VCFileReader.openFileStorePage(pageIndex, fileStoreMeta.getEncodedName());
+                KeyValueSkipListSet kvs = byteArrayToKvs(bytes);
+                KV kv = kvs.get(rowKey);
+                return kv.getData();
+            }
+        }
 
-        //加载到内存,找到KV,返回
-        byte[] bytes = VCFileReader.openFileStorePage(pageIndex, fileStoreMeta.getEncodedName());
-        KeyValueSkipListSet kvs = byteArrayToKvs(bytes);
-        KV kv = kvs.get(rowKey);
-
-        return kv.getData();
     }
 
 
@@ -621,7 +640,7 @@ public class RegionServerAPI {
         fileStoreMeta.updatePageLength(pageIndex,bytes1.length);
         VCFIleWriter.writeAll(fileStoreMeta.getData(),fileStoreMetaName);
 
-        VCFIleWriter.writeAll(bytes1,pageIndex*1024,fileStoreMeta.getEncodedName());
+        VCFIleWriter.writeAll(bytes1,pageIndex*4*1024,fileStoreMeta.getEncodedName());
         return true;
     }
 
@@ -629,8 +648,14 @@ public class RegionServerAPI {
     public static byte[] singleSearch(String dBName,String tabName,int limit,
                                String orderCfName,boolean sort,
                                byte[] cfNames,byte[] terms){
+
+        Set<String> rowKeysRes=null;
         //加载terms
-        Set<String> rowKeysRes= findRowKeysByTerms(dBName, tabName, terms);
+        try {
+            rowKeysRes= findRowKeysByTerms(dBName, tabName, terms);
+        }catch (Exception d){
+            return (dBName+"."+tabName+"类型转换有问题，请检查").getBytes();
+        }
         if (rowKeysRes==null){
             rowKeysRes=new HashSet<>();
         }
@@ -649,12 +674,15 @@ public class RegionServerAPI {
             pos2+=cfNameLength;
 
             MemStore memStore = RegionServer.outboundMemStore.get(dBName + "." + tabName + ":" + cfName);
+            if (memStore==null){
+                memStore=new MemStore();
+            }
             if (memStore.kvSet!=null){
                 for (KV kv:memStore.kvSet){
                     System.out.println(kv);
                 }
             }
-            if (memStore==null){
+            if (memStore.kvSet==null){
                 //从磁盘里读出来
                 RegionMeta regionMeta = getRegionMeta(dBName + "." + tabName);
                 String fileStoreMetaName=regionMeta.getFileStoreMetaName(cfName);
@@ -873,7 +901,7 @@ public class RegionServerAPI {
                 result.append(entry.getValue().toString());
             }
         }
-        TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
+        TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("common/transaction"));
         List<Transaction> transactions = transactionFile.getTransactions();
         transactionFile.getTransactions();
         for (Transaction transaction:transactions){
@@ -886,7 +914,7 @@ public class RegionServerAPI {
     //删除条目（表结构操作和数据）
     public static boolean deleteTransaction(String explainValue){
         Transaction transaction = null;
-        TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
+        TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("common/transaction"));
         List<Transaction> transactions = transactionFile.getTransactions();
         transactions.addAll(RegionServer.transactionMap.values());
         try{
@@ -905,7 +933,7 @@ public class RegionServerAPI {
             assert transaction != null;
             long endTime = transaction.getEndTime();
             long startTime = transaction.getStartTime();
-            RegionServerMeta serverMeta=new RegionServerMeta(VCFileReader.readAll("/x2/vcdb/regionServerMeta"));
+            RegionServerMeta serverMeta=new RegionServerMeta(VCFileReader.readAll("regionServerMeta"));
             Map<String, TableTrailer> regionMap = serverMeta.getRegionMap();
             for (Map.Entry<String,TableTrailer> entry : regionMap.entrySet()) {
                 //判断时间
@@ -933,7 +961,7 @@ public class RegionServerAPI {
             }
             transactionFile=new TransactionFile(transactions);
             RegionServer.transactionMap.clear();
-            VCFIleWriter.writeAll(transactionFile.getData(),"/x2/vcdb/common/transaction");
+            VCFIleWriter.writeAll(transactionFile.getData(),"common/transaction");
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -944,7 +972,7 @@ public class RegionServerAPI {
     //添加新的条目（表结构操作和数据）
     public static boolean useTransaction(String explainValue,String newExplainValue){
         Transaction transaction=null;
-        TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("/x2/vcdb/common/transaction"));
+        TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("common/transaction"));
         List<Transaction> transactions = transactionFile.getTransactions();
         transactions.addAll(RegionServer.transactionMap.values());
         try{
@@ -961,7 +989,7 @@ public class RegionServerAPI {
             assert transaction != null;
             long endTime = transaction.getEndTime();
             long startTime = transaction.getStartTime();
-            RegionServerMeta serverMeta=new RegionServerMeta(VCFileReader.readAll("/x2/vcdb/regionServerMeta"));
+            RegionServerMeta serverMeta=new RegionServerMeta(VCFileReader.readAll("regionServerMeta"));
             Map<String, TableTrailer> regionMap = serverMeta.getRegionMap();
             for (Map.Entry<String,TableTrailer> entry : regionMap.entrySet()) {
                 //判断时间
@@ -996,7 +1024,7 @@ public class RegionServerAPI {
             }
             transactionFile=new TransactionFile(transactions);
             RegionServer.transactionMap.clear();
-            VCFIleWriter.writeAll(transactionFile.getData(),"/x2/vcdb/common/transaction");
+            VCFIleWriter.writeAll(transactionFile.getData(),"common/transaction");
             RegionServer.transactionMap.put(newExplainValue,new Transaction(transaction.getStartTime(),transaction.getEndTime(),newExplainValue));
             return true;
         }catch (Exception e){
@@ -1064,23 +1092,27 @@ public class RegionServerAPI {
             if (memStore==null){
                 //从磁盘里读出来
                 RegionMeta regionMeta = getRegionMeta(dBName + "." + tabName);
-                String fileStoreMetaName=regionMeta.getFileStoreMetaName(entry.getKey());
-                FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
-                List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
-                System.out.println(pageTrailer);
-                FileStore fileStore =new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName())) ;
-                //装了一个fileStore的东西
-                KeyValueSkipListSet kvs=new KeyValueSkipListSet(new KV.KVComparator());
+                if (regionMeta==null){
+                    System.out.println(dBName + "." + tabName+"不存在");
+                    return rowKeysRes;
+                }else {
+                    String fileStoreMetaName=regionMeta.getFileStoreMetaName(entry.getKey());
+                    FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
+                    List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
+                    System.out.println(pageTrailer);
+                    FileStore fileStore =new FileStore(VCFileReader.readAll(fileStoreMeta.getEncodedName())) ;
+                    //装了一个fileStore的东西
+                    KeyValueSkipListSet kvs=new KeyValueSkipListSet(new KV.KVComparator());
 
-                for (int j = 0; j < pageTrailer.size(); j++) {
-                    kvs.addKVs(fileStore.getDataSet(1+j));
+                    for (int j = 0; j < pageTrailer.size(); j++) {
+                        kvs.addKVs(fileStore.getDataSet(1+j));
+                    }
+                    memStore=new MemStore();
+                    memStore.kvSet=kvs;
+                    memStore.type=fileStore.getColumnFamilyMeta().getType().getCode();
+                    // 加载到memStore
+                    RegionServer.outboundMemStore.put(dBName + "." + tabName + ":" + entry.getKey(),memStore);
                 }
-
-                memStore=new MemStore();
-                memStore.kvSet=kvs;
-                memStore.type=fileStore.getColumnFamilyMeta().getType().getCode();
-                // 加载到memStore
-                RegionServer.outboundMemStore.put(dBName + "." + tabName + ":" + entry.getKey(),memStore);
             }
 
             type= memStore.getType();
@@ -1293,8 +1325,13 @@ public class RegionServerAPI {
     public static void addKVsToDisk(String fullTabName,String cfName,KeyValueSkipListSet kvs ){
         RegionServer.readConfig("regionServerMeta");
         RegionMeta regionMeta = RegionServerAPI.getRegionMeta(fullTabName);
+        if (regionMeta==null){
+            System.out.println(fullTabName+"不存在");
+            return;
+        }
         FileStoreMeta fileStoreMeta = RegionServerAPI.getFileStoreMeta(regionMeta, cfName);
-        Map<Integer, List<KV>> integerListMap = RegionServerAPI.splitKVsByPage(fileStoreMeta.getPageTrailer(), kvs);
+        List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();
+        Map<Integer, List<KV>> integerListMap = RegionServerAPI.splitKVsByPage(pageTrailer, kvs);
         for (Map.Entry<Integer,List<KV>> mapEntry:integerListMap.entrySet()){
             System.out.println("page:"+mapEntry.getKey());
             System.out.println("kvs:"+mapEntry.getValue());
@@ -1318,12 +1355,20 @@ public class RegionServerAPI {
 
     public static List<KVRange> getPageTrailer(String tabName, String cfName) {
         RegionMeta regionMeta = getRegionMeta(tabName);
+        if (regionMeta==null){
+            System.out.println(tabName+"不存在");
+            return new ArrayList<>();
+        }
         FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta, cfName);
         return fileStoreMeta.getPageTrailer();
     }
 
     public static void insertPageWithSplit(String tabName, String cfName, int pageIndex, List<KV> kvs) {
         RegionMeta regionMeta = getRegionMeta(tabName);
+        if (regionMeta==null){
+            System.out.println(tabName+"不存在");
+            return;
+        }
         FileStoreMeta fileStoreMeta = getFileStoreMeta(regionMeta, cfName);
         String fileStoreName = fileStoreMeta.getEncodedName();
         List<KVRange> pageTrailer = fileStoreMeta.getPageTrailer();

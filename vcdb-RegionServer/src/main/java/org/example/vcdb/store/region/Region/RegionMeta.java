@@ -48,7 +48,6 @@ public class RegionMeta {
             pos=Bytes.putInt(this.metaByte,pos,entry.getValue().getBytes().length);
             pos = Bytes.putBytes(this.metaByte, pos, entry.getValue().getBytes(), 0, entry.getValue().getBytes().length);
         }
-
     }
 
     public int getNameLength(){
@@ -97,8 +96,13 @@ public class RegionMeta {
     /*CfName*/
     public FileStoreMeta getFileStoreMeta(String key) {
         Map<String, String> fileStoreMap = getFileStoreMap();
-        return new FileStoreMeta(VCFileReader.readAll(fileStoreMap.get(key)));
+        String fileName = fileStoreMap.get(key);
+        if (fileName==null){
+            System.out.println(key+"不存在");
+        }
+        return new FileStoreMeta(VCFileReader.readAll(fileName));
     }
+
     public String getFileStoreMetaName(String key){
         Map<String, String> fileStoreMap = getFileStoreMap();
         System.out.println("key:"+key);

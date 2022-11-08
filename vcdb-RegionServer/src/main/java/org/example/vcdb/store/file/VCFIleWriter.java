@@ -142,7 +142,6 @@ public class VCFIleWriter {
     public static void  initFileStorePage(int pageLength,byte[] kvs,int pageIndex,int count,String fileName){
         RandomAccessFile accessFile = null;
         try {
-
             updateKvsCountFOrFileStorePage(count,pageIndex,fileName);
             //getFromMap
             accessFile = new RandomAccessFile("/x2/vcdb/"+fileName, "rw");

@@ -11,6 +11,7 @@ public class TableFile {
         this.data=new byte[1024*4];
         int pos=0;
         int count=tables.size();
+        pos = Bytes.putInt(this.data,pos,count);
         for (Table table:tables){
             pos = Bytes.putInt(this.data,pos,table.getData().length);
             pos = Bytes.putBytes(this.data,pos,table.getData(),0,table.getData().length);

@@ -33,4 +33,5 @@ public class CreateTable extends RequestEntity {
     public void setColumn_family(List<ColumnFamilyCell> column_family) {
         this.column_family = column_family;
     }
+
 }
