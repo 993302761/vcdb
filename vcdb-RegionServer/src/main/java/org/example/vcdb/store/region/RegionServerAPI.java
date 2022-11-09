@@ -267,9 +267,14 @@ public class RegionServerAPI {
     public static boolean closeTransaction(String explainValue){
         try {
             Transaction transaction = RegionServer.transactionMap.get(explainValue);
-            transaction.setEndTime(new Date().getTime());
-            RegionServer.transactionMap.put(explainValue,transaction);
-            return true;
+            if(transaction==null){
+                System.out.println(explainValue+"不存在");
+                return false;
+            }else {
+                transaction.setEndTime(new Date().getTime());
+                RegionServer.transactionMap.put(explainValue,transaction);
+                return true;
+            }
         } catch (Exception e){
             e.printStackTrace();
             return false;
@@ -469,8 +474,14 @@ public class RegionServerAPI {
             pos+=4;
 
             //找到合并的KVs在哪一页
-            String fileStoreMetaName = getRegionMeta(dBName + "." + tabName).getFileStoreMetaName(cfName);
+            RegionMeta regionMeta = getRegionMeta(dBName + "." + tabName);
+            if(regionMeta==null){
+                System.out.println(dBName + "." + tabName+"不存在");
+                return 0;
+            }
+            String fileStoreMetaName = regionMeta.getFileStoreMetaName(cfName);
             FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
+
             int pageIndex = findPageIndex(dBName, tabName, rowKey ,cfName);
 
             //加载到内存进行修改
@@ -620,7 +631,12 @@ public class RegionServerAPI {
     /*disk*/
     public static boolean deleteVersion(String dBName,String tabName,String rowKey,String cfName,int version){
         //找到修改的KVs在哪一页
-        String fileStoreMetaName=getRegionMeta(dBName + "." + tabName).getFileStoreMetaName(cfName);
+        RegionMeta regionMeta = getRegionMeta(dBName + "." + tabName);
+        if (regionMeta==null){
+            System.out.println(dBName + "." + tabName+" not exist");
+            return false;
+        }
+        String fileStoreMetaName=regionMeta.getFileStoreMetaName(cfName);
         FileStoreMeta fileStoreMeta=new FileStoreMeta(VCFileReader.readAll(fileStoreMetaName));
         int pageIndex = findPageIndex(dBName, tabName, rowKey ,cfName);
 

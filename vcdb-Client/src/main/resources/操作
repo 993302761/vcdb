@@ -15,3 +15,40 @@ curl -H "Content-Type: application/json" -X PUT -d\
    "cf_names":["info"],"terms":[{"cf_name":"info","min":1,"max": 99}]}'\
    "localhost:8080/myDataBase1/myTable32/_search"
 --------------------------------------------------------------------------------
+
+--------------------------------------事务级别版本控制---------------------------------
+curl -H "Content-Type: application/json" -X POST -d\
+ '{"explainValue":  "I want update some Info"}'\
+ "localhost:8080/_open"
+
+ curl -X POST "localhost:8080/_close"
+
+ curl -X POST "localhost:8080/_showTransaction"
+
+ curl -H "Content-Type: application/json" -X DELETE -d\
+  '{"explainValue":  "I want update some Info"}'\
+  "localhost:8080/_deleteTransaction"
+
+curl -H "Content-Type: application/json" -X POST -d\
+ '{"explainValue":  "I want update some Info22","newExplainValue":  "I want update some Info223"}'\
+ "localhost:8080/_useTransaction"
+
+----------------------------------------数据版本控制-----------------------------------
+curl -H "Content-Type: application/json" -X POST -d\
+ '{"Version_terms":[{"rowKey":"row1","cfName":"cf1","version-from":0,"version-to":2}]}'\
+ "localhost:8080/myDataBase/myTable/_merge"
+
+
+ curl -H "Content-Type: application/json" -X POST -d\
+  '{"rowKey":"row1","cfName":"info","version":0}}'\
+  "localhost:8080/myDataBase/myTable/_useVersion"
+
+
+curl -H "Content-Type: application/json" -X POST -d\
+ '{"rowKey":"row1","cfName":"cf1","version":0}}'\
+ "localhost:8080/myDataBase/myTable/delete_version"
+
+   curl -H "Content-Type: application/json" -X POST -d\
+    '{"rowKey":"row1","cfName":"info"}}'\
+    "localhost:8080/myDataBase1/myTable1/_showVersion"
+

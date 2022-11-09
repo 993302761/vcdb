@@ -67,10 +67,10 @@ public class RegionServer {
         System.out.println("ttttt");
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args)
+            throws IOException, InterruptedException {
         DaemonRegionServer.async();
         dbServiceStart();
-
     }
 
     public static void readConfig(String regionServerMeta) {

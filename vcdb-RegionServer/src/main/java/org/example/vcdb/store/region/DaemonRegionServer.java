@@ -59,7 +59,7 @@ public class DaemonRegionServer {
 
         // 执行任务,里面写执行代码
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-            System.out.println("正在检测transactionMap、dbMap、tableMap、tableAlterMap是否为空");
+            System.out.println("正在检测dbMap、tableMap、tableAlterMap是否为空");
             if (!RegionServer.transactionMap.isEmpty()){
                 TransactionFile transactionFile=new TransactionFile(VCFileReader.readAll("common/transaction"));
                 List<Transaction> transactions = null;
@@ -68,13 +68,21 @@ public class DaemonRegionServer {
                 }else {
                     transactions=transactionFile.getTransactions();
                 }
-
+                int oldSize = transactions.size();
                 for (Map.Entry<String,Transaction> entry : RegionServer.transactionMap.entrySet()) {
-                    transactions.add(entry.getValue());
+                    if (entry.getValue().getStartTime()!=0&&entry.getValue().getEndTime()!=0){
+                        transactions.add(entry.getValue());
+                    }else {
+                        System.out.println(entry.getKey()+"这个事务没有完成");
+                    }
                 }
-                VCFIleWriter.writeAll(new TransactionFile(transactions).getData(),"common/transaction");
-                RegionServer.transactionMap.clear();
-                System.out.println("transaction落盘成功");
+                if (transactions.size()==oldSize){
+                    System.out.println("transactions没有增加无需落盘");
+                }else {
+                    VCFIleWriter.writeAll(new TransactionFile(transactions).getData(),"common/transaction");
+                    RegionServer.transactionMap.clear();
+                    System.out.println("transaction落盘成功");
+                }
             }
 
             if (!RegionServer.dbMap.isEmpty()){

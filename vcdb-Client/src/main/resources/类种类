@@ -149,6 +149,21 @@ curl -H "Content-Type: application/json" -X POST -d\
  "localhost:8080/myDataBase1/myTable1/_showVersion"
 
 4.事务版本操作
+1.开启事务
+POST     http://ip:端口/_open
+{
+   "explainValue(操作解释)":  "I want update some Info"）(必要)
+}
+
+
+curl -H "Content-Type: application/json" -X POST -d\
+ '{"explainValue":  "I want update some Info"}'\
+ "localhost:8080/_open"
+
+2.关闭事务
+POST     http://ip:端口/_close
+
+curl -X POST "localhost:8080/_close"
 
 4.1 查看所有事务
 post http://ip:端口/_showTransaction
@@ -271,6 +286,11 @@ post http://ip:端口/dbname/tab_name /_delete
 
 
 //disk
+curl -H "Content-Type: application/json" -X POST -d\
+ '{"cf_names":"info","terms":[{"cf_name":"info","c_name":"myName2","max":"42","min":"1"}]}'\
+ "localhost:8080/myDataBase1/myTable32/_delete"
+
+
 11.基本跟新流程
 POST  http://ip:端口/dbname/tab_name /_update
 {
@@ -300,7 +320,9 @@ POST  http://ip:端口/dbname/tab_name /_update
     ]
 }
 
-
+curl -H "Content-Type: application/json" -X POST -d\
+ '{"terms":[{"cf_name":"info","c_name":"myName2","max":"42","min":"1"}],"values":[{"cf_name":"info","c_name":"myName3,"value":"423"}]}'\
+ "localhost:8080/myDataBase1/myTable32/_update"
 
 //disk
 12.多表查询

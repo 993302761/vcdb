@@ -136,7 +136,6 @@ public class VCDBAdmin {
     //return bool(是否成功)
     public String closeTransaction(CloseTransaction closeTransaction) {
         String temp=ExplainValue;
-        ExplainValue=null;
         ManagedChannel build = ManagedChannelBuilder.forAddress(host, serverPort).usePlaintext().build();
         //使用同步的方式进行消息传递
         RegionServerGrpc.RegionServerBlockingStub blockingStub = RegionServerGrpc.newBlockingStub(build);
@@ -148,6 +147,7 @@ public class VCDBAdmin {
         System.out.println(reply);
         build.shutdown();
         if (reply){
+            ExplainValue=null;
             return "closeTransaction "+temp+"success\n";
         }else {
             return "err\n";
