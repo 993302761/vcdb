@@ -19,33 +19,20 @@ import java.util.Map;
 public class EX {
     public static VCDBAdmin vcdbAdmin = new VCDBAdmin();
 
-    static {
-        //        initAdmin();
-    }
-
 
     public static String DFA2(ActionEntity actionEntity) {
         int MethodState = 0; // method
         //用枚举替换
         if (isPut(actionEntity)) {
-            MethodState = 1;
+            return handlePut(actionEntity);
         } else if (isDelete(actionEntity)) {
-            MethodState = 2;
+            return handleDelete(actionEntity);
         } else if (isPost(actionEntity)) {
-            MethodState = 3;
+            return handlePost(actionEntity);
         } else {
             MethodGetErr(actionEntity);
-        }
-        switch (MethodState) {
-            case 1:
-                return handlePut(actionEntity);
-            case 2:
-                return handleDelete(actionEntity);
-            case 3:
-                return handlePost(actionEntity);
-            default:
-                System.out.println("未知错误---------------------");
-                return "the action is error";
+            System.out.println("未知错误---------------------");
+            return "the action is error";
         }
     }
 
